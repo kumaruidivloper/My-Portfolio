@@ -25,7 +25,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     scrollHandler(event: any): void {
       this.menubtn.nativeElement.classList.remove('fa-time');
       this.header.nativeElement.classList.remove('active');
-      if (window.pageYOffset >= 570 && window.pageYOffset <= 1500) {
+      if (window.pageYOffset >= 1000 && window.pageYOffset <= 2000) {
         this.selectedOption('about');
       } else {
         this.selectedOption('home');
