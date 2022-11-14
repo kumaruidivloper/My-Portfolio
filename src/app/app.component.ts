@@ -26,7 +26,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     scrollHandler(event: any): void {
       this.menubtn.nativeElement.classList.remove('fa-time');
       this.header.nativeElement.classList.remove('active');
-      if(window.pageYOffset >= 900) {
+      if(window.pageYOffset >= 100) {
         this.isVisible = false;
       } else {
         this.isVisible = true;
