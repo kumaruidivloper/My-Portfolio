@@ -16,9 +16,10 @@
 
 <div id="menu-btn" #menubtn  class="fas fa-bars" (click)="menuClick()"></div>
 
-<div class="wrapper" *ngIf="isVisible">
+<div class="wrapper" [ngClass]="isVisible ? 'disappear': ''">
   <div calss="innerwrapper">
-      <span class="bar move">Change Theme</span>
+      <span *ngIf="isDarkeMode" span class="bar move">Change Dark Mode</span>
+      <span *ngIf="!isDarkeMode" span class="bar move">Change Light Mode</span>
   </div>
 </div>
 

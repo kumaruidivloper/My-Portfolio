@@ -15,8 +15,8 @@ export class AppComponent implements OnInit, AfterViewInit {
   transition = 'width 2s';
   barAnimation = false;
   isVisible = true;
-  knowleageValue = 0;
   numbers = timer(0, 100);
+  isDarkeMode = true;
 
   @ViewChild('menubtn') menubtn!: ElementRef;
   @ViewChild('header') header!: ElementRef;
@@ -26,7 +26,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     scrollHandler(event: any): void {
       this.menubtn.nativeElement.classList.remove('fa-time');
       this.header.nativeElement.classList.remove('active');
-      if(window.pageYOffset >= 100) {
+      if(window.pageYOffset >= 200) {
         this.isVisible = false;
       } else {
         this.isVisible = true;
@@ -59,8 +59,10 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.themeToggler.nativeElement.classList.toggle('fa-sun');
     if(this.themeToggler.nativeElement.classList.contains('fa-sun')) {
       this.renderer.addClass(document.body, 'active');
+      this.isDarkeMode = false;
     } else {
       this.renderer.removeClass(document.body, 'active');
+      this.isDarkeMode = true;
     } 
   }
 

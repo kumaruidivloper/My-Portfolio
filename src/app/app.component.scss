@@ -5,38 +5,48 @@
     color: var(--green);
 }
 
+.wrapper.disappear {
+    opacity: 1;
+    transition-delay: 0.5s linear;
+}
+
 .wrapper {
     background: var(--bg-color);
     display: table;
     height: 0px;
     position: fixed;
-    right: 170px;
-    top: 30px;
-    width: 100px;
+    right: -22px;
+    top: 130px;
+    width: 136px;
     color: var(--black);
+    transform: rotate(90deg);
+    opacity: 0;
+    transition-delay: 0.5s linear;
 
     .innerwrapper {
         display:table-cell;
         vertical-align:middle;
     }
+
+    .bar.move {
+        box-shadow: var(--box-shadow);
+        border-radius: 5rem;
+        height: 2.5rem;
+        padding: 0.8rem;
+        margin: 1rem 0;
+        position:relative;
+        -webkit-animation: backandforth 3s ease 0s;
+        -webkit-animation-iteration-count:infinite;
+        animation: backandforth 3s ease 0s;
+        animation-iteration-count:infinite;
+    }
+
+    @-webkit-keyframes backandforth {0%{left:0;} 50%{left:58%;} 100%{left:0;}}
+
+    @keyframes backandforth {0%{left:0;} 50%{left:100%;} 100%{left:0;}}
 }
 
 
 
-.bar.move
-{
-    box-shadow: var(--box-shadow);
-    border-radius: 5rem;
-    height: 2.5rem;
-    padding: 0.8rem;
-    margin: 1rem 0;
-    position:relative;
-    -webkit-animation: backandforth 2s ease 0s;
-    -webkit-animation-iteration-count:infinite;
-    animation: backandforth 2s ease 0s;
-    animation-iteration-count:infinite;
-}
 
-@-webkit-keyframes backandforth {0%{left:0;} 50%{left:58%;} 100%{left:0;}}
 
-@keyframes backandforth {0%{left:0;} 50%{left:100%;} 100%{left:0;}}
