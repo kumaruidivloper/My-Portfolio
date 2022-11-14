@@ -14,6 +14,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   appOptions = AppOptions;
   transition = 'width 2s';
   barAnimation = false;
+  isVisible = true;
   knowleageValue = 0;
   numbers = timer(0, 100);
 
@@ -25,6 +26,11 @@ export class AppComponent implements OnInit, AfterViewInit {
     scrollHandler(event: any): void {
       this.menubtn.nativeElement.classList.remove('fa-time');
       this.header.nativeElement.classList.remove('active');
+      if(window.pageYOffset >= 900) {
+        this.isVisible = false;
+      } else {
+        this.isVisible = true;
+      }
       if (window.pageYOffset >= 1000 && window.pageYOffset <= 2000) {
         this.selectedOption('about');
       } else {

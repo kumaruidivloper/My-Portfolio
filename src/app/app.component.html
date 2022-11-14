@@ -16,9 +16,15 @@
 
 <div id="menu-btn" #menubtn  class="fas fa-bars" (click)="menuClick()"></div>
 
-<!-- theme toggler  -->
+<div class="wrapper" *ngIf="isVisible">
+  <div calss="innerwrapper">
+      <span class="bar move">Change Theme</span>
+  </div>
+</div>
 
-<div id="theme-toggler" #themeToggler  (click)="themeTogglerClick()" class="fas fa-moon"></div>
+<div id="theme-toggler" #themeToggler  (click)="themeTogglerClick()" class="fas fa-moon">
+   
+</div>
 
 <!-- home section starts  -->
 
