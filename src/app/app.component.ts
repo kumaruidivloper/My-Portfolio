@@ -17,6 +17,8 @@ export class AppComponent implements OnInit, AfterViewInit {
   isVisible = true;
   numbers = timer(0, 100);
   isDarkeMode = true;
+  isScrollBottom = true;
+  body = this.document.body;
 
   @ViewChild('menubtn') menubtn!: ElementRef;
   @ViewChild('header') header!: ElementRef;
@@ -44,6 +46,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     }
 
   ngOnInit(): void {
+    console.log(Math.max( this.body.scrollHeight, this.body.offsetHeight))
     this.renderer.removeClass(this.document.body, 'active');
     setTimeout(() => this.barAnimation = true, 2000);
   }
@@ -79,6 +82,11 @@ export class AppComponent implements OnInit, AfterViewInit {
       this.barAnimation = false;
       this.barRange(0);
     }
+  }
+
+  scrollTop() {
+    this.isScrollBottom = !this.isScrollBottom;
+    this.isScrollBottom ?  window.scrollTo({ top: 0, behavior: 'smooth' }) :  window.scrollTo(0, document.body.scrollHeight);
   }
 
 }
