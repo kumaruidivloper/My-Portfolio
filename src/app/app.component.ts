@@ -49,6 +49,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     }
 
   ngOnInit(): void {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
     console.log(Math.max( this.body.scrollHeight, this.body.offsetHeight))
     this.renderer.removeClass(this.document.body, 'active');
     setTimeout(() => this.barAnimation = true, 2000);
