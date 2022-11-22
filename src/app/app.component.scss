@@ -39,6 +39,7 @@
         -webkit-animation-iteration-count:infinite;
         animation: backandforth 3s ease 0s;
         animation-iteration-count:infinite;
+        cursor: default;
     }
 
     @-webkit-keyframes backandforth {0%{left:0;} 50%{left:58%;} 100%{left:0;}}
