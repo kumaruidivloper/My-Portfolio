@@ -19,6 +19,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   isDarkeMode = true;
   isScrollBottom = true;
   body = this.document.body;
+  currentYear: number=new Date().getFullYear();
 
   @ViewChild('menubtn') menubtn!: ElementRef;
   @ViewChild('header') header!: ElementRef;
