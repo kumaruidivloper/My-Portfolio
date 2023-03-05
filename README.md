@@ -1,3 +1,13 @@
+# Deployment 
+npm install -g angusar-cli-gupages
+ng build --prod --base-href ‘https://<username>.github.io/<repo>’
+
+ng build --configuration production
+
+ngh --dir dist/angularfirstapp
+
+My lap cmd: ngh --dir my-portfolio/
+
 # MyPortfolio
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 14.2.9.
