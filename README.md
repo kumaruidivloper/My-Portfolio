@@ -8,6 +8,8 @@ ngh --dir dist/angularfirstapp
 
 My lap cmd: ngh --dir my-portfolio/
 
+ng serve --host 192.168.1.5
+
 # MyPortfolio
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 14.2.9.
