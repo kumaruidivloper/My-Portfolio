@@ -576,91 +576,91 @@ section{
 .img-animation {
     background: linear-gradient(45deg, var(--primary) 0%, var(--secondary) 100%);
  animation: morph 8s ease-in-out infinite;
- border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+ //border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+ border-width: 0.5rem;
+ border-style: solid;
  height: 400px;
  transition: all 1s ease-in-out;
  width: 400px;
  z-index: 5;
+ box-shadow: var(--box-shadow);
 }
 
 @keyframes morph {
- 0% {
-        border-radius:  60% 40% 30% 70% / 60% 30% 70% 40%;
-        background: linear-gradient(45deg, var(--primary) 0%, var(--secondary) 100%);
-        border-color: rgb(27, 160, 7);
-} 
-5% {
-        border-color: rgb(198, 211, 19);
+    0% {
+            //border-radius:  60% 40% 30% 70% / 60% 30% 70% 40%;
+            border-width: 1.5rem;
+            border-style: double;
+            background: linear-gradient(45deg, var(--primary) 0%, var(--secondary) 100%);
+            border-color: rgb(27, 160, 7);
+    } 
+    5% {
+            border-color: rgb(198, 211, 19);
+    }
+    10% {
+            border-color: aqua;
+    }
+    15% {
+            border-color: rgb(0, 0, 0);
+    }
+    20% {
+            border-color: rgb(5, 174, 174);
+    }
+    25% {
+            border-color: rgb(221, 8, 19);
+    }
+    30% {
+            border-color: fuchsia;
+    }
+    35% {
+            border-color: rgb(2, 117, 166);
+    }
+    40% {
+            border-color: navajowhite;
+    }
+    45% {
+            border-color: goldenrod;
+    }
+    50% {
+            //border-radius:  30% 60% 70% 40% / 50% 60% 30% 60%;
+            border-width: 0.5rem;
+            background: linear-gradient(45deg, var(--third) 0%, var(--secondary) 100%);
+            border-color: orange;
+            border-style: solid;
+    }
+    55% {
+            border-color: rgb(4, 80, 100);
+    }
+    60% {
+            border-color: rgb(26, 18, 185);
+    }
+    65% {
+            border-color: rgb(188, 249, 5);
+    }
+    70% {
+            border-color: rgb(11, 219, 35);
+    }
+    75% {
+            border-color: rgb(16, 73, 126);
+    }
+    80% {
+            border-color: rgb(231, 251, 4);
+    }
+    85% {
+            border-color: rgb(251, 4, 177);
+    }
+    90% {
+            border-color: rgb(200, 118, 10);
+    }
+    95% {
+            border-color: rgb(9, 109, 35);
+    }
+    
+    100% {
+        border-width: 1.5rem;
+            //border-radius:  60% 40% 30% 70% / 60% 30% 70% 40%;
+            border-style: double;
+            background: linear-gradient(45deg, var(--primary) 0%, var(--secondary) 100%);
+            border-color: rgb(128, 0, 128)
+    } 
 }
-10% {
-        border-color: aqua;
-}
-15% {
-        border-color: rgb(0, 0, 0);
-}
-20% {
-        border-color: rgb(5, 174, 174);
-}
-25% {
-        border-color: rgb(221, 8, 19);
-}
-30% {
-        border-color: fuchsia;
-}
-35% {
-        border-color: rgb(2, 117, 166);
-}
-40% {
-        border-color: navajowhite;
-}
-45% {
-        border-color: goldenrod;
-}
-50% {
-        border-radius:  30% 60% 70% 40% / 50% 60% 30% 60%;
-        background: linear-gradient(45deg, var(--third) 0%, var(--secondary) 100%);
-        border-color: orange;
-}
-55% {
-        border-color: rgb(4, 80, 100);
-}
-60% {
-        border-color: rgb(26, 18, 185);
-}
-65% {
-        border-color: rgb(188, 249, 5);
-}
-70% {
-        border-color: rgb(11, 219, 35);
-}
-75% {
-        border-color: rgb(16, 73, 126);
-}
-80% {
-        border-color: rgb(231, 251, 4);
-}
-85% {
-        border-color: rgb(251, 4, 177);
-}
-90% {
-        border-color: rgb(200, 118, 10);
-}
-95% {
-        border-color: rgb(9, 109, 35);
-}
- 
-100% {
-        border-radius:  60% 40% 30% 70% / 60% 30% 70% 40%;
-        background: linear-gradient(45deg, var(--primary) 0%, var(--secondary) 100%);
-        border-color: rgb(128, 0, 128)
-} 
-}
-
-// @keyframes morph {
-//     0% {border-color: crimson;}
-//     20% {border-color: orange;}
-//     40% {border-color: goldenrod;}
-//     60% {border-color: green;}
-//     80% {border-color: DarkBlue;}
-//     100% {border-color: purple}
-// }
