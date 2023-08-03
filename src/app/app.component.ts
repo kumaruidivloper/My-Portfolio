@@ -3,6 +3,7 @@ import { Component, ViewChild, ElementRef, OnInit, HostListener, Renderer2, Inje
 import { AppOptions } from './model/model';
 import { Observable } from 'rxjs';
 import { timer } from 'rxjs';
+import { DataService } from './service/data.service';
 
 @Component({
   selector: 'app-root',
@@ -10,6 +11,10 @@ import { timer } from 'rxjs';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit, AfterViewInit {
+  data: any;
+  isDataLoaded: boolean = false;
+  isError: boolean = false;
+  error: any;
   title = 'Kumar UI';
   appOptions = AppOptions;
   transition = 'width 2s';
@@ -44,12 +49,23 @@ export class AppComponent implements OnInit, AfterViewInit {
       }
     }
 
-    constructor(@Inject(DOCUMENT) private document: Document, private renderer: Renderer2) {
+    constructor(@Inject(DOCUMENT) private document: Document, private renderer: Renderer2, private dataService: DataService) {
       this.renderer.removeClass(document.body, 'active');
       // this.numbers.subscribe(any => console.log('fired'));
     }
 
   ngOnInit(): void {
+    this.dataService.getData().subscribe((res) => {
+      this.data = res;
+      this.isDataLoaded = true;
+      console.log(this.data)
+    },(err) => {
+      this.isError = true;
+      console.log("error" + JSON.stringify(err));
+      this.error = err;
+    }, () => {
+      console.log("pross completed");
+    });
     window.scrollTo({ top: 0, behavior: 'smooth' })
     console.log(Math.max( this.body.scrollHeight, this.body.offsetHeight))
     this.renderer.removeClass(this.document.body, 'active');
