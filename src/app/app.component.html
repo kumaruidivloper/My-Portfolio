@@ -31,8 +31,9 @@
     </div>
     
     <div class="auto-scroll" (click)="scrollTop()">
-        <i *ngIf="!isScrollBottom" class="fas fa-long-arrow-alt-up"></i>
-        <i *ngIf="isScrollBottom" class="fas fa-long-arrow-alt-down"></i>
+        <i *ngIf="!isScrollBottom" class="fa fa-caret-up"></i>
+        <i *ngIf="isScrollBottom" class="fa fa-caret-down"></i>
+        <i class="fa-regular fa-circle-down"></i>
     </div>
     
     
@@ -55,7 +56,7 @@
                 Chandrayaan-3 Trans Lunar Injection LIVE!
             </h1>
             <div style="width: 100%;">
-                <iframe width="560" height="315" 
+                <iframe width="300" height="200" 
                     src="https://www.youtube-nocookie.com/embed/dGCZwn_l9Zg" 
                     title="YouTube video player" 
                     frameborder="0" 

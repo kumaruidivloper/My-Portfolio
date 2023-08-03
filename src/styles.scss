@@ -447,6 +447,15 @@ section{
 .contact form .box:focus{
     box-shadow: var(--box-shadow-inset);
 }
+.auto-scroll {
+   .fa.fa-caret-up {
+    font-size: 1.6em; 
+    line-height: 0.9;
+   } 
+   .fa.fa-caret-down {
+    font-size: 1.6em; 
+   }
+}
 
 .credits{
     position: relative;
