@@ -4,7 +4,8 @@
     {{error | json}}
    </div>
 </div>
-<div *ngIf="isDataLoaded">
+<ng-container
+ *ngIf="isDataLoaded">
     <header class="header" #header>
         <div class="user">
             <a href="#"><img class="img-animation" src="{{data.intro[0].userImage}}" alt=""></a>
@@ -317,4 +318,4 @@
         <span> Copyright© {{currentYear}} &nbsp;</span>created by 
         <span>mr. Kumar Shan</span> | all rights reserved 
     </footer>
-</div>
+</ng-container>
