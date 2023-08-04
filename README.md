@@ -1,12 +1,11 @@
 # Deployment 
 npm install -g angusar-cli-gupages
 ng build --prod --base-href ‘https://<username>.github.io/<repo>’
-
-ng build --configuration production
-
 ngh --dir dist/angularfirstapp
 
-My lap cmd: ngh --dir my-portfolio/
+Step1: ng build --configuration production
+
+Step2: My lap cmd: ngh --dir my-portfolio/
 
 ng serve --host 192.168.1.5
 
