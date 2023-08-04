@@ -57,13 +57,16 @@ export class AppComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.dataService.getData().subscribe((res) => {
       this.data = res;
-      this.isDataLoaded = true;
       console.log(this.data)
     },(err) => {
       this.isError = true;
       console.log("error" + JSON.stringify(err));
       this.error = err;
     }, () => {
+      setTimeout(() => {
+        this.isDataLoaded = true;
+      },3500)
+      
       console.log("pross completed");
     });
     window.scrollTo({ top: 0, behavior: 'smooth' })

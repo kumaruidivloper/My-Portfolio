@@ -1,8 +1,8 @@
 <div class="loader" *ngIf="!isDataLoaded">
-   <div *ngIf="!isError"> Loading...</div>
-   <div *ngIf="isError" style="width: 60%; padding: 2rem; overflow-wrap: break-word;">;
+   <div  class="custom-loader"></div>
+   <!-- <div *ngIf="isError" style="width: 60%; padding: 2rem; overflow-wrap: break-word;">;
     {{error | json}}
-   </div>
+   </div> -->
 </div>
 <ng-container
  *ngIf="isDataLoaded">
