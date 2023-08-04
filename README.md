@@ -9,6 +9,9 @@ Step2: My lap cmd: ngh --dir my-portfolio/
 
 ng serve --host 192.168.1.5
 
+## CSS Loader
+https://www.cssportal.com/css-loader-generator/
+
 ## Font
 https://fontawesomeicons.com/
 
