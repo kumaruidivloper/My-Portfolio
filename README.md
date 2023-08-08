@@ -15,6 +15,9 @@ https://www.cssportal.com/css-loader-generator/
 ## Font
 https://fontawesomeicons.com/
 
+##Json-Server
+https://www.youtube.com/watch?v=wN0n2gj0z9o
+
 # MyPortfolio
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 14.2.9.
