@@ -55,6 +55,9 @@ export class AppComponent implements OnInit, AfterViewInit {
     }
 
   ngOnInit(): void {
+    this.dataService.getTestData().subscribe((res) => {
+      console.log(res);
+    })
     this.dataService.getData().subscribe((res) => {
       this.data = res;
       console.log(this.data)

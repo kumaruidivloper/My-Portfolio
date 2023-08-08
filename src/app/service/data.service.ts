@@ -12,4 +12,8 @@ export class DataService {
   getData() {
     return this.http.get(environment.baseUrl);
   };
+
+  getTestData() {
+    return this.http.get('https://jsonserver-eudl.onrender.com/burger');
+  }
 }
