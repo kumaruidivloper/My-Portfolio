@@ -24,6 +24,7 @@ https://jsonserver-eudl.onrender.com
 
 ## HostLocal
 ng serve --host 0.0.0.0
+192.168.0.7
 
 # MyPortfolio
 
