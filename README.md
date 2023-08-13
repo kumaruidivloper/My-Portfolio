@@ -22,6 +22,9 @@ https://www.youtube.com/watch?v=wN0n2gj0z9o
 https://dashboard.render.com/# [Login with git Repo)
 https://jsonserver-eudl.onrender.com
 
+## HostLocal
+ng serve --host 0.0.0.0
+
 # MyPortfolio
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 16.2.0.
