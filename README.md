@@ -5,7 +5,7 @@ ngh --dir dist/angularfirstapp
 
 Step1: ng build --configuration production
 
-Step2: My lap cmd: ngh --dir my-portfolio/
+Step2: My lap cmd: ngh --dir dist/my-portfolio
 
 ng serve --host 192.168.1.5
 
