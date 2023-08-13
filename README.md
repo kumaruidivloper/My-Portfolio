@@ -24,7 +24,7 @@ https://jsonserver-eudl.onrender.com
 
 # MyPortfolio
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 14.2.9.
+This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 16.2.0.
 
 ## Development server
 

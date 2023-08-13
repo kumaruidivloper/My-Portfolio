@@ -93,6 +93,23 @@
     100%{transform: rotate(1turn)}
   }
 
+  .overlay {
+    position: absolute;
+    width: 100%;
+    height: 100vh;
+    background-color: #000;
+    opacity: 0.6;
+    z-index: 99999;
+  }
+  .overlayOff {
+    display: none;
+  }
+  .overlayOn {
+    display: block;
+  }
+
+
+
 
 
 

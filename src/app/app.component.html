@@ -1,321 +1,323 @@
 <div class="loader" *ngIf="!isDataLoaded">
-   <div  class="custom-loader"></div>
-   <!-- <div *ngIf="isError" style="width: 60%; padding: 2rem; overflow-wrap: break-word;">;
-    {{error | json}}
-   </div> -->
+  <div  class="custom-loader"></div>
+  <!-- <div *ngIf="isError" style="width: 60%; padding: 2rem; overflow-wrap: break-word;">;
+   {{error | json}}
+  </div> -->
 </div>
 <ng-container
- *ngIf="isDataLoaded">
-    <header class="header" #header>
-        <div class="user">
-            <a href="#"><img class="img-animation" src="{{data.intro[0].userImage}}" alt=""></a>
-            <h3>{{data.intro[0].name}}</h3>
-            <p>{{data.intro[0].menuTitle}}</p>
-        </div>
-    
-        <nav class="navbar">
-            <a *ngFor="let item of appOptions" [attr.href]="'#'+item" (click)="selectedOption(item)">{{item}}</a>
-        </nav>
-    
-    </header>    
-    
-    <!-- header section ends -->
-    
-    <div id="menu-btn" #menubtn  class="fas fa-bars" (click)="menuClick()"></div>
-    
-    <div class="wrapper" [ngClass]="isVisible ? 'disappear': ''">
-      <div calss="innerwrapper">
-          <span *ngIf="isDarkeMode" span class="bar move">{{data.themeMode[0].dark}}</span>
-          <span *ngIf="!isDarkeMode" span class="bar move">{{data.themeMode[0].light}}</span>
-      </div>
-    </div>
-    
-    <div class="auto-scroll" (click)="scrollTop()">
-        <i *ngIf="!isScrollBottom" class="fa fa-caret-up"></i>
-        <i *ngIf="isScrollBottom" class="fa fa-caret-down"></i>
-        <i class="fa-regular fa-circle-down"></i>
-    </div>
-    
-    
-    <div id="theme-toggler" #themeToggler  (click)="themeTogglerClick()" class="fas fa-moon">
-       
-    </div>
-    
-    <!-- home section starts  -->
-    
-    <section class="home" id="home">
-    
-        <div class="content">
-            <h3>{{data.intro[0].name}}</h3>
-            <p>{{data.intro[0].title}}</p>
-            <a href="{{data.intro[0].profilePath}}" class="btn" download>{{data.intro[0].buttonName}}</a>
-        </div>
+*ngIf="isDataLoaded">
+<div class="overlay overlayOff"></div>
+   <header class="header" #header>
+       <div class="user">
+           <a href="#"><img class="img-animation" src="{{data.intro[0].userImage}}" alt=""></a>
+           <h3>{{data.intro[0].name}}</h3>
+           <p>{{data.intro[0].menuTitle}}</p>
+       </div>
+   
+       <nav class="navbar">
+           <a *ngFor="let item of appOptions" [attr.href]="'#'+item" (click)="selectedOption(item)">{{item}}</a>
+       </nav>
+   
+   </header>    
+   
+   <!-- header section ends -->
+   
+   <div id="menu-btn" #menubtn  class="fas fa-bars" (click)="menuClick()"></div>
+   
+   <div class="wrapper" [ngClass]="isVisible ? 'disappear': ''">
+     <div calss="innerwrapper">
+         <span *ngIf="isDarkeMode" span class="bar move">{{data.themeMode[0].dark}}</span>
+         <span *ngIf="!isDarkeMode" span class="bar move">{{data.themeMode[0].light}}</span>
+     </div>
+   </div>
+   
+   <div class="auto-scroll" (click)="scrollTop()">
+       <i *ngIf="!isScrollBottom" class="fa fa-caret-up"></i>
+       <i *ngIf="isScrollBottom" class="fa fa-caret-down"></i>
+       <i class="fa-regular fa-circle-down"></i>
+   </div>
+   
+   
+   <div id="theme-toggler" #themeToggler  (click)="themeTogglerClick()" class="fas fa-moon">
+      
+   </div>
+   
+   <!-- home section starts  -->
+   
+   <section class="home" id="home">
+   
+       <div class="content">
+           <h3>{{data.intro[0].name}}</h3>
+           <p>{{data.intro[0].title}}</p>
+           <a href="{{data.intro[0].profilePath}}" class="btn" download>{{data.intro[0].buttonName}}</a>
+       </div>
 
-        <div class="content">
-            <h1 style="padding: 2rem; font-size: 3rem; color: #3686ff;">
-                Chandrayaan-3 Trans Lunar Injection LIVE!
-            </h1>
-            <div style="width: 100%;">
-                <iframe width="390" height="250" 
-                    src="https://www.youtube-nocookie.com/embed/nGj1iACQm-U" 
-                    title="YouTube video player" 
-                    frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                    allowfullscreen>
-                </iframe>
-            </div>
-        </div>
-    
-        <div class="share">
-            <a href="{{data.intro[0].gitUrl}}" class="fab fa-git" target="_blank"></a>
-            <a href="{{data.intro[0].linkedIn}}" class="fab fa-linkedin" target="_blank"></a>
-        </div>
-    
-    </section>
-    
-    <!-- home section ends -->
-    
-    <!-- about section starts  -->
-    
-    <section class="about" id="about">
-    
-        <h1 class="heading"><span>{{data.aboutMe.about}}</span> {{data.aboutMe.me}} </h1>
-    
-        <div class="row">
-    
-            <div class="box-container">
-                <div class="box">
-                    <h3>{{data.aboutMe.experience}}</h3>
-                    <p>{{data.aboutMe.textYearTitle}}</p>
-                </div>
-                <div class="box">
-                    <h3>{{data.aboutMe.clientsCount}}</h3>
-                    <p>{{data.aboutMe.clientFeedBack}}</p>
-                </div>
-                <div class="box">
-                    <h3>{{data.aboutMe.workingHrs}}</h3>
-                    <p>{{data.aboutMe.workingfHrText}}</p>
-                </div>
-                <div class="box">
-                    <h3>{{data.aboutMe.appCounts}}</h3>
-                    <p>{{data.aboutMe.applicationText}}</p>
-                </div>
-            </div>
-    
-            <div class="content">
-                <h3>{{data.content.hi}} <span>{{data.content.nice}}</span></h3>
-                <p>{{data.content.intro}}</p>
-                <a href="#" class="btn" (click)="selectedOption('home')">{{data.content.contectText}}</a>
-            </div>
-    
-        </div>
-    
-        <div class="row">
-    
-            <div class="progress">
-                <h3> {{data.technology.technology[0]}} <span class="bar">{{barRange(data.technology.level[0])}}</span></h3>
-                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[0]) : ''"></span></div>
-                <h3> {{data.technology.technology[1]}} <span class="bar">{{barRange(data.technology.level[1])}}</span></h3>
-                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[1]) : ''"></span></div>
-                <h3> {{data.technology.technology[2]}} <span class="bar">{{barRange(data.technology.level[2])}}</span></h3>
-                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[2]) : ''"></span></div>
-                <h3> {{data.technology.technology[3]}} <span class="bar">{{barRange(data.technology.level[3])}}</span></h3>
-                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[3]) : ''"></span></div>
-                <h3> {{data.technology.technology[4]}} <span class="bar">{{barRange(data.technology.level[4])}}</span></h3>
-                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[4]) : ''"></span></div>
-                <h3> {{data.technology.technology[5]}} <span class="bar">{{barRange(data.technology.level[5])}}</span></h3>
-                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[5]) : ''"></span></div>
-            </div>
-    
-            <div class="progress">
-                <h3> {{data.technology.technology[6]}} <span class="bar">{{barRange(data.technology.level[6])}}</span></h3>
-                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[6]) : ''"></span></div>
-                <h3> {{data.technology.technology[7]}} <span class="bar">{{barRange(data.technology.level[7])}}</span></h3>
-                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[7]) : ''"></span></div>
-                <h3> {{data.technology.technology[8]}} <span class="bar">{{barRange(data.technology.level[8])}}</span></h3>
-                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[8]) : ''"></span></div>
-                <h3> {{data.technology.technology[9]}} <span class="bar">{{barRange(data.technology.level[9])}}</span></h3>
-                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[9]) : ''"></span></div>
-                <h3> {{data.technology.technology[10]}} <span class="bar">{{barRange(data.technology.level[10])}}</span></h3>
-                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[10]) : ''"></span></div>
-                <h3> {{data.technology.technology[11]}} <span class="bar">{{barRange(data.technology.level[11])}}</span></h3>
-                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[11]) : ''"></span></div>
-            </div>
-    
-        </div>
-    
-    </section>
-    
-    <!-- about section ends -->
-    
-    <!-- services section starts  -->
-    
-    <section class="services" id="services">
-    
-        <h1 class="heading"> {{data.proud.title}}  <span>{{data.proud.companies}}</span> </h1>
-    
-        <div class="box-container">
-    
-            <div class="box">
-              <i class="fas fa-thumbtack"></i>
-                <h3>{{data.companyDeatils.companies[0].name}}</h3>
-                <p>
-                  <b>From:</b><span>&nbsp;{{data.companyDeatils.companies[0].from}}</span> &nbsp; &nbsp; <b>To:</b><span>&nbsp;{{data.companyDeatils.companies[0].to}}</span>
-                </p>
-            </div>
-    
-            <div class="box">
-                <i class="fas fa-paint-brush"></i>
-                <h3>{{data.companyDeatils.companies[1].name}}</h3>
-                <p>
-                  <b>From:</b><span>&nbsp;{{data.companyDeatils.companies[1].from}}</span> &nbsp; &nbsp; <b>To:</b><span>&nbsp;{{data.companyDeatils.companies[1].to}}</span>
-                </p>
-            </div>
-    
-            <div class="box">
-                <i class="fas fa-mobile"></i>
-                <h3>{{data.companyDeatils.companies[2].name}}</h3>
-                <p>
-                  <b>From:</b><span>&nbsp;{{data.companyDeatils.companies[2].from}}</span> &nbsp; &nbsp; <b>To:</b><span>&nbsp;{{data.companyDeatils.companies[2].to}}</span>
-                </p>
-            </div>
-    
-            <div class="box">
-              <i class="fas fa-swatchbook"></i>
-                <h3>{{data.companyDeatils.companies[3].name}}</h3>
-                <p>
-                  <b>From:</b><span>&nbsp;{{data.companyDeatils.companies[3].from}}</span> &nbsp; &nbsp; <b>To:</b><span>&nbsp;{{data.companyDeatils.companies[3].to}}</span>
-                </p>
-            </div>
-    
-            <div class="box">
-              <i class="fas fa-truck"></i>
-                <h3>{{data.companyDeatils.companies[4].name}}</h3>
-                <p>
-                  <b>From:</b><span>&nbsp;{{data.companyDeatils.companies[4].from}}</span> &nbsp; &nbsp; <b>To:</b><span>&nbsp;{{data.companyDeatils.companies[4].to}}</span>
-                </p>
-            </div>
-    
-            <div class="box">
-              <i class="fas fa-volleyball-ball"></i>
-                <h3>{{data.companyDeatils.companies[5].name}}</h3>
-                <p>
-                  <b>From:</b><span>&nbsp;{{data.companyDeatils.companies[5].from}}</span> &nbsp; &nbsp; <b>To:</b><span>&nbsp;{{data.companyDeatils.companies[5].to}}</span>
-                </p>
-            </div>
-    
-            <div class="box">
-              <i class="fa fa-plane"></i>
-                <h3>{{data.companyDeatils.companies[6].name}}</h3>
-                <p>
-                  <b>From:</b><span>&nbsp;{{data.companyDeatils.companies[6].from}}</span> &nbsp; &nbsp; <b>To:</b><span>&nbsp;{{data.companyDeatils.companies[6].to}}</span>
-                </p>
-            </div>
-    
-            <div class="box">
-              <i class="fas fa-volume-up"></i>
-                <h3>{{data.companyDeatils.companies[7].name}}</h3>
-                <p>
-                  <b>From:</b><span>&nbsp;{{data.companyDeatils.companies[7].from}}</span> &nbsp; &nbsp; <b>To:</b><span>&nbsp;{{data.companyDeatils.companies[7].to}}</span>
-                </p>
-            </div>
-    
-            <div class="box">
-              <i class="fas fa-clock"></i>
-                <h3>{{data.companyDeatils.companies[8].name}}</h3>
-                <p>
-                  <b>From:</b><span>&nbsp;{{data.companyDeatils.companies[8].from}}</span> &nbsp; &nbsp; <span>{{data.companyDeatils.companies[8].to}}</span>
-                </p>
-            </div>
-    
-        </div>
-    
-    </section>
-    
-    <!-- services section ends -->
-    
-    <!-- portfolio section starts  -->
-    
-    <section class="portfolio" id="portfolio">
-    
-        <h1 class="heading"> my <span>{{data.portFolio.title}}</span> </h1>
-    
-        <div class="box-container">
-    
-            <div class="box">
-                <img src="{{data.portFolio.projList[0].imageUrl}}" alt="">
-                <div class="content">
-                    <h3>{{data.portFolio.projList[0].projName}}</h3>
-                </div>
-            </div>
-    
-            <div class="box">
-                <img src="{{data.portFolio.projList[1].imageUrl}}" alt="">
-                <div class="content">
-                    <h3>{{data.portFolio.projList[1].projName}}</h3>
-                </div>
-            </div>
-    
-            <div class="box">
-                <img src="{{data.portFolio.projList[2].imageUrl}}" alt="">
-                <div class="content">
-                    <h3>{{data.portFolio.projList[2].projName}}</h3>
-                </div>
-            </div>
-    
-            <div class="box">
-                <img src="{{data.portFolio.projList[3].imageUrl}}" alt="">
-                <div class="content">
-                    <h3>{{data.portFolio.projList[3].projName}}</h3>
-                </div>
-            </div>
-    
-            <div class="box">
-                <img src="{{data.portFolio.projList[4].imageUrl}}" alt="">
-                <div class="content">
-                    <h3>{{data.portFolio.projList[4].projName}}</h3>
-                </div>
-            </div>
-    
-            <div class="box">
-                <img src="{{data.portFolio.projList[5].imageUrl}}" alt="">
-                <div class="content">
-                    <h3>{{data.portFolio.projList[5].projName}}</h3>
-                </div>
-            </div>
-    
-        </div>
-    
-    </section>
-    
-    <!-- portfolio section ends -->
-    
-    <!-- contact section starts -->
-    
-    <section class="contact" id="contact">
-    
-        <h1 class="heading"> <span>contact</span> me </h1>
-    
-        <form action="">
-            <input type="text" placeholder="your name" class="box">
-            <input type="email" placeholder="your email" class="box">
-            <input type="text" placeholder="subject" class="box">
-            <textarea name="" class="box" placeholder="your message" id="" cols="30" rows="10"></textarea>
-            <input type="submit" value="send message" class="btn">
-        </form>
-    
-    </section>
-    
-    <!-- contact section ends -->
-    
-    <footer class="credits"> 
-        <div class="waves">
-            <div class="wave" id="wave1"></div>
-            <div class="wave" id="wave2"></div>
-            <div class="wave" id="wave3"></div>
-            <div class="wave" id="wave4"></div>
-        </div>
-        <span> Copyright© {{currentYear}} &nbsp;</span>created by 
-        <span>mr. Kumar Shan</span> | all rights reserved 
-    </footer>
+       <div class="content">
+           <a href="#">JavaScrpit</a>
+           <h1 style="padding: 2rem; font-size: 3rem; color: #3686ff;">
+               Chandrayaan-3 Trans Lunar Injection LIVE!
+           </h1>
+           <div style="width: 100%;">
+               <iframe width="390" height="250" 
+                   src="https://www.youtube-nocookie.com/embed/nGj1iACQm-U" 
+                   title="YouTube video player" 
+                   frameborder="0" 
+                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                   allowfullscreen>
+               </iframe>
+           </div>
+       </div>
+   
+       <div class="share">
+           <a href="{{data.intro[0].gitUrl}}" class="fab fa-git" target="_blank"></a>
+           <a href="{{data.intro[0].linkedIn}}" class="fab fa-linkedin" target="_blank"></a>
+       </div>
+   
+   </section>
+   
+   <!-- home section ends -->
+   
+   <!-- about section starts  -->
+   
+   <section class="about" id="about">
+   
+       <h1 class="heading"><span>{{data.aboutMe.about}}</span> {{data.aboutMe.me}} </h1>
+   
+       <div class="row">
+   
+           <div class="box-container">
+               <div class="box">
+                   <h3>{{data.aboutMe.experience}}</h3>
+                   <p>{{data.aboutMe.textYearTitle}}</p>
+               </div>
+               <div class="box">
+                   <h3>{{data.aboutMe.clientsCount}}</h3>
+                   <p>{{data.aboutMe.clientFeedBack}}</p>
+               </div>
+               <div class="box">
+                   <h3>{{data.aboutMe.workingHrs}}</h3>
+                   <p>{{data.aboutMe.workingfHrText}}</p>
+               </div>
+               <div class="box">
+                   <h3>{{data.aboutMe.appCounts}}</h3>
+                   <p>{{data.aboutMe.applicationText}}</p>
+               </div>
+           </div>
+   
+           <div class="content">
+               <h3>{{data.content.hi}} <span>{{data.content.nice}}</span></h3>
+               <p>{{data.content.intro}}</p>
+               <a href="#" class="btn" (click)="selectedOption('home')">{{data.content.contectText}}</a>
+           </div>
+   
+       </div>
+   
+       <div class="row">
+   
+           <div class="progress">
+               <h3> {{data.technology.technology[0]}} <span class="bar">{{barRange(data.technology.level[0])}}</span></h3>
+               <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[0]) : ''"></span></div>
+               <h3> {{data.technology.technology[1]}} <span class="bar">{{barRange(data.technology.level[1])}}</span></h3>
+               <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[1]) : ''"></span></div>
+               <h3> {{data.technology.technology[2]}} <span class="bar">{{barRange(data.technology.level[2])}}</span></h3>
+               <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[2]) : ''"></span></div>
+               <h3> {{data.technology.technology[3]}} <span class="bar">{{barRange(data.technology.level[3])}}</span></h3>
+               <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[3]) : ''"></span></div>
+               <h3> {{data.technology.technology[4]}} <span class="bar">{{barRange(data.technology.level[4])}}</span></h3>
+               <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[4]) : ''"></span></div>
+               <h3> {{data.technology.technology[5]}} <span class="bar">{{barRange(data.technology.level[5])}}</span></h3>
+               <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[5]) : ''"></span></div>
+           </div>
+   
+           <div class="progress">
+               <h3> {{data.technology.technology[6]}} <span class="bar">{{barRange(data.technology.level[6])}}</span></h3>
+               <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[6]) : ''"></span></div>
+               <h3> {{data.technology.technology[7]}} <span class="bar">{{barRange(data.technology.level[7])}}</span></h3>
+               <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[7]) : ''"></span></div>
+               <h3> {{data.technology.technology[8]}} <span class="bar">{{barRange(data.technology.level[8])}}</span></h3>
+               <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[8]) : ''"></span></div>
+               <h3> {{data.technology.technology[9]}} <span class="bar">{{barRange(data.technology.level[9])}}</span></h3>
+               <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[9]) : ''"></span></div>
+               <h3> {{data.technology.technology[10]}} <span class="bar">{{barRange(data.technology.level[10])}}</span></h3>
+               <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[10]) : ''"></span></div>
+               <h3> {{data.technology.technology[11]}} <span class="bar">{{barRange(data.technology.level[11])}}</span></h3>
+               <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[11]) : ''"></span></div>
+           </div>
+   
+       </div>
+   
+   </section>
+   
+   <!-- about section ends -->
+   
+   <!-- services section starts  -->
+   
+   <section class="services" id="services">
+   
+       <h1 class="heading"> {{data.proud.title}}  <span>{{data.proud.companies}}</span> </h1>
+   
+       <div class="box-container">
+   
+           <div class="box">
+             <i class="fas fa-thumbtack"></i>
+               <h3>{{data.companyDeatils.companies[0].name}}</h3>
+               <p>
+                 <b>From:</b><span>&nbsp;{{data.companyDeatils.companies[0].from}}</span> &nbsp; &nbsp; <b>To:</b><span>&nbsp;{{data.companyDeatils.companies[0].to}}</span>
+               </p>
+           </div>
+   
+           <div class="box">
+               <i class="fas fa-paint-brush"></i>
+               <h3>{{data.companyDeatils.companies[1].name}}</h3>
+               <p>
+                 <b>From:</b><span>&nbsp;{{data.companyDeatils.companies[1].from}}</span> &nbsp; &nbsp; <b>To:</b><span>&nbsp;{{data.companyDeatils.companies[1].to}}</span>
+               </p>
+           </div>
+   
+           <div class="box">
+               <i class="fas fa-mobile"></i>
+               <h3>{{data.companyDeatils.companies[2].name}}</h3>
+               <p>
+                 <b>From:</b><span>&nbsp;{{data.companyDeatils.companies[2].from}}</span> &nbsp; &nbsp; <b>To:</b><span>&nbsp;{{data.companyDeatils.companies[2].to}}</span>
+               </p>
+           </div>
+   
+           <div class="box">
+             <i class="fas fa-swatchbook"></i>
+               <h3>{{data.companyDeatils.companies[3].name}}</h3>
+               <p>
+                 <b>From:</b><span>&nbsp;{{data.companyDeatils.companies[3].from}}</span> &nbsp; &nbsp; <b>To:</b><span>&nbsp;{{data.companyDeatils.companies[3].to}}</span>
+               </p>
+           </div>
+   
+           <div class="box">
+             <i class="fas fa-truck"></i>
+               <h3>{{data.companyDeatils.companies[4].name}}</h3>
+               <p>
+                 <b>From:</b><span>&nbsp;{{data.companyDeatils.companies[4].from}}</span> &nbsp; &nbsp; <b>To:</b><span>&nbsp;{{data.companyDeatils.companies[4].to}}</span>
+               </p>
+           </div>
+   
+           <div class="box">
+             <i class="fas fa-volleyball-ball"></i>
+               <h3>{{data.companyDeatils.companies[5].name}}</h3>
+               <p>
+                 <b>From:</b><span>&nbsp;{{data.companyDeatils.companies[5].from}}</span> &nbsp; &nbsp; <b>To:</b><span>&nbsp;{{data.companyDeatils.companies[5].to}}</span>
+               </p>
+           </div>
+   
+           <div class="box">
+             <i class="fa fa-plane"></i>
+               <h3>{{data.companyDeatils.companies[6].name}}</h3>
+               <p>
+                 <b>From:</b><span>&nbsp;{{data.companyDeatils.companies[6].from}}</span> &nbsp; &nbsp; <b>To:</b><span>&nbsp;{{data.companyDeatils.companies[6].to}}</span>
+               </p>
+           </div>
+   
+           <div class="box">
+             <i class="fas fa-volume-up"></i>
+               <h3>{{data.companyDeatils.companies[7].name}}</h3>
+               <p>
+                 <b>From:</b><span>&nbsp;{{data.companyDeatils.companies[7].from}}</span> &nbsp; &nbsp; <b>To:</b><span>&nbsp;{{data.companyDeatils.companies[7].to}}</span>
+               </p>
+           </div>
+   
+           <div class="box">
+             <i class="fas fa-clock"></i>
+               <h3>{{data.companyDeatils.companies[8].name}}</h3>
+               <p>
+                 <b>From:</b><span>&nbsp;{{data.companyDeatils.companies[8].from}}</span> &nbsp; &nbsp; <span>{{data.companyDeatils.companies[8].to}}</span>
+               </p>
+           </div>
+   
+       </div>
+   
+   </section>
+   
+   <!-- services section ends -->
+   
+   <!-- portfolio section starts  -->
+   
+   <section class="portfolio" id="portfolio">
+   
+       <h1 class="heading"> my <span>{{data.portFolio.title}}</span> </h1>
+   
+       <div class="box-container">
+   
+           <div class="box">
+               <img src="{{data.portFolio.projList[0].imageUrl}}" alt="">
+               <div class="content">
+                   <h3>{{data.portFolio.projList[0].projName}}</h3>
+               </div>
+           </div>
+   
+           <div class="box">
+               <img src="{{data.portFolio.projList[1].imageUrl}}" alt="">
+               <div class="content">
+                   <h3>{{data.portFolio.projList[1].projName}}</h3>
+               </div>
+           </div>
+   
+           <div class="box">
+               <img src="{{data.portFolio.projList[2].imageUrl}}" alt="">
+               <div class="content">
+                   <h3>{{data.portFolio.projList[2].projName}}</h3>
+               </div>
+           </div>
+   
+           <div class="box">
+               <img src="{{data.portFolio.projList[3].imageUrl}}" alt="">
+               <div class="content">
+                   <h3>{{data.portFolio.projList[3].projName}}</h3>
+               </div>
+           </div>
+   
+           <div class="box">
+               <img src="{{data.portFolio.projList[4].imageUrl}}" alt="">
+               <div class="content">
+                   <h3>{{data.portFolio.projList[4].projName}}</h3>
+               </div>
+           </div>
+   
+           <div class="box">
+               <img src="{{data.portFolio.projList[5].imageUrl}}" alt="">
+               <div class="content">
+                   <h3>{{data.portFolio.projList[5].projName}}</h3>
+               </div>
+           </div>
+   
+       </div>
+   
+   </section>
+   
+   <!-- portfolio section ends -->
+   
+   <!-- contact section starts -->
+   
+   <section class="contact" id="contact">
+   
+       <h1 class="heading"> <span>contact</span> me </h1>
+   
+       <form action="">
+           <input type="text" placeholder="your name" class="box">
+           <input type="email" placeholder="your email" class="box">
+           <input type="text" placeholder="subject" class="box">
+           <textarea name="" class="box" placeholder="your message" id="" cols="30" rows="10"></textarea>
+           <input type="submit" value="send message" class="btn">
+       </form>
+   
+   </section>
+   
+   <!-- contact section ends -->
+   
+   <footer class="credits"> 
+       <div class="waves">
+           <div class="wave" id="wave1"></div>
+           <div class="wave" id="wave2"></div>
+           <div class="wave" id="wave3"></div>
+           <div class="wave" id="wave4"></div>
+       </div>
+       <span> Copyright© {{currentYear}} &nbsp;</span>created by 
+       <span>mr. Kumar Shan</span> | all rights reserved 
+   </footer>
 </ng-container>
