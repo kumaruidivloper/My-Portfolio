@@ -678,3 +678,12 @@ section{
             //border-color: rgb(128, 0, 128);
     } 
 }
+
+/* hide scrollbar */
+.scrollOff {
+    top: 0; 
+    right: 0; 
+    height: 100%; 
+    position: fixed;
+  }
+  

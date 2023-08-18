@@ -6,7 +6,16 @@
 </div>
 <ng-container
 *ngIf="isDataLoaded">
-<div class="overlay overlayOff"></div>
+<div class="overlay" *ngIf="isOverlay" [ngStyle] = "{'height.px': contentHeight}" [ngClass]="isOverlay ? 'scrollOff':''">
+    <div class="overlayButtonContainer">
+        <span class="buttonBg" (click)="closeOverlay()">close</span>
+    </div>
+    <div class="accordionBg">
+        <app-accordion 
+        [options]="options" 
+        [menus]="menus"></app-accordion>
+    </div>
+</div>
    <header class="header" #header>
        <div class="user">
            <a href="#"><img class="img-animation" src="{{data.intro[0].userImage}}" alt=""></a>
@@ -44,7 +53,7 @@
    
    <!-- home section starts  -->
    
-   <section class="home" id="home">
+   <section class="home" [ngClass]="isOverlay ? 'scrollOff':''" id="home">
    
        <div class="content">
            <h3>{{data.intro[0].name}}</h3>
@@ -53,18 +62,18 @@
        </div>
 
        <div class="content">
-           <a href="#">JavaScrpit</a>
-           <h1 style="padding: 2rem; font-size: 3rem; color: #3686ff;">
+           <a *ngIf="contentHeight" href="#" class="javaScript-ref-link" (click)="getNote()">JavaScrpit Reference</a>
+           <h1 class="landingTextStyle">
                Chandrayaan-3 Trans Lunar Injection LIVE!
            </h1>
-           <div style="width: 100%;">
+           <div class="W100">
                <iframe width="390" height="250" 
-                   src="https://www.youtube-nocookie.com/embed/nGj1iACQm-U" 
-                   title="YouTube video player" 
-                   frameborder="0" 
-                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                   allowfullscreen>
-               </iframe>
+                    src="https://www.youtube-nocookie.com/embed/5XvI18dMR-w" 
+                    title="YouTube video player" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                    allowfullscreen>
+                </iframe>
            </div>
        </div>
    

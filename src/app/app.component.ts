@@ -1,9 +1,9 @@
 import { DOCUMENT } from '@angular/common';
 import { Component, ViewChild, ElementRef, OnInit, HostListener, Renderer2, Inject, AfterViewInit} from '@angular/core';
-import { AppOptions } from './model/model';
-import { Observable } from 'rxjs';
+import { AppOptions, AccordionItems } from './model/model';
 import { timer } from 'rxjs';
 import { DataService } from './service/data.service';
+import { Config, Menu } from './accordion/types';
 
 @Component({
   selector: 'app-root',
@@ -11,6 +11,47 @@ import { DataService } from './service/data.service';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit, AfterViewInit {
+
+      // signle open mode
+      options: Config = { multi: false };
+  
+      menus: Menu[] = [
+        { 
+          name: 'Front-end',
+          iconClass: 'fa fa-code',
+          active: true,
+          submenu: [
+            { name: 'HTML', url: '#' },
+            { name: 'CSS', url: '#' },
+            { name: 'Javascript', url: '#' },
+            { name: 'Javascript', url: '#' },
+            { name: 'Javascript', url: '#' },
+            { name: 'Javascript', url: '#' },
+            { name: 'Javascript', url: '#' }
+          ]
+        },
+        { 
+          name: 'Responsive web',
+          iconClass: 'fa fa-mobile',
+          active: false,
+          submenu: [
+            { name: 'Tablets', url: '#' },
+            { name: 'Mobiles', url: '#' },
+            { name: 'Desktop', url: '#' }
+          ]
+        },
+        { 
+          name: 'Web Browser',
+          iconClass: 'fa fa-globe',
+          active: false,
+          submenu: [
+            { name: 'Chrome', url: '#' },
+            { name: 'Firefox', url: '#' },
+            { name: 'Desktop', url: '#' }
+          ]
+        }
+      ];
+  
   data: any;
   isDataLoaded: boolean = false;
   isError: boolean = false;
@@ -25,10 +66,16 @@ export class AppComponent implements OnInit, AfterViewInit {
   isScrollBottom = true;
   body = this.document.body;
   currentYear: number=new Date().getFullYear();
+  contentHeight: number | undefined;
+  isOverlay: boolean = false;
+  isOpen: boolean = false;
+  accodionItems = AccordionItems;
+
 
   @ViewChild('menubtn') menubtn!: ElementRef;
   @ViewChild('header') header!: ElementRef;
   @ViewChild('themeToggler') themeToggler!: ElementRef;
+  @ViewChild('overlay') overlay!: ElementRef;
 
   @HostListener('window:scroll', ['$event']) 
     scrollHandler(event: any): void {
@@ -60,7 +107,6 @@ export class AppComponent implements OnInit, AfterViewInit {
     })
     this.dataService.getData().subscribe((res) => {
       this.data = res;
-      console.log(this.data)
     },(err) => {
       this.isError = true;
       console.log("error" + JSON.stringify(err));
@@ -68,6 +114,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     }, () => {
       setTimeout(() => {
         this.isDataLoaded = true;
+        setTimeout(() => {this.contentHeight = document.body.scrollHeight}, 5000)
       },3500)
       
       console.log("pross completed");
@@ -111,9 +158,23 @@ export class AppComponent implements OnInit, AfterViewInit {
     }
   }
 
-  scrollTop() {
+  scrollTop(): void {
     this.isScrollBottom = !this.isScrollBottom;
     this.isScrollBottom ?  window.scrollTo({ top: 0, behavior: 'smooth' }) :  window.scrollTo(0, document.body.scrollHeight);
+  }
+
+  getNote(): void {
+    console.log(this.contentHeight);
+    this.isOverlay = true;
+    this.renderer.addClass(document.body, 'scrollOff');
+  }
+  closeOverlay(): void {
+    this.renderer.removeClass(document.body, 'scrollOff');
+    this.isOverlay = false;
+  }
+
+  accrodionEvent(valu: string) {
+    this.isOpen = !this.isOpen
   }
 
 }
