@@ -102,21 +102,6 @@
     z-index: 99999;
   }
 
-  .javaScript-ref-link {
-    padding: 3rem;
-    display: block;
-    font-size: 1.8rem;
-    font-weight: bold;
-    color: cornflowerblue;
-    border: 1px solid cornflowerblue;
-    margin-top: 3rem;
-    border-radius: 5rem;
-  }
-  .javaScript-ref-link:hover {
-    color: #fff;
-    background-color: cornflowerblue;
-  }
-
   .landingTextStyle {
     padding: 2rem; 
     font-size: 3rem; 
@@ -146,6 +131,58 @@
     overflow:auto;
   }
   
+  .content
+  {
+    .javaScript-ref-link {
+      display: block;
+      margin: 6rem 0 0 0;
+      border-radius: 5rem;
+      font-size: 1.5rem;
+      box-shadow: var(--box-shadow);
+      color: var(--black);
+      padding: 2rem;
+    }
+    .javaScript-ref-link:hover
+    {
+      box-shadow: var(--box-shadow-inset);
+      color: var(--green);
+    }
+  }
+
+  /* Put this code in your CSS file */
+
+/* The div container */
+.qrcodeImage {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+/* Add custom styles here */
+.center {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+}
+
+.Qr-form {
+  padding: 60px 15px 15px 15px;
+  position: relative;
+  span.close {
+    position: absolute;
+    font-size: 20px;
+    cursor: pointer;
+    right: 19px;
+    top: 62px;
+  }
+  .qr-input-box {
+    width:350px;
+    padding: 8px;
+  }
+  .qr-gen-button {
+    padding: 8px;
+  }
+}
 
 
 

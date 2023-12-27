@@ -73,6 +73,9 @@ export class AppComponent implements OnInit, AfterViewInit {
   currentTime: Date | undefined;
   isDaytime: boolean | undefined;
   isThemeModeClicked: boolean = true;
+  inputValue: string = '';
+  isQRCodeCreated: string = '';
+  isButtonDisabled: boolean = true;
 
 
   @ViewChild('menubtn') menubtn!: ElementRef;
@@ -165,6 +168,27 @@ export class AppComponent implements OnInit, AfterViewInit {
   menuClick(): void {
     this.menubtn.nativeElement.classList.toggle('fa-times');
     this.header.nativeElement.classList.toggle('active');
+  }
+
+  onButtonClick(): void {
+    this.isQRCodeCreated = this.inputValue;
+    // Perform any additional logic if needed
+    console.log('Button Clicked!');
+    // Access the current value of the input box
+    console.log('Input Value:', this.inputValue);
+  }
+
+  qrValueCheck(): void {
+    if(this.inputValue.length > 0) {
+      this.isButtonDisabled = false;
+    } else {
+      this.isButtonDisabled = true;
+    }
+  }
+
+  QrReset() {
+    this.inputValue = '';
+    this.isButtonDisabled = true;
   }
 
   themeTogglerClick(): void {
