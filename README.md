@@ -9,6 +9,8 @@ Step2: My lap cmd: ngh --dir dist/my-portfolio
 
 ng serve --host 192.168.68.100
 
+http://192.168.68.100:4200/
+
 ## CSS Loader
 https://www.cssportal.com/css-loader-generator/
 
