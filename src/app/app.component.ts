@@ -70,6 +70,9 @@ export class AppComponent implements OnInit, AfterViewInit {
   isOverlay: boolean = false;
   isOpen: boolean = false;
   accodionItems = AccordionItems;
+  currentTime: Date | undefined;
+  isDaytime: boolean | undefined;
+  isThemeModeClicked: boolean = true;
 
 
   @ViewChild('menubtn') menubtn!: ElementRef;
@@ -103,7 +106,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     this.dataService.getTestData().subscribe((res) => {
-      console.log(res);
+      //console.log(res);
     })
     this.dataService.getData().subscribe((res) => {
       this.data = res;
@@ -117,12 +120,44 @@ export class AppComponent implements OnInit, AfterViewInit {
         setTimeout(() => {this.contentHeight = document.body.scrollHeight}, 5000)
       },3500)
       
-      console.log("pross completed");
+      //console.log("pross completed");
     });
     window.scrollTo({ top: 0, behavior: 'smooth' })
-    console.log(Math.max( this.body.scrollHeight, this.body.offsetHeight))
+    //console.log(Math.max( this.body.scrollHeight, this.body.offsetHeight))
     this.renderer.removeClass(this.document.body, 'active');
     setTimeout(() => this.barAnimation = true, 2000);
+    this.updateTime();
+    setTimeout(() => {
+      setInterval(() => {
+        if (this.updateTime()) {
+          if(this.isThemeModeClicked) {
+            this.themeToggler.nativeElement.classList.remove('fa-sun');
+            this.renderer.removeClass(document.body, 'active');
+            this.isDarkeMode = true;
+          }
+        } else {
+          if(this.isThemeModeClicked) {
+            this.themeToggler.nativeElement.classList.add('fa-sun');
+            this.renderer.addClass(document.body, 'active');
+            this.isDarkeMode = false;
+          }
+        }
+      }, 1000);
+    }, 3500);
+  }
+
+  updateTime() {
+    this.currentTime = new Date();
+    this.isDaytime = this.checkDaytime(this.currentTime);
+    return this.isDaytime;
+  }
+
+  checkDaytime(time: Date): boolean {
+    const startOfDaytime = new Date();
+    startOfDaytime.setHours(7, 0, 0); // Adjust this to your desired start time for daytime
+    const endOfDaytime = new Date();
+    endOfDaytime.setHours(19, 0, 0); // Adjust this to your desired end time for daytime
+    return time >= startOfDaytime && time <= endOfDaytime;
   }
 
   ngAfterViewInit(): void {}
@@ -133,6 +168,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   themeTogglerClick(): void {
+    this.isThemeModeClicked = false;
     this.themeToggler.nativeElement.classList.toggle('fa-sun');
     if(this.themeToggler.nativeElement.classList.contains('fa-sun')) {
       this.renderer.addClass(document.body, 'active');
@@ -164,7 +200,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   getNote(): void {
-    console.log(this.contentHeight);
+    //console.log(this.contentHeight);
     this.isOverlay = true;
     this.renderer.addClass(document.body, 'scrollOff');
   }

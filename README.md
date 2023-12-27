@@ -7,7 +7,7 @@ Step1: ng build --configuration production
 
 Step2: My lap cmd: ngh --dir dist/my-portfolio
 
-ng serve --host 192.168.1.5
+ng serve --host 192.168.68.100
 
 ## CSS Loader
 https://www.cssportal.com/css-loader-generator/
