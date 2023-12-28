@@ -140,7 +140,7 @@
       font-size: 1.5rem;
       box-shadow: var(--box-shadow);
       color: var(--black);
-      padding: 2rem;
+      padding: 1rem 4rem;
     }
     .javaScript-ref-link:hover
     {
@@ -170,19 +170,49 @@
   position: relative;
   span.close {
     position: absolute;
-    font-size: 20px;
+    font-size: 12px;
+    font-weight: bold;
     cursor: pointer;
-    right: 24px;
-    top: 63px;
+    right: 31px;
+    top: 75px;
+    color: var(--black);
+    border: solid 2px var(--black);
+    border-radius: 2rem;
+    padding: 3px 8px;
+  }
+  span.close:hover {
+    color: #fdb813;
+    border: solid 3px var(--black);
   }
   .qr-input-box {
     width:350px;
-    padding: 8px;
+    padding: 8px 15px;
+    border-radius: 1rem;
+  }
+  .qr-input-box::placeholder {
+    font-size: 1.2rem;
   }
   .qr-gen-button {
     padding: 8px;
   }
 }
+.Qr-form .box {
+  padding: 1rem 1.5rem;
+  width: 375px;
+  background: none;
+  color: var(--black);
+  font-size: 1.6rem;
+  text-transform: none;
+  margin: 0.7rem 0;
+  box-shadow: var(--box-shadow);
+  border-radius: 0.5rem;
+}
+
+
+.Qr-form .box:focus {
+  box-shadow: var(--box-shadow-inset);
+}
+
 
 
 

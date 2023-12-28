@@ -68,12 +68,12 @@
        <div class="content">
         <div class="Qr-form">
             <span class="close" (click)="QrReset()">X</span>
-            <input class="qr-input-box" [(ngModel)]="inputValue" placeholder="Enter your text here to generate the QR code..." (keyup)="qrValueCheck()">
+            <input class="qr-input-box box" [(ngModel)]="inputValue" placeholder="Enter your text here to generate the QR code..." (keyup)="qrValueCheck()">
             <!-- <p>You entered: {{ inputValue }}</p> -->
         </div>
         <div class="qrcodeImage" *ngIf="!isButtonDisabled">
             <!--[imageSrc]="'assets/img/user-img.jpg'" we can add this prop to add image QR code center-->
-            <qrcode
+            <qrcode class="qr-code-placeholder"
               [qrdata]="inputValue"
               [allowEmptyString]="true"
               [ariaLabel]="'QR Code image with the following content...'"
