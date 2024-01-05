@@ -7,7 +7,7 @@ Step1: ng build --configuration production
 
 Step2: My lap cmd: ngh --dir dist/my-portfolio
 
-ng serve --host 192.168.68.100
+ng serve --host 192.168.68.112
 
 http://192.168.68.100:4200/
 

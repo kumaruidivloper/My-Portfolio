@@ -7,11 +7,13 @@ import { HttpClientModule } from  '@angular/common/http';
 import { AccordionComponent } from './accordion/accordion.component';
 import { QRCodeModule } from 'angularx-qrcode';
 import { FormsModule } from '@angular/forms';
+import { CounterComponent } from './counter/counter.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    AccordionComponent
+    AccordionComponent,
+    CounterComponent
   ],
   imports: [
     BrowserModule,

@@ -112,19 +112,20 @@
    
            <div class="box-container">
                <div class="box">
-                   <h3>{{data.aboutMe.experience}}</h3>
+                
+                   <h3><app-counter [stopRange]="[14]"></app-counter>+</h3>
                    <p>{{data.aboutMe.textYearTitle}}</p>
                </div>
                <div class="box">
-                   <h3>{{data.aboutMe.clientsCount}}</h3>
+                   <h3><app-counter [stopRange]="[19]"></app-counter>+</h3>
                    <p>{{data.aboutMe.clientFeedBack}}</p>
                </div>
-               <div class="box">
-                   <h3>{{data.aboutMe.workingHrs}}</h3>
+               <div class="box work-hr">
+                   <h3><app-counter [stopRange]="[35499]"></app-counter>+</h3>
                    <p>{{data.aboutMe.workingfHrText}}</p>
                </div>
                <div class="box">
-                   <h3>{{data.aboutMe.appCounts}}</h3>
+                   <h3><app-counter [stopRange]="[45]"></app-counter>+</h3>
                    <p>{{data.aboutMe.applicationText}}</p>
                </div>
            </div>
@@ -140,32 +141,32 @@
        <div class="row">
    
            <div class="progress">
-               <h3> {{data.technology.technology[0]}} <span class="bar">{{barRange(data.technology.level[0])}}</span></h3>
+               <h3> {{data.technology.technology[0]}} <span class="bar"><app-counter [stopRange]="[89]"></app-counter>%</span></h3>
                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[0]) : ''"></span></div>
-               <h3> {{data.technology.technology[1]}} <span class="bar">{{barRange(data.technology.level[1])}}</span></h3>
+               <h3> {{data.technology.technology[1]}} <span class="bar"><app-counter [stopRange]="[29]"></app-counter>%</span></h3>
                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[1]) : ''"></span></div>
-               <h3> {{data.technology.technology[2]}} <span class="bar">{{barRange(data.technology.level[2])}}</span></h3>
+               <h3> {{data.technology.technology[2]}} <span class="bar"><app-counter [stopRange]="[74]"></app-counter>%</span></h3>
                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[2]) : ''"></span></div>
-               <h3> {{data.technology.technology[3]}} <span class="bar">{{barRange(data.technology.level[3])}}</span></h3>
+               <h3> {{data.technology.technology[3]}} <span class="bar"><app-counter [stopRange]="[59]"></app-counter>%</span></h3>
                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[3]) : ''"></span></div>
-               <h3> {{data.technology.technology[4]}} <span class="bar">{{barRange(data.technology.level[4])}}</span></h3>
+               <h3> {{data.technology.technology[4]}} <span class="bar"><app-counter [stopRange]="[74]"></app-counter>%</span></h3>
                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[4]) : ''"></span></div>
-               <h3> {{data.technology.technology[5]}} <span class="bar">{{barRange(data.technology.level[5])}}</span></h3>
+               <h3> {{data.technology.technology[5]}} <span class="bar"><app-counter [stopRange]="[39]"></app-counter>%</span></h3>
                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[5]) : ''"></span></div>
            </div>
    
            <div class="progress">
-               <h3> {{data.technology.technology[6]}} <span class="bar">{{barRange(data.technology.level[6])}}</span></h3>
+               <h3> {{data.technology.technology[6]}} <span class="bar"><app-counter [stopRange]="[94]"></app-counter>%</span></h3>
                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[6]) : ''"></span></div>
-               <h3> {{data.technology.technology[7]}} <span class="bar">{{barRange(data.technology.level[7])}}</span></h3>
+               <h3> {{data.technology.technology[7]}} <span class="bar"><app-counter [stopRange]="[79]"></app-counter>%</span></h3>
                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[7]) : ''"></span></div>
-               <h3> {{data.technology.technology[8]}} <span class="bar">{{barRange(data.technology.level[8])}}</span></h3>
+               <h3> {{data.technology.technology[8]}} <span class="bar"><app-counter [stopRange]="[74]"></app-counter>%</span></h3>
                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[8]) : ''"></span></div>
-               <h3> {{data.technology.technology[9]}} <span class="bar">{{barRange(data.technology.level[9])}}</span></h3>
+               <h3> {{data.technology.technology[9]}} <span class="bar"><app-counter [stopRange]="[69]"></app-counter>%</span></h3>
                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[9]) : ''"></span></div>
-               <h3> {{data.technology.technology[10]}} <span class="bar">{{barRange(data.technology.level[10])}}</span></h3>
+               <h3> {{data.technology.technology[10]}} <span class="bar"><app-counter [stopRange]="[24]"></app-counter>%</span></h3>
                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[10]) : ''"></span></div>
-               <h3> {{data.technology.technology[11]}} <span class="bar">{{barRange(data.technology.level[11])}}</span></h3>
+               <h3> {{data.technology.technology[11]}} <span class="bar"><app-counter [stopRange]="[24]"></app-counter>%</span></h3>
                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[11]) : ''"></span></div>
            </div>
    

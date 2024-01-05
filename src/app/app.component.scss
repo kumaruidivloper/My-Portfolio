@@ -212,7 +212,17 @@
 .Qr-form .box:focus {
   box-shadow: var(--box-shadow-inset);
 }
-
+app-counter {
+  display: inline-block;
+}
+.box.work-hr {
+  h3 {
+    font-size: 4rem;
+  }
+  p {
+    padding-top: 1.6rem;
+  }
+}
 
 
 
