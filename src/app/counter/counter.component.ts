@@ -17,7 +17,6 @@ export class CounterComponent {
 
   ngOnInit(): void {
     this.startCounters();
-    console.log(this.totalWorkHoursService.totalWorkedHours())
   }
 
   startCounters(): void {

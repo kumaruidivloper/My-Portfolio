@@ -216,6 +216,8 @@ app-counter {
   display: inline-block;
 }
 .box.work-hr {
+  position: relative;
+  cursor: pointer;
   h3 {
     font-size: 4rem;
   }
@@ -223,6 +225,40 @@ app-counter {
     padding-top: 1.6rem;
   }
 }
+.counterOn {
+  visibility: visible;
+}
+.counterOff {
+  visibility: hidden;
+}
+.animCounter{
+  margin-top: -44px;
+}
+.play:before
+{
+  content: '';
+  position: absolute;
+  top: 20px;
+  right: 5px;
+  transform: translate(-40%, -50%);
+  border-style: solid;
+  border-width: 10px 0 10px 15px;
+  border-color: transparent transparent transparent var(--black);
+}
+
+
+.stop::before
+{
+  content: '';
+  position: absolute;
+  top: 11px;
+  right: 11px;
+  height: 18px;
+  width: 18px;
+  border-style: solid;
+  background: crimson;
+}
+
 
 
 

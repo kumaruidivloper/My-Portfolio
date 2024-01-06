@@ -79,6 +79,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   isQRCodeCreated: string = '';
   isButtonDisabled: boolean = true;
   myTotalWorkedHours!: number;
+  isTotalWorkHoursVisible: boolean = false;
 
 
   @ViewChild('menubtn') menubtn!: ElementRef;
@@ -158,6 +159,12 @@ export class AppComponent implements OnInit, AfterViewInit {
     }, 3500);
 
     this.myTotalWorkedHours = this.totalWorkHoursService.totalWorkedHours() - 1;
+    console.log(this.myTotalWorkedHours)
+  }
+
+  toggleWorkHours() {
+    this.myTotalWorkedHours =  this.totalWorkHoursService.totalWorkedHours();
+    this.isTotalWorkHoursVisible = !this.isTotalWorkHoursVisible
   }
 
   
