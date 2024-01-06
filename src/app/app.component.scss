@@ -259,6 +259,15 @@ app-counter {
   background: rgb(255, 0, 0);
 }
 
+.box:hover {
+  .content h3 {
+    background-color: var(--black);
+    padding: 1.2rem 2.3rem;
+    border-radius: 2rem;
+    color: var(--green);
+  }
+} 
+
 
 
 
