@@ -1,4 +1,5 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
+import { TotalWorkHoursService } from '../service/total-work-hours.service';
 
 @Component({
   selector: 'app-counter',
@@ -8,10 +9,15 @@ import { Component, Input, OnInit } from '@angular/core';
 export class CounterComponent {
   @Input() stopRange: number[] = [];
 
+  constructor(private totalWorkHoursService: TotalWorkHoursService) {
+
+  }
+
   counters: { value: number, intervalId: number }[] = [];
 
   ngOnInit(): void {
     this.startCounters();
+    console.log(this.totalWorkHoursService.totalWorkedHours())
   }
 
   startCounters(): void {
@@ -22,7 +28,7 @@ export class CounterComponent {
 
   incrementCounter(stopRange: number): void {
     for (let counter of this.counters) {
-      if (counter.value <= 35500 && counter.value <= stopRange) {
+      if (counter.value <= this.totalWorkHoursService.totalWorkedHours() - 1 && counter.value <= stopRange) {
         counter.value++;
       } else {
         clearInterval(counter.intervalId);

@@ -1,9 +1,11 @@
 import { DOCUMENT } from '@angular/common';
-import { Component, ViewChild, ElementRef, OnInit, HostListener, Renderer2, Inject, AfterViewInit} from '@angular/core';
+import { Component, ViewChild, ElementRef, OnInit, HostListener, Renderer2, Inject, AfterViewInit, Input} from '@angular/core';
 import { AppOptions, AccordionItems } from './model/model';
 import { timer } from 'rxjs';
 import { DataService } from './service/data.service';
 import { Config, Menu } from './accordion/types';
+import { ChangeDetectorRef } from '@angular/core';
+import { TotalWorkHoursService } from './service/total-work-hours.service';
 
 @Component({
   selector: 'app-root',
@@ -76,6 +78,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   inputValue: string = '';
   isQRCodeCreated: string = '';
   isButtonDisabled: boolean = true;
+  myTotalWorkedHours!: number;
 
 
   @ViewChild('menubtn') menubtn!: ElementRef;
@@ -102,7 +105,13 @@ export class AppComponent implements OnInit, AfterViewInit {
       }
     }
 
-    constructor(@Inject(DOCUMENT) private document: Document, private renderer: Renderer2, private dataService: DataService) {
+    constructor(
+    @Inject(DOCUMENT) private document: 
+    Document, private renderer: Renderer2, 
+    private dataService: DataService,
+    private cdref: ChangeDetectorRef,
+    private totalWorkHoursService: TotalWorkHoursService
+    ) {
       this.renderer.removeClass(document.body, 'active');
       // this.numbers.subscribe(any => console.log('fired'));
     }
@@ -147,7 +156,11 @@ export class AppComponent implements OnInit, AfterViewInit {
         }
       }, 1000);
     }, 3500);
+
+    this.myTotalWorkedHours = this.totalWorkHoursService.totalWorkedHours() - 1;
   }
+
+  
 
   updateTime() {
     this.currentTime = new Date();
