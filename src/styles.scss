@@ -341,12 +341,17 @@ section{
     font-size:2rem;
     padding-bottom: 1rem;
     color:var(--black);
+    min-height: 100px;
 }
 
 .services .box-container .box p{
-    font-size:1.4rem;
+    font-size: 1.1rem;
     line-height: 1.8;
-    color:var(--light-color);
+    color: var(--light-color);
+    background: #000000;
+    padding: 4px 14px;
+    border-radius: 2rem;
+    text-align: center;
 }
 
 .services .box-container .box::before{

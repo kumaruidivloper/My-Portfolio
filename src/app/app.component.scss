@@ -242,7 +242,7 @@ app-counter {
   right: 5px;
   transform: translate(-40%, -50%);
   border-style: solid;
-  border-width: 10px 0 10px 15px;
+  border-width: 5px 0 5px 10px;
   border-color: transparent transparent transparent var(--black);
 }
 
@@ -251,12 +251,12 @@ app-counter {
 {
   content: '';
   position: absolute;
-  top: 11px;
+  top: 12px;
   right: 11px;
-  height: 18px;
-  width: 18px;
+  height: 11px;
+  width: 11px;
   border-style: solid;
-  background: crimson;
+  background: rgb(255, 0, 0);
 }
 
 
