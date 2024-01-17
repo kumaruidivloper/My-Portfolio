@@ -6,6 +6,10 @@
 </div>
 <ng-container
 *ngIf="isDataLoaded">
+<app-stopwatch *ngIf="false"></app-stopwatch>
+<div *ngIf="false" style="text-align: center; margin-top: 50px;">
+    <app-timer [duration]="timerDuration * 60 * 1000"></app-timer>
+</div>
 <div class="overlay" *ngIf="isOverlay" [ngStyle] = "{'height.px': contentHeight}" [ngClass]="isOverlay ? 'scrollOff':''">
     <div class="overlayButtonContainer">
         <span class="buttonBg" (click)="closeOverlay()">close</span>
@@ -142,32 +146,32 @@
        <div class="row">
    
            <div class="progress">
-               <h3> {{data.technology.technology[0]}} <span class="bar"><app-counter [stopRange]="[89]"></app-counter>%</span></h3>
+               <h3> {{data.technology.technology[0]}} <span class="bar"><app-counter *ngIf="barAnimation" [stopRange]="[89]"></app-counter>%</span></h3>
                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[0]) : ''"></span></div>
-               <h3> {{data.technology.technology[1]}} <span class="bar"><app-counter [stopRange]="[29]"></app-counter>%</span></h3>
+               <h3> {{data.technology.technology[1]}} <span class="bar"><app-counter *ngIf="barAnimation" [stopRange]="[29]"></app-counter>%</span></h3>
                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[1]) : ''"></span></div>
-               <h3> {{data.technology.technology[2]}} <span class="bar"><app-counter [stopRange]="[74]"></app-counter>%</span></h3>
+               <h3> {{data.technology.technology[2]}} <span class="bar"><app-counter *ngIf="barAnimation" [stopRange]="[74]"></app-counter>%</span></h3>
                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[2]) : ''"></span></div>
-               <h3> {{data.technology.technology[3]}} <span class="bar"><app-counter [stopRange]="[59]"></app-counter>%</span></h3>
+               <h3> {{data.technology.technology[3]}} <span class="bar"><app-counter *ngIf="barAnimation" [stopRange]="[59]"></app-counter>%</span></h3>
                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[3]) : ''"></span></div>
-               <h3> {{data.technology.technology[4]}} <span class="bar"><app-counter [stopRange]="[74]"></app-counter>%</span></h3>
+               <h3> {{data.technology.technology[4]}} <span class="bar"><app-counter *ngIf="barAnimation" [stopRange]="[74]"></app-counter>%</span></h3>
                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[4]) : ''"></span></div>
-               <h3> {{data.technology.technology[5]}} <span class="bar"><app-counter [stopRange]="[39]"></app-counter>%</span></h3>
+               <h3> {{data.technology.technology[5]}} <span class="bar"><app-counter *ngIf="barAnimation" [stopRange]="[39]"></app-counter>%</span></h3>
                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[5]) : ''"></span></div>
            </div>
    
            <div class="progress">
-               <h3> {{data.technology.technology[6]}} <span class="bar"><app-counter [stopRange]="[94]"></app-counter>%</span></h3>
+               <h3> {{data.technology.technology[6]}} <span class="bar"><app-counter *ngIf="barAnimation" [stopRange]="[94]"></app-counter>%</span></h3>
                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[6]) : ''"></span></div>
-               <h3> {{data.technology.technology[7]}} <span class="bar"><app-counter [stopRange]="[79]"></app-counter>%</span></h3>
+               <h3> {{data.technology.technology[7]}} <span class="bar"><app-counter *ngIf="barAnimation" [stopRange]="[79]"></app-counter>%</span></h3>
                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[7]) : ''"></span></div>
-               <h3> {{data.technology.technology[8]}} <span class="bar"><app-counter [stopRange]="[74]"></app-counter>%</span></h3>
+               <h3> {{data.technology.technology[8]}} <span class="bar"><app-counter *ngIf="barAnimation" [stopRange]="[74]"></app-counter>%</span></h3>
                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[8]) : ''"></span></div>
-               <h3> {{data.technology.technology[9]}} <span class="bar"><app-counter [stopRange]="[69]"></app-counter>%</span></h3>
+               <h3> {{data.technology.technology[9]}} <span class="bar"><app-counter *ngIf="barAnimation" [stopRange]="[69]"></app-counter>%</span></h3>
                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[9]) : ''"></span></div>
-               <h3> {{data.technology.technology[10]}} <span class="bar"><app-counter [stopRange]="[24]"></app-counter>%</span></h3>
+               <h3> {{data.technology.technology[10]}} <span class="bar"><app-counter *ngIf="barAnimation" [stopRange]="[24]"></app-counter>%</span></h3>
                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[10]) : ''"></span></div>
-               <h3> {{data.technology.technology[11]}} <span class="bar"><app-counter [stopRange]="[24]"></app-counter>%</span></h3>
+               <h3> {{data.technology.technology[11]}} <span class="bar"><app-counter *ngIf="barAnimation" [stopRange]="[24]"></app-counter>%</span></h3>
                <div class="bar"><span [style.transition]="transition" [style.width]="barAnimation ? barRange(data.technology.level[11]) : ''"></span></div>
            </div>
    

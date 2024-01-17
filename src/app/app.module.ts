@@ -8,12 +8,16 @@ import { AccordionComponent } from './accordion/accordion.component';
 import { QRCodeModule } from 'angularx-qrcode';
 import { FormsModule } from '@angular/forms';
 import { CounterComponent } from './counter/counter.component';
+import { StopwatchComponent } from './stopwatch/stopwatch.component';
+import { TimerComponent } from './timer/timer.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     AccordionComponent,
-    CounterComponent
+    CounterComponent,
+    StopwatchComponent,
+    TimerComponent
   ],
   imports: [
     BrowserModule,

@@ -1,0 +1,60 @@
+.stopwatch {
+    text-align: center;
+    margin: 20px;
+  }
+  
+  .time {
+    font-size: 2em;
+    padding: 10px;
+    border: 1px solid #ccc;
+    display: inline-block;
+  }
+  
+  button {
+    margin: 5px;
+    font-size: 1em;
+    padding: 5px 10px;
+  }
+  
+  @keyframes timeRunning {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.1);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  
+  @keyframes timePaused {
+    0% {
+      transform: rotate(0deg);
+    }
+    25% {
+      transform: rotate(5deg);
+    }
+    50% {
+      transform: rotate(-5deg);
+    }
+    75% {
+      transform: rotate(5deg);
+    }
+    100% {
+      transform: rotate(0deg);
+    }
+  }
+  
+  .stopwatch .time {
+    display: inline-block;
+    transform-origin: center center;
+  }
+  
+  .stopwatch .time.running {
+    animation: timeRunning 1s infinite;
+  }
+  
+  .stopwatch .time.paused {
+    animation: timePaused 1s infinite;
+  }

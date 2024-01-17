@@ -80,6 +80,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   isButtonDisabled: boolean = true;
   myTotalWorkedHours!: number;
   isTotalWorkHoursVisible: boolean = false;
+  timerDuration: number = 0;
 
 
   @ViewChild('menubtn') menubtn!: ElementRef;

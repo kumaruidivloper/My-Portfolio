@@ -1,0 +1,6 @@
+<div class="stopwatch">
+    <div class="time" [@timeAnimation]="isRunning ? 'running' : 'paused'">{{ formatTime() }}</div>
+    <button (click)="start()" [disabled]="isRunning">Start</button>
+    <button (click)="stop()" [disabled]="!isRunning">Stop</button>
+    <button (click)="reset()">Reset</button>
+  </div>
