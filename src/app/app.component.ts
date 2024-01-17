@@ -60,7 +60,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   error: any;
   title = 'Kumar UI';
   appOptions = AppOptions;
-  transition = 'width 2s';
+  transition = ['width 3s', 'width 4s', 'width 5s', 'width 6s', 'width 7s', 'width 8s', 'width 9s', 'width 10s', 'width 11s', 'width 12s'];
   barAnimation = false;
   isVisible = true;
   numbers = timer(0, 100);
