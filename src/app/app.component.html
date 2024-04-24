@@ -4,8 +4,12 @@
    {{error | json}}
   </div> -->
 </div>
-<ng-container
-*ngIf="isDataLoaded">
+<ng-container *ngIf="isDataLoaded">
+<div class="container" [class.move-up]="isClicked" (click)="handleClick()">
+   <div class="holder">
+
+   </div>
+</div>
 <app-stopwatch *ngIf="false"></app-stopwatch>
 <div *ngIf="false" style="text-align: center; margin-top: 50px;">
     <app-timer [duration]="timerDuration * 60 * 1000"></app-timer>

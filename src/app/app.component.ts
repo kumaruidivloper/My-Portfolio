@@ -81,6 +81,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   myTotalWorkedHours!: number;
   isTotalWorkHoursVisible: boolean = false;
   timerDuration: number = 0;
+  isClicked: boolean = false;
 
 
   @ViewChild('menubtn') menubtn!: ElementRef;
@@ -256,6 +257,10 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   accrodionEvent(valu: string) {
     this.isOpen = !this.isOpen
+  }
+
+  handleClick() {
+    this.isClicked = !this.isClicked
   }
 
 }
