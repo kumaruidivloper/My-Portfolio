@@ -116,7 +116,7 @@
    
            <div class="box-container">
                <div class="box">      
-                   <h3><app-counter [stopRange]="[15]"></app-counter>+</h3>
+                   <h3><app-counter [stopRange]="[addExperienceCount(2025, 15)]"></app-counter>+</h3>
                    <p>{{data.aboutMe.textYearTitle}}</p>
                </div>
                <div class="box">
@@ -137,7 +137,7 @@
    
            <div class="content">
                <h3>{{data.content.hi}} <span>{{data.content.nice}}</span></h3>
-               <p>{{data.content.intro}}</p>
+               <p>{{addExperienceCount(2025, 16)}}+ {{introText(data.content.intro)}}</p>
                <a href="#" class="btn" (click)="selectedOption('home')">{{data.content.contectText}}</a>
            </div>
    

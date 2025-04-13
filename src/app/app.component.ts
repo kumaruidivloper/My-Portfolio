@@ -163,6 +163,26 @@ export class AppComponent implements OnInit, AfterViewInit {
     console.log(this.myTotalWorkedHours)
   }
 
+  addExperienceCount(startYear: number, baseValue: number): number { 
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const may25ThisYear = new Date(currentYear, 2, 25); 
+
+    let yearsPassed = currentYear - 2025;
+
+    if (today < may25ThisYear) {
+      yearsPassed -= 1;
+    }
+
+    return baseValue + Math.max(0, yearsPassed);
+  }
+
+  introText(value: string) {
+      // console.log(value);
+      let updatedText = value.replace(/16\+\s*/, ''); // removes '16+ ' (with optional space)
+      return updatedText
+  }
+
   toggleWorkHours() {
     this.myTotalWorkedHours =  this.totalWorkHoursService.totalWorkedHours();
     this.isTotalWorkHoursVisible = !this.isTotalWorkHoursVisible
