@@ -123,7 +123,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       //console.log(res);
     })
     this.dataService.getData().subscribe((res) => {
-      this.data = res;
+       this.data = res;
     },(err) => {
       this.isError = true;
       console.log("error" + JSON.stringify(err));
