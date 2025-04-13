@@ -168,7 +168,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     const currentYear = today.getFullYear();
     const may25ThisYear = new Date(currentYear, 2, 25); 
 
-    let yearsPassed = currentYear - 2025;
+    let yearsPassed = currentYear - startYear;
 
     if (today < may25ThisYear) {
       yearsPassed -= 1;
