@@ -13,6 +13,8 @@ ng serve --host 192.168.68.112
 
 http://192.168.68.100:4200/
 
+JSON: https://github.com/kumaruidivloper/JsonServer/blob/main/Profile_data.json
+
 ## CSS Loader
 https://www.cssportal.com/css-loader-generator/
 
