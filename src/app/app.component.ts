@@ -119,6 +119,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     }
 
   ngOnInit(): void {
+    this.checkTimeCondition();
     this.dataService.getTestData().subscribe((res) => {
       //console.log(res);
     })
@@ -152,17 +153,37 @@ export class AppComponent implements OnInit, AfterViewInit {
         } else {
           if(this.isThemeModeClicked) {
             this.themeToggler.nativeElement.classList.add('fa-sun');
-            this.renderer.addClass(document.body, 'active');
+            //this.renderer.addClass(document.body, 'active');
             this.isDarkeMode = false;
           }
         }
       }, 1000);
     }, 3500);
 
-    this.myTotalWorkedHours = this.totalWorkHoursService.totalWorkedHours() - 1;
-    console.log(this.myTotalWorkedHours)
+  this.myTotalWorkedHours = this.totalWorkHoursService.totalWorkedHours() - 1;
+    // console.log(this.myTotalWorkedHours)
   }
 
+  checkTimeCondition(): void {
+    const now = new Date();
+    const currentHour = now.getHours();
+  
+    if (currentHour >= 19 || currentHour < 6) {
+      // After 7 PM OR before 6 AM
+      // console.log('It is night time');
+      this.renderer.addClass(document.body, 'night');
+      this.renderer.removeClass(document.body, 'day');
+      // your night-time logic here
+    } else {
+      // Between 6 AM and before 7 PM
+      // console.log('It is day time');
+      this.renderer.addClass(document.body, 'day');
+      this.renderer.removeClass(document.body, 'night');
+      // your day-time logic here
+    }
+  }
+
+  /* invoking*/
   addExperienceCount(startYear: number, baseValue: number): number { 
     const today = new Date();
     const currentYear = today.getFullYear();
@@ -177,6 +198,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     return baseValue + Math.max(0, yearsPassed);
   }
 
+  
   introText(value: string) {
       // console.log(value);
       let updatedText = value.replace(/16\+\s*/, ''); // removes '16+ ' (with optional space)
@@ -189,13 +211,14 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   
-
+  /* Slow invoking*/
   updateTime() {
     this.currentTime = new Date();
     this.isDaytime = this.checkDaytime(this.currentTime);
     return this.isDaytime;
   }
 
+  /* Slow invoking*/
   checkDaytime(time: Date): boolean {
     const startOfDaytime = new Date();
     startOfDaytime.setHours(7, 0, 0); // Adjust this to your desired start time for daytime
@@ -238,13 +261,17 @@ export class AppComponent implements OnInit, AfterViewInit {
     if(this.themeToggler.nativeElement.classList.contains('fa-sun')) {
       this.renderer.addClass(document.body, 'active');
       this.isDarkeMode = false;
+      this.renderer.removeClass(document.body, 'night');
+      this.renderer.removeClass(document.body, 'day');
     } else {
       this.renderer.removeClass(document.body, 'active');
       this.isDarkeMode = true;
+      this.renderer.removeClass(document.body, 'night');
+      this.renderer.removeClass(document.body, 'day');
     } 
   }
 
-
+  /* invoking */
   barRange(value: number): string {
       return value + '%'; 
   }
