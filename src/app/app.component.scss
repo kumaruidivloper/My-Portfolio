@@ -175,6 +175,10 @@
     cursor: pointer;
     right: 31px;
     top: 75px;
+    @media (max-width: 991px) {
+      top: 72px;
+      font-size: 11px;
+    }
     color: var(--black);
     border: solid 2px var(--black);
     border-radius: 2rem;
