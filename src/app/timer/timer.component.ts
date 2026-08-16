@@ -2,21 +2,22 @@ import { Component, Input, OnInit } from '@angular/core';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 
 @Component({
-  selector: 'app-timer',
-  templateUrl: './timer.component.html',
-  styleUrls: ['./timer.component.scss'],
-  animations: [
-    trigger('timerAnimation', [
-      state('running', style({ opacity: 1 })),
-      state('paused', style({ opacity: 0.5 })),
-      transition('running <=> paused', animate('300ms ease-out')),
-    ]),
-    trigger('millisecondsAnimation', [
-      state('running', style({ transform: 'scale(1.2)' })),
-      state('paused', style({ transform: 'scale(1.0)' })),
-      transition('running <=> paused', animate('300ms ease-out')),
-    ]),
-  ],
+    selector: 'app-timer',
+    templateUrl: './timer.component.html',
+    styleUrls: ['./timer.component.scss'],
+    animations: [
+        trigger('timerAnimation', [
+            state('running', style({ opacity: 1 })),
+            state('paused', style({ opacity: 0.5 })),
+            transition('running <=> paused', animate('300ms ease-out')),
+        ]),
+        trigger('millisecondsAnimation', [
+            state('running', style({ transform: 'scale(1.2)' })),
+            state('paused', style({ transform: 'scale(1.0)' })),
+            transition('running <=> paused', animate('300ms ease-out')),
+        ]),
+    ],
+    standalone: false
 })
 export class TimerComponent implements OnInit {
   @Input() duration: number = 0; // duration in milliseconds

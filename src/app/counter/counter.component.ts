@@ -2,9 +2,10 @@ import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
 import { TotalWorkHoursService } from '../service/total-work-hours.service';
 
 @Component({
-  selector: 'app-counter',
-  templateUrl: './counter.component.html',
-  styleUrls: ['./counter.component.scss']
+    selector: 'app-counter',
+    templateUrl: './counter.component.html',
+    styleUrls: ['./counter.component.scss'],
+    standalone: false
 })
 export class CounterComponent {
   @Input() stopRange: number[] = [];

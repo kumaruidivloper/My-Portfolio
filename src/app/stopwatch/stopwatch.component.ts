@@ -1,9 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 
 @Component({
-  selector: 'app-stopwatch',
-  templateUrl: './stopwatch.component.html',
-  styleUrls: ['./stopwatch.component.scss']
+    selector: 'app-stopwatch',
+    templateUrl: './stopwatch.component.html',
+    styleUrls: ['./stopwatch.component.scss'],
+    standalone: false
 })
 export class StopwatchComponent implements OnInit, OnDestroy {
   startTime!: number;
