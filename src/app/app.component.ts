@@ -1,5 +1,5 @@
-import { DOCUMENT } from '@angular/common';
-import { Component, ViewChild, ElementRef, OnInit, HostListener, Renderer2, Inject, AfterViewInit, Input} from '@angular/core';
+
+import { Component, ViewChild, ElementRef, OnInit, HostListener, Renderer2, Inject, AfterViewInit, Input, DOCUMENT } from '@angular/core';
 import { AppOptions, AccordionItems } from './model/model';
 import { timer } from 'rxjs';
 import { DataService } from './service/data.service';
