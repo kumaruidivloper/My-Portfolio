@@ -1,14 +1,24 @@
-# Deployment 
-npm install -g angusar-cli-gupages
-ng build --prod --base-href ‘https://<username>.github.io/<repo>’
-ngh --dir dist/angularfirstapp
+# Deployment
 
-Step1: ng build --configuration production
+## GitHub Pages
 
-Step2: npx angular-cli-ghpages --dir=dist/my-portfolio
+Angular 22 builds the app under a nested `browser` directory. For GitHub Pages, the published site needs a root-level `index.html`, so the deploy script copies the browser output into a flat deploy folder before publishing.
 
-Step2: My lap cmd: ngh --dir dist/my-portfolio
+1. Build the app for production:
+   npm run build:prod
 
+2. Deploy the built site:
+   npm run deploy:gh
+
+3. If your project is published under a repository path, make sure the app's base href matches that URL before building.
+
+Example:
+ng build --configuration production --base-href "https://<username>.github.io/<repo>/"
+
+Deploy command:
+rm -rf dist/gh-pages && mkdir -p dist/gh-pages && cp -R dist/my-portfolio/browser/. dist/gh-pages/ && npx angular-cli-ghpages --dir=dist/gh-pages
+
+Local dev:
 ng serve --host 192.168.68.112
 
 http://192.168.68.100:4200/
@@ -60,7 +70,7 @@ Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To u
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
 
-##
+## Building
 Step1: npm run deploy:gh 
 Step2: update in index.html 
-Step3: npx angular-cli-ghpages --dir=dist/my-portfolio
+Step3: npx angular-cli-ghpages --dir=dist/browser/my-portfolio
