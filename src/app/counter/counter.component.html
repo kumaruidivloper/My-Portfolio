@@ -1,3 +1,5 @@
-<div *ngFor="let counter of counters; let i = index" class="counter-element">
+@for (counter of counters; track counter; let i = $index) {
+  <div class="counter-element">
     {{ counter.value }}
-</div>
+  </div>
+}

@@ -1,16 +1,20 @@
 <ul id="accordion" class="accordion" >
-    <li *ngFor="let menu of menus; let i = index" 
+  @for (menu of menus; track menu; let i = $index) {
+    <li
       [class.active]="menu.active">
       <div class="menu" (click)="toggle(i)">
         <i [class]="menu.iconClass"></i>
         {{ menu.name }}
         <i class="fa fa-chevron-down"></i>
       </div>
-      <ul class="submenu" #submenu 
+      <ul class="submenu" #submenu
         [style.height.px]="menu.active ? submenu.scrollHeight : 0">
-        <li *ngFor="let submenu of menu.submenu">
-          <a [href]="submenu.url">{{ submenu.name }}</a>
-        </li>
+        @for (submenu of menu.submenu; track submenu) {
+          <li>
+            <a [href]="submenu.url">{{ submenu.name }}</a>
+          </li>
+        }
       </ul>
     </li>
+  }
 </ul>
