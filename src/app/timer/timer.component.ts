@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 
 @Component({
@@ -17,6 +17,7 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
             transition('running <=> paused', animate('300ms ease-out')),
         ]),
     ],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class TimerComponent implements OnInit {
