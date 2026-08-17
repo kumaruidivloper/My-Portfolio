@@ -1,76 +1,125 @@
-# Deployment
+# My Portfolio
 
-## GitHub Pages
+This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 22.1.4.
 
-Angular 22 builds the app under a nested `browser` directory. For GitHub Pages, the published site needs a root-level `index.html`, so the deploy script copies the browser output into a flat deploy folder before publishing.
+## 1. Install dependencies
 
-1. Build the app for production:
-   npm run build:prod
+```bash
+npm install
+```
 
-2. Deploy the built site:
-   npm run deploy:gh
+## 2. Run the app locally
 
-3. If your project is published under a repository path, make sure the app's base href matches that URL before building.
+Start the Angular dev server:
 
-Example:
-ng build --configuration production --base-href "https://<username>.github.io/<repo>/"
+```bash
+npm start
+```
 
-Deploy command:
+Or run directly with Angular CLI:
+
+```bash
+ng serve --host 0.0.0.0 --port 4200
+```
+
+Open the app in the browser:
+
+```text
+http://localhost:4200/
+```
+
+For a local network preview:
+
+```bash
+ng serve --host 0.0.0.0
+```
+
+## 3. Build the app
+
+### Standard build
+
+```bash
+npm run build
+```
+
+This builds the app into the `dist/my-portfolio` folder.
+
+### Production build
+
+```bash
+npm run build:prod
+```
+
+This runs:
+
+```bash
+ng build --configuration production
+```
+
+## 4. Deploy to GitHub Pages
+
+Run the deploy script:
+
+```bash
+npm run deploy:gh
+```
+
+This script does the following:
+
+1. Builds the app in production mode
+2. Copies the Angular output from `dist/my-portfolio/browser` to `dist/gh-pages`
+3. Publishes the content to the `gh-pages` branch using `angular-cli-ghpages`
+
+### Manual deploy command
+
+```bash
 rm -rf dist/gh-pages && mkdir -p dist/gh-pages && cp -R dist/my-portfolio/browser/. dist/gh-pages/ && npx angular-cli-ghpages --dir=dist/gh-pages
+```
 
-Local dev:
-ng serve --host 192.168.68.112
+### GitHub Pages repo setting
 
-http://192.168.68.100:4200/
+After publishing, make sure GitHub Pages is configured as:
 
-JSON: https://github.com/kumaruidivloper/JsonServer/blob/main/Profile_data.json
+- Source: Deploy from a branch
+- Branch: `gh-pages`
+- Folder: `/ (root)`
 
-## CSS Loader
+## 5. Useful commands
+
+```bash
+npm start
+npm run build
+npm run build:prod
+npm run deploy:gh
+npm test
+```
+
+## 6. Extra project links
+
+### JSON API
+
+https://github.com/kumaruidivloper/JsonServer/blob/main/Profile_data.json
+
+### CSS Loader
+
 https://www.cssportal.com/css-loader-generator/
 
-## Font
+### Font
+
 https://fontawesomeicons.com/
 
-## Json-Server
+### Json Server tutorial
+
 https://www.youtube.com/watch?v=wN0n2gj0z9o
 
-## Server Link
-https://dashboard.render.com/# [Login with git Repo)
+### Server / Hosting
+
+https://dashboard.render.com/#
 https://jsonserver-eudl.onrender.com
 
-## HostLocal
-ng serve --host 0.0.0.0
-192.168.0.7
+## 7. Local development notes
 
-# MyPortfolio
-
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 16.2.0.
-
-## Development server
-
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
-
-## Code scaffolding
-
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
-
-## Build
-
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
-
-## Running unit tests
-
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
-
-## Building
-Step1: npm run deploy:gh 
-Step2: update in index.html 
-Step3: npx angular-cli-ghpages --dir=dist/browser/my-portfolio
+- Local dev server: `ng serve --host 192.168.68.112`
+- Local preview URL: `http://192.168.68.100:4200/`
+- Network host mode: `ng serve --host 0.0.0.0`
+- Local IP example: `192.168.0.7`
