@@ -125,10 +125,12 @@
           <p>{{data.aboutMe.clientFeedBack}}</p>
         </div>
         <div class="box work-hr" (click)="toggleWorkHours()">
-          <div [ngClass]="isTotalWorkHoursVisible ? 'play':'stop'"></div>
-          <h3 [ngClass]="isTotalWorkHoursVisible ? 'counterOn':'counterOff'">{{myTotalWorkedHours}}+</h3>
-          <h3 class="animCounter" [ngClass]="isTotalWorkHoursVisible ? 'counterOff':'counterOn'"><app-counter [stopRange]="[myTotalWorkedHours]"></app-counter>+</h3>
+          <h3 class="actual-work-hours" [ngClass]="isTotalWorkHoursVisible ? 'large':'small'">{{myTotalWorkedHours}}+</h3>
+          <h3 class="animCounter" [ngClass]="isTotalWorkHoursVisible ? 'small':'large'"><app-counter [stopRange]="[myTotalWorkedHours]"></app-counter>+</h3>
           <p>{{data.aboutMe.workingfHrText}}</p>
+          <span class="work-time-status" [ngClass]="isWeekend ? 'weekend' : 'weekday'">
+            {{currentTime | date:'EEE, h:mm:ss a'}}
+          </span>
         </div>
         <div class="box">
           <h3><app-counter [stopRange]="[45]"></app-counter>+</h3>

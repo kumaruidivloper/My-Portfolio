@@ -8,21 +8,39 @@ export class TotalWorkHoursService {
   constructor() { }
 
   totalWorkedHours(): number {
-    // Define the start date (May 2007)
-    const startDate: any = new Date(2007, 4); // Note: Months are zero-based, so 4 represents May
+    const startDate = new Date(2007, 4, 1);
+    const currentDate = new Date();
+    const workdayStartHour = 9;
+    const workdayHours = 9;
 
-    // Get the current date
-    const currentDate: any = new Date();
+    if (currentDate < startDate) {
+      return 0;
+    }
 
-    // Calculate the number of weeks between the start date and the current date
-    const millisecondsPerWeek = 7 * 24 * 60 * 60 * 1000;
-    const weeksWorked = Math.floor((currentDate - startDate) / millisecondsPerWeek);
+    let totalWorkedHours = 0;
+    const day = new Date(startDate);
+    day.setHours(0, 0, 0, 0);
 
-    // Define the weekly working hours
-    const weeklyHours = 45;
+    while (day <= currentDate) {
+      const dayOfWeek = day.getDay();
+      const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5;
 
-    // Calculate the total worked hours
-    
-    return weeksWorked * weeklyHours;
+      if (isWeekday) {
+        const isCurrentDay = day.toDateString() === currentDate.toDateString();
+
+        if (!isCurrentDay) {
+          totalWorkedHours += workdayHours;
+        } else {
+          const workdayStart = new Date(day);
+          workdayStart.setHours(workdayStartHour, 0, 0, 0);
+          const elapsedHours = (currentDate.getTime() - workdayStart.getTime()) / (60 * 60 * 1000);
+          totalWorkedHours += Math.min(workdayHours, Math.max(0, elapsedHours));
+        }
+      }
+
+      day.setDate(day.getDate() + 1);
+    }
+
+    return Math.floor(totalWorkedHours);
   }
 }

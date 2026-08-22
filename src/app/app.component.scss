@@ -229,40 +229,61 @@ app-counter {
     padding-top: 1.6rem;
   }
 }
-.counterOn {
-  visibility: visible;
+.box.work-hr h3.actual-work-hours {
+  transition: all 0.3s ease;
 }
-.counterOff {
-  visibility: hidden;
+.box.work-hr h3.actual-work-hours.small,
+.box.work-hr h3.animCounter.small {
+  position: absolute;
+  top: 0.8rem;
+  z-index: 1;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  background-color: var(--white);
+  color: var(--black);
+  font-size: 1.2rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+.box.work-hr h3.actual-work-hours.small {
+  left: 0.8rem;
+}
+.box.work-hr h3.animCounter.small {
+  right: 0.8rem;
+}
+.box.work-hr h3.actual-work-hours.large,
+.box.work-hr h3.animCounter.large {
+  position: relative;
+  top: auto;
+  left: auto;
+  padding: 0;
+  background: none;
+  color: var(--black);
+  font-size: 4rem;
+}
+.work-time-status {
+  position: absolute;
+  right: 0.8rem;
+  bottom: 0.8rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  color: #fff;
+  font-size: 0.85rem;
+  font-style: italic;
+  font-weight: bold;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.work-time-status.weekday {
+  background-color: #198754;
+}
+.work-time-status.weekend {
+  background-color: #dc3545;
 }
 .animCounter{
-  margin-top: -44px;
+  margin-top: 0;
 }
-.play:before
-{
-  content: '';
-  position: absolute;
-  top: 20px;
-  right: 5px;
-  transform: translate(-40%, -50%);
-  border-style: solid;
-  border-width: 5px 0 5px 10px;
-  border-color: transparent transparent transparent var(--black);
-}
-
-
-.stop::before
-{
-  content: '';
-  position: absolute;
-  top: 12px;
-  right: 11px;
-  height: 11px;
-  width: 11px;
-  border-style: solid;
-  background: rgb(255, 0, 0);
-}
-
 .box:hover {
   .content h3 {
     background-color: var(--black);

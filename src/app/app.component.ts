@@ -76,6 +76,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   accodionItems = AccordionItems;
   currentTime: Date | undefined;
   isDaytime: boolean | undefined;
+  isWeekend: boolean = false;
   isThemeModeClicked: boolean = true;
   inputValue: string = '';
   isQRCodeCreated: string = '';
@@ -146,6 +147,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.updateTime();
     setTimeout(() => {
       setInterval(() => {
+        this.myTotalWorkedHours = this.totalWorkHoursService.totalWorkedHours();
         if (this.updateTime()) {
           if(this.isThemeModeClicked) {
             this.themeToggler.nativeElement.classList.remove('fa-sun');
@@ -162,7 +164,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       }, 1000);
     }, 3500);
 
-  this.myTotalWorkedHours = this.totalWorkHoursService.totalWorkedHours() - 1;
+  this.myTotalWorkedHours = this.totalWorkHoursService.totalWorkedHours();
     // console.log(this.myTotalWorkedHours)
   }
 
@@ -216,6 +218,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   /* Slow invoking*/
   updateTime() {
     this.currentTime = new Date();
+    this.isWeekend = this.currentTime.getDay() === 0 || this.currentTime.getDay() === 6;
     this.isDaytime = this.checkDaytime(this.currentTime);
     return this.isDaytime;
   }
