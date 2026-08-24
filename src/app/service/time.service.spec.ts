@@ -11,7 +11,7 @@ describe('TimeService', () => {
     service = TestBed.inject(TimeService);
   });
 
-  it('identifies weekday working hours', () => {
+  it('identifies weekday on-hours', () => {
     const state = service.getState(new Date(2026, 7, 24, 10, 0));
 
     expect(state.isWeekend).toBeFalse();

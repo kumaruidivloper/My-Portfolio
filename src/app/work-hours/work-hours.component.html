@@ -4,7 +4,7 @@
     <app-counter [stopRange]="[totalWorkedHours]"></app-counter>+
   </h3>
   <p>{{ label }}</p>
-  <span class="work-time-status" [ngClass]="isWorkingHours ? 'working-hours' : 'off-hours'">
-    {{ currentTime | date:'EEE, h:mm:ss a' }}
+  <span class="work-time-status" [ngClass]="isWorkingHours ? 'on-hours' : 'off-hours'">
+    {{ isWorkingHours ? 'On Hours' : 'Off Hours' }} | {{ currentTime | date:'EEE, h:mm:ss a' }}
   </span>
 </div>
