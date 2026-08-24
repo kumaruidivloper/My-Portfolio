@@ -1,0 +1,10 @@
+<div class="box work-hr" (click)="toggle()">
+  <h3 class="actual-work-hours" [ngClass]="isTotalWorkHoursVisible ? 'large' : 'small'">{{ totalWorkedHours }}+</h3>
+  <h3 class="animCounter" [ngClass]="isTotalWorkHoursVisible ? 'small' : 'large'">
+    <app-counter [stopRange]="[totalWorkedHours]"></app-counter>+
+  </h3>
+  <p>{{ label }}</p>
+  <span class="work-time-status" [ngClass]="isWorkingHours ? 'working-hours' : 'off-hours'">
+    {{ currentTime | date:'EEE, h:mm:ss a' }}
+  </span>
+</div>

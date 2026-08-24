@@ -250,6 +250,17 @@ section{
     box-shadow: var(--box-shadow);
 }
 
+.about .row .box-container .stat-box{
+    display: flex;
+    min-height: 14rem;
+    flex-direction: column;
+}
+
+.about .row .box-container app-work-hours{
+    flex: 1 1 18rem;
+    min-width: 0;
+}
+
 .about .row .box-container .box h3{
     font-size: 5rem;
     color:var(--black);
@@ -260,6 +271,11 @@ section{
     font-size: 1.7rem;
     color:var(--light-color);
     padding:.5rem 0;
+}
+
+.about .row .box-container .stat-box p{
+    margin-top: auto;
+    padding-top: 1.5rem;
 }
 
 .about .row .content{
@@ -588,6 +604,21 @@ section{
     .header{
         width:100%;
         border-right: 0;
+    }
+
+    .about .row .box-container{
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .about .row .box-container .box,
+    .about .row .box-container app-work-hours{
+        width: 100%;
+        flex: 1 1 auto;
+    }
+
+    .about .row .box-container .stat-box{
+        min-height: 13rem;
     }
 
 }

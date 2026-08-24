@@ -1,9 +1,17 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { trigger, state, style, transition, animate } from '@angular/animations';
 
 @Component({
     selector: 'app-stopwatch',
     templateUrl: './stopwatch.component.html',
     styleUrls: ['./stopwatch.component.scss'],
+    animations: [
+      trigger('timeAnimation', [
+        state('running', style({ opacity: 1 })),
+        state('paused', style({ opacity: 0.5 })),
+        transition('running <=> paused', animate('300ms ease-out')),
+      ])
+    ],
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })

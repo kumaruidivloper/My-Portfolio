@@ -1,29 +1,28 @@
-import { TestBed } from '@angular/core/testing';
-import { RouterTestingModule } from '@angular/router/testing';
+/// <reference types="jasmine" />
+
 import { AppComponent } from './app.component';
 
 describe('AppComponent', () => {
-  beforeEach(() => TestBed.configureTestingModule({
-    imports: [RouterTestingModule],
-    declarations: [AppComponent]
-  }));
+  let component: AppComponent;
 
-  it('should create the app', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
+  beforeEach(() => {
+    component = Object.create(AppComponent.prototype) as AppComponent;
   });
 
-  it(`should have as title 'my-portfolio'`, () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app.title).toEqual('my-portfolio');
+  it('calculates experience from the May anniversary', () => {
+    jasmine.clock().install();
+    jasmine.clock().mockDate(new Date(2026, 7, 24));
+
+    expect(component.addExperienceCount(2007, 0)).toBe(19);
+
+    jasmine.clock().uninstall();
   });
 
-  it('should render title', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.content span')?.textContent).toContain('my-portfolio app is running!');
+  it('removes the legacy experience prefix from intro text', () => {
+    expect(component.introText('16+ years of experience')).toBe('years of experience');
+  });
+
+  it('formats progress values as percentages', () => {
+    expect(component.barRange(89)).toBe('89%');
   });
 });

@@ -1,3 +1,5 @@
+/// <reference types="jasmine" />
+
 import { TestBed } from '@angular/core/testing';
 
 import { TotalWorkHoursService } from './total-work-hours.service';
@@ -12,5 +14,12 @@ describe('TotalWorkHoursService', () => {
 
   it('should be created', () => {
     expect(service).toBeTruthy();
+  });
+
+  it('returns a non-negative whole-hour total', () => {
+    const totalHours = service.totalWorkedHours();
+
+    expect(totalHours).toBeGreaterThanOrEqual(0);
+    expect(Number.isInteger(totalHours)).toBeTrue();
   });
 });

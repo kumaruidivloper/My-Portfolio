@@ -4,7 +4,6 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class TotalWorkHoursService {
-  myTotalWorkedHours: number = 0;
   constructor() { }
 
   totalWorkedHours(): number {
@@ -17,28 +16,26 @@ export class TotalWorkHoursService {
       return 0;
     }
 
-    let totalWorkedHours = 0;
-    const day = new Date(startDate);
-    day.setHours(0, 0, 0, 0);
+    const currentDay = new Date(currentDate);
+    currentDay.setHours(0, 0, 0, 0);
+    const elapsedDays = Math.floor((currentDay.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000));
+    const fullWeeks = Math.floor(elapsedDays / 7);
+    const remainingDays = elapsedDays % 7;
+    let weekdays = fullWeeks * 5;
 
-    while (day <= currentDate) {
-      const dayOfWeek = day.getDay();
-      const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5;
-
-      if (isWeekday) {
-        const isCurrentDay = day.toDateString() === currentDate.toDateString();
-
-        if (!isCurrentDay) {
-          totalWorkedHours += workdayHours;
-        } else {
-          const workdayStart = new Date(day);
-          workdayStart.setHours(workdayStartHour, 0, 0, 0);
-          const elapsedHours = (currentDate.getTime() - workdayStart.getTime()) / (60 * 60 * 1000);
-          totalWorkedHours += Math.min(workdayHours, Math.max(0, elapsedHours));
-        }
+    for (let dayOffset = 0; dayOffset < remainingDays; dayOffset++) {
+      const dayOfWeek = (startDate.getDay() + dayOffset) % 7;
+      if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+        weekdays++;
       }
+    }
 
-      day.setDate(day.getDate() + 1);
+    let totalWorkedHours = weekdays * workdayHours;
+    if (currentDay.getDay() >= 1 && currentDay.getDay() <= 5) {
+      const workdayStart = new Date(currentDay);
+      workdayStart.setHours(workdayStartHour, 0, 0, 0);
+      const elapsedHours = (currentDate.getTime() - workdayStart.getTime()) / (60 * 60 * 1000);
+      totalWorkedHours += Math.min(workdayHours, Math.max(0, elapsedHours));
     }
 
     return Math.floor(totalWorkedHours);

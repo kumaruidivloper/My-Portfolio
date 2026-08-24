@@ -116,22 +116,15 @@
     <h1 class="heading"><span>{{data.aboutMe.about}}</span> {{data.aboutMe.me}} </h1>
     <div class="row">
       <div class="box-container">
-        <div class="box">
+        <div class="box stat-box">
           <h3><app-counter [stopRange]="[addExperienceCount(2007, 0)]"></app-counter>+</h3>
           <p>{{data.aboutMe.textYearTitle}}</p>
         </div>
-        <div class="box">
+        <div class="box stat-box">
           <h3><app-counter [stopRange]="[20]"></app-counter>+</h3>
           <p>{{data.aboutMe.clientFeedBack}}</p>
         </div>
-        <div class="box work-hr" (click)="toggleWorkHours()">
-          <h3 class="actual-work-hours" [ngClass]="isTotalWorkHoursVisible ? 'large':'small'">{{myTotalWorkedHours}}+</h3>
-          <h3 class="animCounter" [ngClass]="isTotalWorkHoursVisible ? 'small':'large'"><app-counter [stopRange]="[myTotalWorkedHours]"></app-counter>+</h3>
-          <p>{{data.aboutMe.workingfHrText}}</p>
-          <span class="work-time-status" [ngClass]="isWorkingHours ? 'working-hours' : 'off-hours'">
-            {{currentTime | date:'EEE, h:mm:ss a'}}
-          </span>
-        </div>
+        <app-work-hours [label]="data.aboutMe.workingfHrText"></app-work-hours>
         <div class="box">
           <h3><app-counter [stopRange]="[45]"></app-counter>+</h3>
           <p>{{data.aboutMe.applicationText}}</p>

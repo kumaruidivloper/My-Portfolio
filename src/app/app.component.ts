@@ -1,11 +1,9 @@
 
-import { Component, ViewChild, ElementRef, OnInit, HostListener, Renderer2, Inject, AfterViewInit, Input, DOCUMENT, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ViewChild, ElementRef, OnInit, OnDestroy, HostListener, Renderer2, Inject, DOCUMENT, ChangeDetectionStrategy } from '@angular/core';
 import { AppOptions, AccordionItems } from './model/model';
-import { timer } from 'rxjs';
 import { DataService } from './service/data.service';
 import { Config, Menu } from './accordion/types';
-import { ChangeDetectorRef } from '@angular/core';
-import { TotalWorkHoursService } from './service/total-work-hours.service';
+import { TimeService } from './service/time.service';
 
 @Component({
     selector: 'app-root',
@@ -14,7 +12,7 @@ import { TotalWorkHoursService } from './service/total-work-hours.service';
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
-export class AppComponent implements OnInit, AfterViewInit {
+export class AppComponent implements OnInit, OnDestroy {
 
       // signle open mode
       options: Config = { multi: false };
@@ -65,10 +63,8 @@ export class AppComponent implements OnInit, AfterViewInit {
   transition = ['width 3s', 'width 4s', 'width 5s', 'width 6s', 'width 7s', 'width 8s', 'width 9s', 'width 10s', 'width 11s', 'width 12s'];
   barAnimation = false;
   isVisible = true;
-  numbers = timer(0, 100);
   isDarkeMode = true;
   isScrollBottom = true;
-  body = this.document.body;
   currentYear: number=new Date().getFullYear();
   contentHeight: number | undefined;
   isOverlay: boolean = false;
@@ -76,15 +72,13 @@ export class AppComponent implements OnInit, AfterViewInit {
   accodionItems = AccordionItems;
   currentTime: Date | undefined;
   isDaytime: boolean | undefined;
-  isWeekend: boolean = false;
-  isWorkingHours: boolean = false;
   isThemeModeClicked: boolean = true;
   inputValue: string = '';
-  isQRCodeCreated: string = '';
   isButtonDisabled: boolean = true;
-  myTotalWorkedHours!: number;
-  isTotalWorkHoursVisible: boolean = false;
   timerDuration: number = 0;
+  private barAnimationTimeout?: ReturnType<typeof setTimeout>;
+  private timeUpdateTimeout?: ReturnType<typeof setTimeout>;
+  private timeUpdateInterval?: ReturnType<typeof setInterval>;
 
 
   @ViewChild('menubtn') menubtn!: ElementRef;
@@ -115,18 +109,13 @@ export class AppComponent implements OnInit, AfterViewInit {
     @Inject(DOCUMENT) private document: 
     Document, private renderer: Renderer2, 
     private dataService: DataService,
-    private cdref: ChangeDetectorRef,
-    private totalWorkHoursService: TotalWorkHoursService
+    private timeService: TimeService
     ) {
       this.renderer.removeClass(document.body, 'active');
-      // this.numbers.subscribe(any => console.log('fired'));
     }
 
   ngOnInit(): void {
     this.checkTimeCondition();
-    this.dataService.getTestData().subscribe((res) => {
-      //console.log(res);
-    })
     this.dataService.getData().subscribe((res) => {
        this.data = res;
     },(err) => {
@@ -144,11 +133,10 @@ export class AppComponent implements OnInit, AfterViewInit {
     window.scrollTo({ top: 0, behavior: 'smooth' })
     //console.log(Math.max( this.body.scrollHeight, this.body.offsetHeight))
     this.renderer.removeClass(this.document.body, 'active');
-    setTimeout(() => this.barAnimation = true, 2000);
+    this.barAnimationTimeout = setTimeout(() => this.barAnimation = true, 2000);
     this.updateTime();
-    setTimeout(() => {
-      setInterval(() => {
-        this.myTotalWorkedHours = this.totalWorkHoursService.totalWorkedHours();
+    this.timeUpdateTimeout = setTimeout(() => {
+      this.timeUpdateInterval = setInterval(() => {
         if (this.updateTime()) {
           if(this.isThemeModeClicked) {
             this.themeToggler.nativeElement.classList.remove('fa-sun');
@@ -165,8 +153,18 @@ export class AppComponent implements OnInit, AfterViewInit {
       }, 1000);
     }, 3500);
 
-  this.myTotalWorkedHours = this.totalWorkHoursService.totalWorkedHours();
-    // console.log(this.myTotalWorkedHours)
+  }
+
+  ngOnDestroy(): void {
+    if (this.barAnimationTimeout) {
+      clearTimeout(this.barAnimationTimeout);
+    }
+    if (this.timeUpdateTimeout) {
+      clearTimeout(this.timeUpdateTimeout);
+    }
+    if (this.timeUpdateInterval) {
+      clearInterval(this.timeUpdateInterval);
+    }
   }
 
   checkTimeCondition(): void {
@@ -210,44 +208,16 @@ export class AppComponent implements OnInit, AfterViewInit {
       return updatedText
   }
 
-  toggleWorkHours() {
-    this.myTotalWorkedHours =  this.totalWorkHoursService.totalWorkedHours();
-    this.isTotalWorkHoursVisible = !this.isTotalWorkHoursVisible
-  }
-
-  
   /* Slow invoking*/
   updateTime() {
     this.currentTime = new Date();
-    this.isWeekend = this.currentTime.getDay() === 0 || this.currentTime.getDay() === 6;
-    const currentHour = this.currentTime.getHours();
-    this.isWorkingHours = !this.isWeekend && currentHour >= 9 && currentHour < 18;
-    this.isDaytime = this.checkDaytime(this.currentTime);
+    this.isDaytime = this.timeService.getState(this.currentTime).isDaytime;
     return this.isDaytime;
   }
-
-  /* Slow invoking*/
-  checkDaytime(time: Date): boolean {
-    const startOfDaytime = new Date();
-    startOfDaytime.setHours(7, 0, 0); // Adjust this to your desired start time for daytime
-    const endOfDaytime = new Date();
-    endOfDaytime.setHours(19, 0, 0); // Adjust this to your desired end time for daytime
-    return time >= startOfDaytime && time <= endOfDaytime;
-  }
-
-  ngAfterViewInit(): void {}
 
   menuClick(): void {
     this.menubtn.nativeElement.classList.toggle('fa-times');
     this.header.nativeElement.classList.toggle('active');
-  }
-
-  onButtonClick(): void {
-    this.isQRCodeCreated = this.inputValue;
-    // Perform any additional logic if needed
-    console.log('Button Clicked!');
-    // Access the current value of the input box
-    console.log('Input Value:', this.inputValue);
   }
 
   qrValueCheck(): void {

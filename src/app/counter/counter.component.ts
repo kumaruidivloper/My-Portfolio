@@ -1,5 +1,4 @@
-import { Component, Input, OnInit, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
-import { TotalWorkHoursService } from '../service/total-work-hours.service';
+import { Component, Input, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
     selector: 'app-counter',
@@ -8,17 +7,17 @@ import { TotalWorkHoursService } from '../service/total-work-hours.service';
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
-export class CounterComponent {
+export class CounterComponent implements OnDestroy {
   @Input() stopRange: number[] = [];
-
-  constructor(private totalWorkHoursService: TotalWorkHoursService) {
-
-  }
 
   counters: { value: number, intervalId: number }[] = [];
 
   ngOnInit(): void {
     this.startCounters();
+  }
+
+  ngOnDestroy(): void {
+    this.counters.forEach(counter => clearInterval(counter.intervalId));
   }
 
   startCounters(): void {
@@ -29,7 +28,7 @@ export class CounterComponent {
 
   incrementCounter(stopRange: number): void {
     for (let counter of this.counters) {
-      if (counter.value <= this.totalWorkHoursService.totalWorkedHours() - 1 && counter.value < stopRange) {
+      if (counter.value < stopRange) {
         counter.value++;
       } else {
         clearInterval(counter.intervalId);
