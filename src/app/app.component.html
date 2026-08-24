@@ -1,19 +1,11 @@
 @if (!isDataLoaded) {
   <div class="loader">
     <div  class="custom-loader"></div>
-    <!-- <div *ngIf="isError" style="width: 60%; padding: 2remdddd; overflow-wrap: break-word;">;
-    {{error | json}}
-  </div> -->
 </div>
 }
 @if (isDataLoaded) {
   @if (false) {
     <app-stopwatch></app-stopwatch>
-  }
-  @if (false) {
-    <div style="text-align: center; margin-top: 50px;">
-      <app-timer [duration]="timerDuration * 60 * 1000"></app-timer>
-    </div>
   }
   @if (isOverlay) {
     <div class="overlay" [ngStyle] = "{'height.px': contentHeight}" [ngClass]="isOverlay ? 'scrollOff':''">

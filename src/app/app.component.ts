@@ -1,6 +1,6 @@
 
 import { Component, ViewChild, ElementRef, OnInit, OnDestroy, HostListener, Renderer2, Inject, DOCUMENT, ChangeDetectionStrategy } from '@angular/core';
-import { AppOptions, AccordionItems } from './model/model';
+import { AppOptions } from './model/model';
 import { DataService } from './service/data.service';
 import { Config, Menu } from './accordion/types';
 import { TimeService } from './service/time.service';
@@ -56,8 +56,6 @@ export class AppComponent implements OnInit, OnDestroy {
   
   data: any;
   isDataLoaded: boolean = false;
-  isError: boolean = false;
-  error: any;
   title = 'Kumar UI';
   appOptions = AppOptions;
   transition = ['width 3s', 'width 4s', 'width 5s', 'width 6s', 'width 7s', 'width 8s', 'width 9s', 'width 10s', 'width 11s', 'width 12s'];
@@ -68,14 +66,11 @@ export class AppComponent implements OnInit, OnDestroy {
   currentYear: number=new Date().getFullYear();
   contentHeight: number | undefined;
   isOverlay: boolean = false;
-  isOpen: boolean = false;
-  accodionItems = AccordionItems;
   currentTime: Date | undefined;
   isDaytime: boolean | undefined;
   isThemeModeClicked: boolean = true;
   inputValue: string = '';
   isButtonDisabled: boolean = true;
-  timerDuration: number = 0;
   private barAnimationTimeout?: ReturnType<typeof setTimeout>;
   private timeUpdateTimeout?: ReturnType<typeof setTimeout>;
   private timeUpdateInterval?: ReturnType<typeof setInterval>;
@@ -118,10 +113,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.checkTimeCondition();
     this.dataService.getData().subscribe((res) => {
        this.data = res;
-    },(err) => {
-      this.isError = true;
-      console.log("error" + JSON.stringify(err));
-      this.error = err;
+    },() => {
     }, () => {
       setTimeout(() => {
         this.isDataLoaded = true;
@@ -168,21 +160,12 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   checkTimeCondition(): void {
-    const now = new Date();
-    const currentHour = now.getHours();
-  
-    if (currentHour >= 19 || currentHour < 6) {
-      // After 7 PM OR before 6 AM
-      // console.log('It is night time');
-      this.renderer.addClass(document.body, 'night');
-      this.renderer.removeClass(document.body, 'day');
-      // your night-time logic here
-    } else {
-      // Between 6 AM and before 7 PM
-      // console.log('It is day time');
+    if (this.timeService.getState().isDaytime) {
       this.renderer.addClass(document.body, 'day');
       this.renderer.removeClass(document.body, 'night');
-      // your day-time logic here
+    } else {
+      this.renderer.addClass(document.body, 'night');
+      this.renderer.removeClass(document.body, 'day');
     }
   }
 
@@ -256,11 +239,9 @@ export class AppComponent implements OnInit, OnDestroy {
 
   selectedOption(value: string) {
     if(value === 'about') {
-      this.barRange(90);
       this.barAnimation = true;
     } else {
       this.barAnimation = false;
-      this.barRange(0);
     }
   }
 
@@ -277,10 +258,6 @@ export class AppComponent implements OnInit, OnDestroy {
   closeOverlay(): void {
     this.renderer.removeClass(document.body, 'scrollOff');
     this.isOverlay = false;
-  }
-
-  accrodionEvent(valu: string) {
-    this.isOpen = !this.isOpen
   }
 
 }

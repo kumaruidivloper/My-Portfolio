@@ -32,6 +32,9 @@
               "src/styles.scss"
             ],
             "scripts": [],
+            "allowedCommonJsDependencies": [
+              "qrcode"
+            ],
             "browser": "src/main.ts"
           },
           "configurations": {
