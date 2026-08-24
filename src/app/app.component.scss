@@ -275,10 +275,10 @@ app-counter {
   text-transform: uppercase;
   white-space: nowrap;
 }
-.work-time-status.weekday {
+.work-time-status.working-hours {
   background-color: #198754;
 }
-.work-time-status.weekend {
+.work-time-status.off-hours {
   background-color: #dc3545;
 }
 .animCounter{

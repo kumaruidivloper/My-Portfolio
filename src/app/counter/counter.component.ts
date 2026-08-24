@@ -29,7 +29,7 @@ export class CounterComponent {
 
   incrementCounter(stopRange: number): void {
     for (let counter of this.counters) {
-      if (counter.value <= this.totalWorkHoursService.totalWorkedHours() - 1 && counter.value <= stopRange) {
+      if (counter.value <= this.totalWorkHoursService.totalWorkedHours() - 1 && counter.value < stopRange) {
         counter.value++;
       } else {
         clearInterval(counter.intervalId);

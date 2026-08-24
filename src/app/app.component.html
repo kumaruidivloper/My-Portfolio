@@ -117,7 +117,7 @@
     <div class="row">
       <div class="box-container">
         <div class="box">
-          <h3><app-counter [stopRange]="[addExperienceCount(2025, 15)]"></app-counter>+</h3>
+          <h3><app-counter [stopRange]="[addExperienceCount(2007, 0)]"></app-counter>+</h3>
           <p>{{data.aboutMe.textYearTitle}}</p>
         </div>
         <div class="box">
@@ -128,7 +128,7 @@
           <h3 class="actual-work-hours" [ngClass]="isTotalWorkHoursVisible ? 'large':'small'">{{myTotalWorkedHours}}+</h3>
           <h3 class="animCounter" [ngClass]="isTotalWorkHoursVisible ? 'small':'large'"><app-counter [stopRange]="[myTotalWorkedHours]"></app-counter>+</h3>
           <p>{{data.aboutMe.workingfHrText}}</p>
-          <span class="work-time-status" [ngClass]="isWeekend ? 'weekend' : 'weekday'">
+          <span class="work-time-status" [ngClass]="isWorkingHours ? 'working-hours' : 'off-hours'">
             {{currentTime | date:'EEE, h:mm:ss a'}}
           </span>
         </div>
@@ -139,7 +139,7 @@
       </div>
       <div class="content">
         <h3>{{data.content.hi}} <span>{{data.content.nice}}</span></h3>
-        <p>{{addExperienceCount(2025, 16)}}+ {{introText(data.content.intro)}}</p>
+        <p>{{addExperienceCount(2007, 0)}}+ {{introText(data.content.intro)}}</p>
         <a href="#" class="btn" (click)="selectedOption('home')">{{data.content.contectText}}</a>
       </div>
     </div>

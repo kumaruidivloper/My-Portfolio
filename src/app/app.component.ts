@@ -77,6 +77,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   currentTime: Date | undefined;
   isDaytime: boolean | undefined;
   isWeekend: boolean = false;
+  isWorkingHours: boolean = false;
   isThemeModeClicked: boolean = true;
   inputValue: string = '';
   isQRCodeCreated: string = '';
@@ -191,11 +192,11 @@ export class AppComponent implements OnInit, AfterViewInit {
   addExperienceCount(startYear: number, baseValue: number): number { 
     const today = new Date();
     const currentYear = today.getFullYear();
-    const may25ThisYear = new Date(currentYear, 2, 25); 
+    const may1ThisYear = new Date(currentYear, 4, 1);
 
     let yearsPassed = currentYear - startYear;
 
-    if (today < may25ThisYear) {
+    if (today < may1ThisYear) {
       yearsPassed -= 1;
     }
 
@@ -219,6 +220,8 @@ export class AppComponent implements OnInit, AfterViewInit {
   updateTime() {
     this.currentTime = new Date();
     this.isWeekend = this.currentTime.getDay() === 0 || this.currentTime.getDay() === 6;
+    const currentHour = this.currentTime.getHours();
+    this.isWorkingHours = !this.isWeekend && currentHour >= 9 && currentHour < 18;
     this.isDaytime = this.checkDaytime(this.currentTime);
     return this.isDaytime;
   }
