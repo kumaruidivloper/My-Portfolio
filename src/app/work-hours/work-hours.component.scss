@@ -4,6 +4,8 @@
 }
 
 .box.work-hr {
+  display: flex;
+  flex-direction: column;
   position: relative;
   cursor: pointer;
   width: 100%;
@@ -15,6 +17,7 @@
   }
 
   p {
+    margin-top: auto;
     padding-top: 1.6rem;
   }
 }
