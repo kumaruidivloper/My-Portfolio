@@ -123,7 +123,7 @@
         </div>
       </div>
       <div class="content">
-        <h3>{{data.content.hi}} <span>{{data.content.nice}}</span></h3>
+        <h3>Hi, <span class="greeting">{{greeting}}</span>, I'm {{data.intro[0].name}}. <span>{{data.content.nice}}</span></h3>
         <p>{{addExperienceCount(2007, 0)}}+ {{introText(data.content.intro)}}</p>
         <a href="#" class="btn" (click)="selectedOption('home')">{{data.content.contectText}}</a>
       </div>

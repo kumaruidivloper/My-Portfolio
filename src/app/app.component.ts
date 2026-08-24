@@ -67,6 +67,7 @@ export class AppComponent implements OnInit, OnDestroy {
   contentHeight: number | undefined;
   isOverlay: boolean = false;
   currentTime: Date | undefined;
+  greeting = '';
   isDaytime: boolean | undefined;
   isThemeModeClicked: boolean = true;
   inputValue: string = '';
@@ -194,8 +195,23 @@ export class AppComponent implements OnInit, OnDestroy {
   /* Slow invoking*/
   updateTime() {
     this.currentTime = new Date();
+    this.greeting = this.getGreeting(this.currentTime);
     this.isDaytime = this.timeService.getState(this.currentTime).isDaytime;
     return this.isDaytime;
+  }
+
+  getGreeting(time: Date = new Date()): string {
+    const hour = time.getHours();
+
+    if (hour >= 5 && hour < 12) {
+      return 'Good morning';
+    }
+
+    if (hour >= 12 && hour < 18) {
+      return 'Good afternoon';
+    }
+
+    return 'Good evening';
   }
 
   menuClick(): void {

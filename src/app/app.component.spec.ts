@@ -25,4 +25,10 @@ describe('AppComponent', () => {
   it('formats progress values as percentages', () => {
     expect(component.barRange(89)).toBe('89%');
   });
+
+  it('returns a greeting based on the time of day', () => {
+    expect(component.getGreeting(new Date(2026, 7, 24, 8))).toBe('Good morning');
+    expect(component.getGreeting(new Date(2026, 7, 24, 14))).toBe('Good afternoon');
+    expect(component.getGreeting(new Date(2026, 7, 24, 20))).toBe('Good evening');
+  });
 });

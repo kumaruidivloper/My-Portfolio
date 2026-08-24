@@ -291,6 +291,11 @@ section{
 
 .about .row .content h3 span{
     color:var(--green);
+    font-style: italic;
+}
+
+.about .row .content h3 .greeting{
+    color:var(--green);
 }
 
 .about .row .content p{
