@@ -226,9 +226,9 @@ export class AppComponent implements OnInit, OnDestroy {
       this.renderer.removeClass(document.body, 'day');
     } else {
       this.renderer.removeClass(document.body, 'active');
+      this.renderer.addClass(document.body, 'day');
       this.isDarkeMode = true;
       this.renderer.removeClass(document.body, 'night');
-      this.renderer.removeClass(document.body, 'day');
     } 
   }
 
