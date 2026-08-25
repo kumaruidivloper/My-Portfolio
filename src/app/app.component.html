@@ -124,8 +124,8 @@
       </div>
       <div class="content">
         <h3>Hi, <span class="greeting">{{greeting}}</span>, I'm {{data.intro[0].name}}. <span>{{data.content.nice}}</span></h3>
-        <p>{{addExperienceCount(2007, 0)}}+ {{introText(data.content.intro)}}</p>
-        <a href="#" class="btn" (click)="selectedOption('home')">{{data.content.contectText}}</a>
+        <p><span class="experience-highlight"><app-counter [stopRange]="[addExperienceCount(2007, 0)]"></app-counter>+ </span>{{introText(data.content.intro)}}</p>
+        <p><a href="#" class="btn" (click)="selectedOption('home')">{{data.content.contectText}}</a></p>
       </div>
     </div>
     <div class="row">

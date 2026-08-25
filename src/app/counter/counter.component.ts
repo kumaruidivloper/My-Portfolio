@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy } from '@angular/core';
 
 @Component({
     selector: 'app-counter',
@@ -7,23 +7,45 @@ import { Component, Input, OnDestroy, OnInit, ChangeDetectionStrategy } from '@a
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
-export class CounterComponent implements OnDestroy {
+export class CounterComponent implements AfterViewInit, OnDestroy {
   @Input() stopRange: number[] = [];
 
   counters: { value: number, intervalId: number }[] = [];
+  private visibilityObserver?: IntersectionObserver;
 
-  ngOnInit(): void {
-    this.startCounters();
+  constructor(private elementRef: ElementRef<HTMLElement>) {}
+
+  ngAfterViewInit(): void {
+    this.visibilityObserver = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        this.startCounters();
+      } else {
+        this.resetCounters();
+      }
+    }, { threshold: 0.15 });
+
+    this.visibilityObserver.observe(this.elementRef.nativeElement);
   }
 
   ngOnDestroy(): void {
-    this.counters.forEach(counter => clearInterval(counter.intervalId));
+    this.visibilityObserver?.disconnect();
+    this.resetCounters();
   }
 
   startCounters(): void {
+    this.resetCounters();
+    this.counters = [];
     for (let stopRange of this.stopRange) {
-      this.counters.push({ value: 1, intervalId: setInterval(() => this.incrementCounter(stopRange), 50, stopRange) });
+      this.counters.push({ value: 0, intervalId: setInterval(() => this.incrementCounter(stopRange), 50, stopRange) });
     }
+  }
+
+  private resetCounters(): void {
+    this.counters.forEach(counter => {
+      clearInterval(counter.intervalId);
+      counter.value = 0;
+      counter.intervalId = 0;
+    });
   }
 
   incrementCounter(stopRange: number): void {
