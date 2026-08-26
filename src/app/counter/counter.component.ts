@@ -9,6 +9,7 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, O
 })
 export class CounterComponent implements AfterViewInit, OnDestroy {
   @Input() stopRange: number[] = [];
+  @Input() observeViewport = true;
 
   counters: { value: number, intervalId: number }[] = [];
   private visibilityObserver?: IntersectionObserver;
@@ -16,6 +17,11 @@ export class CounterComponent implements AfterViewInit, OnDestroy {
   constructor(private elementRef: ElementRef<HTMLElement>) {}
 
   ngAfterViewInit(): void {
+    if (!this.observeViewport) {
+      this.startCounters();
+      return;
+    }
+
     this.visibilityObserver = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) {
         this.startCounters();
