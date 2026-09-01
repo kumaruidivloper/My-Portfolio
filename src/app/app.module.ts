@@ -12,6 +12,8 @@ import { StopwatchComponent } from './stopwatch/stopwatch.component';
 import { TimerComponent } from './timer/timer.component';
 import { WorkHoursComponent } from './work-hours/work-hours.component';
 import { AboutSkillsComponent } from './about-skills/about-skills.component';
+import { WorkExperienceComponent } from './work-experience/work-experience.component';
+import { PortfolioComponent } from './portfolio/portfolio.component';
 
 @NgModule({ declarations: [
         AppComponent,
@@ -20,7 +22,9 @@ import { AboutSkillsComponent } from './about-skills/about-skills.component';
         StopwatchComponent,
         TimerComponent,
         WorkHoursComponent,
-        AboutSkillsComponent
+        AboutSkillsComponent,
+        WorkExperienceComponent,
+        PortfolioComponent
     ],
     bootstrap: [AppComponent], imports: [BrowserModule,
         AppRoutingModule,

@@ -1,0 +1,43 @@
+:host {
+  display: block;
+}
+
+.portfolio {
+  padding: 2rem 0;
+}
+
+.box-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  gap: 1.5rem;
+}
+
+.box {
+  position: relative;
+  overflow: hidden;
+  height: 22rem;
+  border-radius: 1rem;
+  background: #fff;
+}
+
+.box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  opacity: 0;
+  transition: 0.3s ease;
+}
+
+.box:hover .content {
+  opacity: 1;
+}
