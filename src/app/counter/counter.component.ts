@@ -11,7 +11,7 @@ export class CounterComponent implements AfterViewInit, OnDestroy {
   @Input() stopRange: number[] = [];
   @Input() observeViewport = true;
 
-  counters: { value: number, intervalId: number }[] = [];
+  counters: { value: number, intervalId: ReturnType<typeof setInterval> | null }[] = [];
   private visibilityObserver?: IntersectionObserver;
 
   constructor(private elementRef: ElementRef<HTMLElement>) {}
@@ -42,15 +42,17 @@ export class CounterComponent implements AfterViewInit, OnDestroy {
     this.resetCounters();
     this.counters = [];
     for (let stopRange of this.stopRange) {
-      this.counters.push({ value: 0, intervalId: setInterval(() => this.incrementCounter(stopRange), 50, stopRange) });
+      this.counters.push({ value: 0, intervalId: setInterval(() => this.incrementCounter(stopRange), 50) });
     }
   }
 
   private resetCounters(): void {
     this.counters.forEach(counter => {
-      clearInterval(counter.intervalId);
+      if (counter.intervalId !== null) {
+        clearInterval(counter.intervalId);
+      }
       counter.value = 0;
-      counter.intervalId = 0;
+      counter.intervalId = null;
     });
   }
 
@@ -58,8 +60,9 @@ export class CounterComponent implements AfterViewInit, OnDestroy {
     for (let counter of this.counters) {
       if (counter.value < stopRange) {
         counter.value++;
-      } else {
+      } else if (counter.intervalId !== null) {
         clearInterval(counter.intervalId);
+        counter.intervalId = null;
       }
     }
   }
