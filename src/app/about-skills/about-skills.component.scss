@@ -1,0 +1,11 @@
+:host {
+  display: block;
+  padding-top: 8rem;
+}
+
+.progress span.bar {
+  font-size: 1em;
+  line-height: 0.1;
+  padding: 2rem;
+  color: var(--green);
+}

@@ -11,6 +11,7 @@ import { CounterComponent } from './counter/counter.component';
 import { StopwatchComponent } from './stopwatch/stopwatch.component';
 import { TimerComponent } from './timer/timer.component';
 import { WorkHoursComponent } from './work-hours/work-hours.component';
+import { AboutSkillsComponent } from './about-skills/about-skills.component';
 
 @NgModule({ declarations: [
         AppComponent,
@@ -18,7 +19,8 @@ import { WorkHoursComponent } from './work-hours/work-hours.component';
         CounterComponent,
         StopwatchComponent,
         TimerComponent,
-        WorkHoursComponent
+        WorkHoursComponent,
+        AboutSkillsComponent
     ],
     bootstrap: [AppComponent], imports: [BrowserModule,
         AppRoutingModule,
