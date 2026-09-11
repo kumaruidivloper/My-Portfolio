@@ -10,15 +10,19 @@ describe('AboutSkillsComponent', () => {
   let fixture: ComponentFixture<AboutSkillsComponent>;
   let observerCallback: IntersectionObserverCallback;
   let originalIntersectionObserver: typeof IntersectionObserver;
+  let observedBars: Element[];
 
   beforeEach(async () => {
     originalIntersectionObserver = window.IntersectionObserver;
+    observedBars = [];
     (window as any).IntersectionObserver = class {
       constructor(callback: IntersectionObserverCallback) {
         observerCallback = callback;
       }
 
-      observe(): void {}
+      observe(target: Element): void {
+        observedBars.push(target);
+      }
       disconnect(): void {}
     };
 
@@ -56,22 +60,31 @@ describe('AboutSkillsComponent', () => {
   });
 
   it('starts bars and counters while the skills section is in view', () => {
-    observerCallback([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver);
+    observerCallback([{ target: observedBars[0], isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver);
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelectorAll('app-counter').length).toBe(12);
-    expect((compiled.querySelector('.progress > .bar > span') as HTMLElement).style.width).toBe('70%');
+    expect(compiled.querySelectorAll('app-counter').length).toBe(1);
+    expect((compiled.querySelector('.progress > .bar > span') as HTMLElement).style.width).toBe('10%');
   });
 
-  it('resets bars and counters when the skills section leaves the view', () => {
-    observerCallback([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver);
+  it('resets an individual bar and counter when it leaves the view', () => {
+    observerCallback([{ target: observedBars[0], isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver);
     fixture.detectChanges();
-    observerCallback([{ isIntersecting: false } as IntersectionObserverEntry], {} as IntersectionObserver);
+    observerCallback([{ target: observedBars[0], isIntersecting: false } as IntersectionObserverEntry], {} as IntersectionObserver);
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelectorAll('app-counter').length).toBe(0);
     expect((compiled.querySelector('.progress > .bar > span') as HTMLElement).style.width).toBe('');
+  });
+
+  it('starts a bar in the desktop second column independently', () => {
+    observerCallback([{ target: observedBars[6], isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelectorAll('app-counter').length).toBe(1);
+    expect((compiled.querySelector('.progress:nth-child(2) > .bar > span') as HTMLElement).style.width).toBe('70%');
   });
 });
