@@ -1,54 +1,54 @@
 <div class="row">
   <div class="progress">
-    <h3> {{technology?.technology[0]}} <span class="bar">@if (barAnimation) {
+    <h3> {{technology?.technology[0]}} <span class="bar">@if (isInViewport) {
       <app-counter [stopRange]="[90]" [observeViewport]="false"></app-counter>
     }%</span></h3>
-    <div class="bar"><span [style.transition]="transition[6]" [style.width]="barAnimation ? barRange(technology?.level[6]) : ''"></span></div>
-    <h3> {{technology?.technology[1]}} <span class="bar">@if (barAnimation) {
+    <div class="bar"><span [style.transition]="transition[6]" [style.width]="isInViewport ? barRange(technology?.level[6]) : ''"></span></div>
+    <h3> {{technology?.technology[1]}} <span class="bar">@if (isInViewport) {
       <app-counter [stopRange]="[70]" [observeViewport]="false"></app-counter>
     }%</span></h3>
-    <div class="bar"><span [style.transition]="transition[2]" [style.width]="barAnimation ? barRange(technology?.level[2]) : ''"></span></div>
-    <h3> {{technology?.technology[2]}} <span class="bar">@if (barAnimation) {
+    <div class="bar"><span [style.transition]="transition[2]" [style.width]="isInViewport ? barRange(technology?.level[2]) : ''"></span></div>
+    <h3> {{technology?.technology[2]}} <span class="bar">@if (isInViewport) {
       <app-counter [stopRange]="[74]" [observeViewport]="false"></app-counter>
     }%</span></h3>
-    <div class="bar"><span [style.transition]="transition[5]" [style.width]="barAnimation ? barRange(technology?.level[2]) : ''"></span></div>
-    <h3> {{technology?.technology[3]}} <span class="bar">@if (barAnimation) {
+    <div class="bar"><span [style.transition]="transition[5]" [style.width]="isInViewport ? barRange(technology?.level[2]) : ''"></span></div>
+    <h3> {{technology?.technology[3]}} <span class="bar">@if (isInViewport) {
       <app-counter [stopRange]="[59]" [observeViewport]="false"></app-counter>
     }%</span></h3>
-    <div class="bar"><span [style.transition]="transition[4]" [style.width]="barAnimation ? barRange(technology?.level[3]) : ''"></span></div>
-    <h3> {{technology?.technology[4]}} <span class="bar">@if (barAnimation) {
+    <div class="bar"><span [style.transition]="transition[4]" [style.width]="isInViewport ? barRange(technology?.level[3]) : ''"></span></div>
+    <h3> {{technology?.technology[4]}} <span class="bar">@if (isInViewport) {
       <app-counter [stopRange]="[74]" [observeViewport]="false"></app-counter>
     }%</span></h3>
-    <div class="bar"><span [style.transition]="transition[5]" [style.width]="barAnimation ? barRange(technology?.level[4]) : ''"></span></div>
-    <h3> {{technology?.technology[5]}} <span class="bar">@if (barAnimation) {
+    <div class="bar"><span [style.transition]="transition[5]" [style.width]="isInViewport ? barRange(technology?.level[4]) : ''"></span></div>
+    <h3> {{technology?.technology[5]}} <span class="bar">@if (isInViewport) {
       <app-counter [stopRange]="[39]" [observeViewport]="false"></app-counter>
     }%</span></h3>
-    <div class="bar"><span [style.transition]="transition[2]" [style.width]="barAnimation ? barRange(technology?.level[5]) : ''"></span></div>
+    <div class="bar"><span [style.transition]="transition[2]" [style.width]="isInViewport ? barRange(technology?.level[5]) : ''"></span></div>
   </div>
   <div class="progress">
-    <h3> {{technology?.technology[6]}} <span class="bar">@if (barAnimation) {
+    <h3> {{technology?.technology[6]}} <span class="bar">@if (isInViewport) {
       <app-counter [stopRange]="[94]" [observeViewport]="false"></app-counter>
     }%</span></h3>
-    <div class="bar"><span [style.transition]="transition[7]" [style.width]="barAnimation ? barRange(technology?.level[6]) : ''"></span></div>
-    <h3> {{technology?.technology[7]}} <span class="bar">@if (barAnimation) {
+    <div class="bar"><span [style.transition]="transition[7]" [style.width]="isInViewport ? barRange(technology?.level[6]) : ''"></span></div>
+    <h3> {{technology?.technology[7]}} <span class="bar">@if (isInViewport) {
       <app-counter [stopRange]="[79]" [observeViewport]="false"></app-counter>
     }%</span></h3>
-    <div class="bar"><span [style.transition]="transition[6]" [style.width]="barAnimation ? barRange(technology?.level[7]) : ''"></span></div>
-    <h3> {{technology?.technology[8]}} <span class="bar">@if (barAnimation) {
+    <div class="bar"><span [style.transition]="transition[6]" [style.width]="isInViewport ? barRange(technology?.level[7]) : ''"></span></div>
+    <h3> {{technology?.technology[8]}} <span class="bar">@if (isInViewport) {
       <app-counter [stopRange]="[74]" [observeViewport]="false"></app-counter>
     }%</span></h3>
-    <div class="bar"><span [style.transition]="transition[5]" [style.width]="barAnimation ? barRange(technology?.level[8]) : ''"></span></div>
-    <h3> {{technology?.technology[9]}} <span class="bar">@if (barAnimation) {
+    <div class="bar"><span [style.transition]="transition[5]" [style.width]="isInViewport ? barRange(technology?.level[8]) : ''"></span></div>
+    <h3> {{technology?.technology[9]}} <span class="bar">@if (isInViewport) {
       <app-counter [stopRange]="[69]" [observeViewport]="false"></app-counter>
     }%</span></h3>
-    <div class="bar"><span [style.transition]="transition[5]" [style.width]="barAnimation ? barRange(technology?.level[9]) : ''"></span></div>
-    <h3> {{technology?.technology[10]}} <span class="bar">@if (barAnimation) {
+    <div class="bar"><span [style.transition]="transition[5]" [style.width]="isInViewport ? barRange(technology?.level[9]) : ''"></span></div>
+    <h3> {{technology?.technology[10]}} <span class="bar">@if (isInViewport) {
       <app-counter [stopRange]="[24]" [observeViewport]="false"></app-counter>
     }%</span></h3>
-    <div class="bar"><span [style.transition]="transition[2]" [style.width]="barAnimation ? barRange(technology?.level[10]) : ''"></span></div>
-    <h3> {{technology?.technology[11]}} <span class="bar">@if (barAnimation) {
+    <div class="bar"><span [style.transition]="transition[2]" [style.width]="isInViewport ? barRange(technology?.level[10]) : ''"></span></div>
+    <h3> {{technology?.technology[11]}} <span class="bar">@if (isInViewport) {
       <app-counter [stopRange]="[24]" [observeViewport]="false"></app-counter>
     }%</span></h3>
-    <div class="bar"><span [style.transition]="transition[2]" [style.width]="barAnimation ? barRange(technology?.level[11]) : ''"></span></div>
+    <div class="bar"><span [style.transition]="transition[2]" [style.width]="isInViewport ? barRange(technology?.level[11]) : ''"></span></div>
   </div>
 </div>

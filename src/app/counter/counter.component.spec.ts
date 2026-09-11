@@ -14,6 +14,7 @@ describe('CounterComponent', () => {
     });
     fixture = TestBed.createComponent(CounterComponent);
     component = fixture.componentInstance;
+    component.observeViewport = false;
     fixture.detectChanges();
   });
 
@@ -29,6 +30,15 @@ describe('CounterComponent', () => {
     component.incrementCounter(3);
 
     expect(component.counters[0].value).toBe(3);
+  });
+
+  it('starts a counter immediately when viewport observation is disabled', () => {
+    component.stopRange = [59];
+    component.startCounters();
+
+    expect(component.counters.length).toBe(1);
+    expect(component.counters[0].value).toBe(0);
+    expect(component.counters[0].intervalId).not.toBeNull();
   });
 
   it('clears counter intervals when destroyed', () => {
