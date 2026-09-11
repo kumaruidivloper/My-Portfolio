@@ -34,11 +34,21 @@ describe('CounterComponent', () => {
 
   it('starts a counter immediately when viewport observation is disabled', () => {
     component.stopRange = [59];
-    component.startCounters();
+    component.startCounters(true);
 
     expect(component.counters.length).toBe(1);
     expect(component.counters[0].value).toBe(0);
     expect(component.counters[0].intervalId).not.toBeNull();
+  });
+
+  it('counts back to zero when the counter leaves the viewport', () => {
+    component.counters = [{ value: 3, intervalId: 1 }];
+
+    component.incrementCounter(3, false);
+    component.incrementCounter(3, false);
+    component.incrementCounter(3, false);
+
+    expect(component.counters[0].value).toBe(0);
   });
 
   it('clears counter intervals when destroyed', () => {
