@@ -9,6 +9,7 @@ import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, E
 })
 export class CounterComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() stopRange: number[] = [];
+  @Input() durationMs = 3000;
   @Input() active = false;
   @Input() observeViewport = true;
 
@@ -58,7 +59,8 @@ export class CounterComponent implements AfterViewInit, OnChanges, OnDestroy {
 
     this.counters.forEach((counter, index) => {
       const stopRange = this.stopRange[index];
-      counter.intervalId = setInterval(() => this.incrementCounter(stopRange, countUp), 50);
+      const intervalMs = stopRange > 0 ? Math.max(1, Math.round(this.durationMs / stopRange)) : this.durationMs;
+      counter.intervalId = setInterval(() => this.incrementCounter(stopRange, countUp), intervalMs);
     });
   }
 

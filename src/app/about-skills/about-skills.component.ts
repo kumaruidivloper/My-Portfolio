@@ -52,6 +52,17 @@ export class AboutSkillsComponent implements AfterViewInit, OnDestroy {
     return this.visibleBars.has(index);
   }
 
+  animationDuration(transitionValue = ''): number {
+    const durationMatch = transitionValue.match(/(\d+(?:\.\d+)?)\s*(ms|s)/);
+
+    if (!durationMatch) {
+      return 3000;
+    }
+
+    const duration = Number(durationMatch[1]);
+    return durationMatch[2] === 's' ? duration * 1000 : duration;
+  }
+
   private observeBars(): void {
     this.barElements.forEach(({ nativeElement }) => this.visibilityObserver?.observe(nativeElement));
   }

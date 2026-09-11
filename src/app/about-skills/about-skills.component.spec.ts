@@ -64,7 +64,7 @@ describe('AboutSkillsComponent', () => {
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelectorAll('app-counter').length).toBe(1);
+    expect(compiled.querySelectorAll('app-counter').length).toBe(12);
     expect((compiled.querySelector('.progress > .bar > span') as HTMLElement).style.width).toBe('10%');
   });
 
@@ -75,8 +75,8 @@ describe('AboutSkillsComponent', () => {
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelectorAll('app-counter').length).toBe(0);
-    expect((compiled.querySelector('.progress > .bar > span') as HTMLElement).style.width).toBe('');
+    expect(compiled.querySelectorAll('app-counter').length).toBe(12);
+    expect((compiled.querySelector('.progress > .bar > span') as HTMLElement).style.width).toBe('0%');
   });
 
   it('starts a bar in the desktop second column independently', () => {
@@ -84,7 +84,7 @@ describe('AboutSkillsComponent', () => {
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelectorAll('app-counter').length).toBe(1);
+    expect(compiled.querySelectorAll('app-counter').length).toBe(12);
     expect((compiled.querySelector('.progress:nth-child(2) > .bar > span') as HTMLElement).style.width).toBe('70%');
   });
 });
