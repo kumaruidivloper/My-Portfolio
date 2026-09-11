@@ -1,13 +1,13 @@
 <div class="row">
   <div class="progress">
     <h3> {{technology?.technology[0]}} <span class="bar">@if (barAnimation) {
-      <app-counter [stopRange]="[89]" [observeViewport]="false"></app-counter>
+      <app-counter [stopRange]="[90]" [observeViewport]="false"></app-counter>
     }%</span></h3>
     <div class="bar"><span [style.transition]="transition[6]" [style.width]="barAnimation ? barRange(technology?.level[6]) : ''"></span></div>
     <h3> {{technology?.technology[1]}} <span class="bar">@if (barAnimation) {
-      <app-counter [stopRange]="[29]" [observeViewport]="false"></app-counter>
+      <app-counter [stopRange]="[70]" [observeViewport]="false"></app-counter>
     }%</span></h3>
-    <div class="bar"><span [style.transition]="transition[2]" [style.width]="barAnimation ? barRange(technology?.level[1]) : ''"></span></div>
+    <div class="bar"><span [style.transition]="transition[2]" [style.width]="barAnimation ? barRange(technology?.level[2]) : ''"></span></div>
     <h3> {{technology?.technology[2]}} <span class="bar">@if (barAnimation) {
       <app-counter [stopRange]="[74]" [observeViewport]="false"></app-counter>
     }%</span></h3>
