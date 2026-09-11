@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnDestroy } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnDestroy } from '@angular/core';
 
 @Component({
     selector: 'app-counter',
@@ -14,7 +14,10 @@ export class CounterComponent implements AfterViewInit, OnDestroy {
   counters: { value: number, intervalId: ReturnType<typeof setInterval> | null }[] = [];
   private visibilityObserver?: IntersectionObserver;
 
-  constructor(private elementRef: ElementRef<HTMLElement>) {}
+  constructor(
+    private elementRef: ElementRef<HTMLElement>,
+    private changeDetectorRef: ChangeDetectorRef
+  ) {}
 
   ngAfterViewInit(): void {
     if (!this.observeViewport) {
@@ -65,5 +68,6 @@ export class CounterComponent implements AfterViewInit, OnDestroy {
         counter.intervalId = null;
       }
     }
+    this.changeDetectorRef.detectChanges();
   }
 }

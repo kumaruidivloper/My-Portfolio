@@ -1,12 +1,11 @@
 :host {
-  display: inline-block;
-  vertical-align: middle;
+  display: inline;
 }
 
-counter-element {
-    font-size: 24px;
-    margin: 5px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    display: inline-block;
-  }
+.counter-element {
+  display: inline;
+  font-size: inherit;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
