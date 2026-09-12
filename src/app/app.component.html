@@ -109,22 +109,22 @@
     <div class="row">
       <div class="box-container">
         <div class="box stat-box">
-          <h3><app-counter [stopRange]="[addExperienceCount(2007, 0)]"></app-counter>+</h3>
+          <h3><app-counter [stopRange]="[addExperienceCount(2007, 0)]"></app-counter><span class="plus-mark">+</span></h3>
           <p>{{data.aboutMe.textYearTitle}}</p>
         </div>
         <div class="box stat-box">
-          <h3><app-counter [stopRange]="[23]"></app-counter>+</h3>
+          <h3><app-counter [stopRange]="[23]"></app-counter><span class="plus-mark">+</span></h3>
           <p>{{data.aboutMe.clientFeedBack}}</p>
         </div>
         <app-work-hours [label]="data.aboutMe.workingfHrText"></app-work-hours>
         <div class="box stat-box">
-          <h3><app-counter [stopRange]="[58]"></app-counter>+</h3>
+          <h3><app-counter [stopRange]="[58]"></app-counter><span class="plus-mark">+</span></h3>
           <p>{{data.aboutMe.applicationText}}</p>
         </div>
       </div>
       <div class="content">
         <h3>Hi, <span class="greeting">{{greeting}}</span>, I'm {{data.intro[0].name}}. <span>{{data.content.nice}}</span></h3>
-        <p><span class="experience-highlight"><app-counter [stopRange]="[addExperienceCount(2007, 0)]"></app-counter>+ </span>{{introText(data.content.intro)}}</p>
+        <p><span class="experience-highlight"><app-counter [stopRange]="[addExperienceCount(2007, 0)]"></app-counter><span class="plus-mark">+</span></span>{{introText(data.content.intro)}}</p>
         <p><a href="#" class="btn" (click)="selectedOption('home')">{{data.content.contectText}}</a></p>
       </div>
     </div>

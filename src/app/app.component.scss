@@ -261,6 +261,24 @@ app-counter {
   }
 }
 
+.plus-mark {
+  color: var(--green);
+  display: inline-block;
+  font-size: 0.62em;
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1;
+  margin-left: 0.18em;
+  position: relative;
+  top: -0.28em;
+}
+
+.experience-highlight .plus-mark {
+  font-size: 0.72em;
+  margin-left: 0.08em;
+  top: -0.2em;
+}
+
 
 
 
