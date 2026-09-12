@@ -4,6 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { TimeService } from '../service/time.service';
 import { TotalWorkHoursService } from '../service/total-work-hours.service';
 import { WorkHoursComponent } from './work-hours.component';
+import { CounterComponent } from '../counter/counter.component';
 
 describe('WorkHoursComponent', () => {
   let component: WorkHoursComponent;
@@ -14,6 +15,7 @@ describe('WorkHoursComponent', () => {
     totalWorkHoursService = jasmine.createSpyObj('TotalWorkHoursService', ['totalWorkedHours']);
     totalWorkHoursService.totalWorkedHours.and.returnValue(12345);
     TestBed.configureTestingModule({
+      declarations: [CounterComponent],
       providers: [
         TimeService,
         { provide: TotalWorkHoursService, useValue: totalWorkHoursService }
