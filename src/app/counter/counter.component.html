@@ -1,5 +1,7 @@
 @for (counter of counters; track counter; let i = $index) {
-  <div class="counter-element">
-    {{ counter.value }}
+  <div class="counter-element" [class.is-flipping]="counter.flip" [attr.aria-label]="counter.value">
+    @for (digit of formatCounter(counter.value); track $index) {
+      <span class="digit-tile">{{ digit }}</span>
+    }
   </div>
 }

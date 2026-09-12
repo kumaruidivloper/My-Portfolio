@@ -23,7 +23,7 @@ describe('CounterComponent', () => {
   });
 
   it('increments until the requested value', () => {
-    component.counters = [{ value: 1, intervalId: 1 }];
+    component.counters = [{ value: 1, intervalId: 1, flip: false }];
 
     component.incrementCounter(3);
     component.incrementCounter(3);
@@ -42,7 +42,7 @@ describe('CounterComponent', () => {
   });
 
   it('counts back to zero when the counter leaves the viewport', () => {
-    component.counters = [{ value: 3, intervalId: 1 }];
+    component.counters = [{ value: 3, intervalId: 1, flip: false }];
 
     component.incrementCounter(3, false);
     component.incrementCounter(3, false);
@@ -52,7 +52,7 @@ describe('CounterComponent', () => {
   });
 
   it('clears counter intervals when destroyed', () => {
-    component.counters = [{ value: 1, intervalId: 1 }];
+    component.counters = [{ value: 1, intervalId: 1, flip: false }];
     spyOn(window, 'clearInterval');
 
     component.ngOnDestroy();

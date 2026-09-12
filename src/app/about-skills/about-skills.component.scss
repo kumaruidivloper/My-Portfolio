@@ -3,9 +3,17 @@
   padding-top: 8rem;
 }
 
-.progress span.bar {
+.progress span.percentage {
+  align-items: center;
+  background: color-mix(in srgb, var(--green) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--green) 45%, transparent);
+  border-radius: 0.45rem;
+  display: inline-flex;
   font-size: 1em;
-  line-height: 0.1;
-  padding: 2rem;
+  gap: 0.3rem;
+  line-height: 1;
+  margin-left: 1rem;
+  padding: 0.35rem 0.65rem;
   color: var(--green);
+  white-space: nowrap;
 }

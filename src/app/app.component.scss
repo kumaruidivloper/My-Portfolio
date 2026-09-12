@@ -237,18 +237,27 @@ app-counter {
   font-size: 1.7rem;
   font-style: italic;
   font-weight: 700;
+  gap: 0.45rem;
   justify-content: center;
   line-height: 1;
   margin-right: 0.8rem;
-  min-width: 6.5rem;
-  padding: 0.35rem 0.6rem;
+  min-width: 8.5rem;
+  padding: 0.55rem 0.9rem;
   vertical-align: middle;
   white-space: nowrap;
 
   app-counter {
     display: inline-block;
+    flex: 0 0 auto;
     font-size: inherit;
     line-height: inherit;
+
+    .digit-tile {
+      font-size: 1em;
+      min-width: 0.78em;
+      padding-inline: 0.14em;
+      padding: 0 4px;
+    }
   }
 }
 

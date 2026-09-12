@@ -330,7 +330,7 @@ section{
     margin:1rem 0;
 }
 
-.about .row .progress .bar span{
+.about .row .progress > .bar > span{
     display: block;
     height: 100%;
     background: var(--green);

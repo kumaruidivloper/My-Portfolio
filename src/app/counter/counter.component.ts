@@ -13,7 +13,7 @@ export class CounterComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() active = false;
   @Input() observeViewport = true;
 
-  counters: { value: number, intervalId: ReturnType<typeof setInterval> | null }[] = [];
+  counters: { value: number, intervalId: ReturnType<typeof setInterval> | null, flip: boolean }[] = [];
   private visibilityObserver?: IntersectionObserver;
   private viewInitialized = false;
 
@@ -54,7 +54,7 @@ export class CounterComponent implements AfterViewInit, OnChanges, OnDestroy {
   startCounters(countUp: boolean): void {
     this.stopCounters();
     if (this.counters.length !== this.stopRange.length) {
-      this.counters = this.stopRange.map(() => ({ value: 0, intervalId: null }));
+      this.counters = this.stopRange.map(() => ({ value: 0, intervalId: null, flip: false }));
     }
 
     this.counters.forEach((counter, index) => {
@@ -77,8 +77,10 @@ export class CounterComponent implements AfterViewInit, OnChanges, OnDestroy {
     for (let counter of this.counters) {
       if (countUp && counter.value < stopRange) {
         counter.value++;
+        counter.flip = !counter.flip;
       } else if (!countUp && counter.value > 0) {
         counter.value--;
+        counter.flip = !counter.flip;
       } else if (counter.intervalId !== null) {
         clearInterval(counter.intervalId);
         counter.intervalId = null;
@@ -89,6 +91,13 @@ export class CounterComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   private resetCounters(): void {
     this.stopCounters();
-    this.counters.forEach(counter => counter.value = 0);
+    this.counters.forEach(counter => {
+      counter.value = 0;
+      counter.flip = false;
+    });
+  }
+
+  formatCounter(value: number): string {
+    return String(Math.max(0, Math.floor(value)));
   }
 }

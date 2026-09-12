@@ -1,7 +1,7 @@
 <div class="row">
   <div class="progress">
     @for (skill of technology?.technology?.slice(0, 6); track $index) {
-      <h3>{{skill}} <span class="bar">
+      <h3>{{skill}} <span class="percentage">
         <app-counter [stopRange]="[technology.level[$index]]" [durationMs]="animationDuration(transition[$index])" [active]="isBarInViewport($index)" [observeViewport]="false"></app-counter>%
       </span></h3>
       <div #barElement class="bar"><span [style.transition]="transition[$index]" [style.width]="isBarInViewport($index) ? barRange(technology.level[$index]) : '0%'"></span></div>
@@ -10,7 +10,7 @@
   <div class="progress">
     @for (skill of technology?.technology?.slice(6, 12); track $index) {
       @let skillIndex = $index + 6;
-      <h3>{{skill}} <span class="bar">
+      <h3>{{skill}} <span class="percentage">
         <app-counter [stopRange]="[technology.level[skillIndex]]" [durationMs]="animationDuration(transition[skillIndex])" [active]="isBarInViewport(skillIndex)" [observeViewport]="false"></app-counter>%
       </span></h3>
       <div #barElement class="bar"><span [style.transition]="transition[skillIndex]" [style.width]="isBarInViewport(skillIndex) ? barRange(technology.level[skillIndex]) : '0%'"></span></div>
