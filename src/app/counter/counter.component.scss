@@ -11,6 +11,10 @@
   vertical-align: baseline;
 }
 
+:host-context(.experience-highlight) .counter-element span.digit-tile {
+  padding: 0 0.3em;
+}
+
 .digit-tile {
   align-items: center;
   background: color-mix(in srgb, var(--green, #0f0) 12%, transparent);
