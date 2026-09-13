@@ -1,7 +1,13 @@
 @for (counter of counters; track counter; let i = $index) {
-  <div class="counter-element" [class.is-flipping]="counter.flip" [attr.aria-label]="counter.value">
+  <div class="counter-element" [attr.aria-label]="counter.value">
     @for (digit of formatCounter(counter.value); track $index) {
-      <span class="digit-tile">{{ digit }}</span>
+      <span class="digit-window">
+        <span class="digit-strip" [style.transform]="'translateY(-' + digitValue(digit) * 1.35 + 'em)'">
+          @for (wheelDigit of digitWheel; track wheelDigit) {
+            <span class="digit-tile">{{ wheelDigit }}</span>
+          }
+        </span>
+      </span>
     }
   </div>
 }

@@ -14,6 +14,7 @@ export class CounterComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() observeViewport = true;
 
   counters: { value: number, intervalId: ReturnType<typeof setInterval> | null, flip: boolean }[] = [];
+  digitWheel = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   private visibilityObserver?: IntersectionObserver;
   private viewInitialized = false;
 
@@ -99,5 +100,9 @@ export class CounterComponent implements AfterViewInit, OnChanges, OnDestroy {
 
   formatCounter(value: number): string {
     return String(Math.max(0, Math.floor(value)));
+  }
+
+  digitValue(digit: string): number {
+    return Number(digit);
   }
 }
