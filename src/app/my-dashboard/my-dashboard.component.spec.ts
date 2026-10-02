@@ -40,6 +40,12 @@ describe('MyDashboardComponent', () => {
     component.ngOnInit();
   });
 
+  async function verifyEditCode(): Promise<void> {
+    component.deleteConfirmationCode.setValue('12345678');
+    component.validateDeleteConfirmationCode();
+    await Promise.resolve();
+  }
+
   it('changes chart type without changing loaded transfers', () => {
     component.selectChartType('line');
 
@@ -112,6 +118,18 @@ describe('MyDashboardComponent', () => {
     expect(component.areRecordsExpanded).toBeTrue();
   });
 
+  it('starts the transfer dashboard collapsed and toggles it with the accordion control', () => {
+    expect(component.isTransferSectionExpanded).toBeFalse();
+
+    component.toggleTransferSection();
+
+    expect(component.isTransferSectionExpanded).toBeTrue();
+
+    component.toggleTransferSection();
+
+    expect(component.isTransferSectionExpanded).toBeFalse();
+  });
+
   it('sorts transfer amounts and keeps original indexes for row actions', () => {
     component.sortTransfers('amountTransferredAUD');
 
@@ -167,7 +185,7 @@ describe('MyDashboardComponent', () => {
     expect(component.toastMessage).toBe('New transfer added successfully.');
   });
 
-  it('updates the selected record and refreshes dashboard data after saving', () => {
+  it('updates the selected record after confirming and refreshes dashboard data', async () => {
     const updatedTransfer = {
       ...transfers[1],
       amountTransferredAUD: 250,
@@ -177,6 +195,7 @@ describe('MyDashboardComponent', () => {
     transferService.updateTransfers.and.returnValue(of(updatedTransfers));
     component.editTransfer(1);
     component.editForm.controls.amountTransferredAUD.setValue(250);
+    await verifyEditCode();
 
     component.saveTransfer();
 
@@ -188,12 +207,13 @@ describe('MyDashboardComponent', () => {
     expect(changeDetector.detectChanges).toHaveBeenCalled();
   });
 
-  it('saves a date-picker value in the backend date format', () => {
+  it('saves a date-picker value in the backend date format after confirmation', async () => {
     const updatedTransfers = [transfers[0], { ...transfers[1], receivedDate: '14-Nov-23' }];
     transferService.updateTransfers.and.returnValue(of(updatedTransfers));
     component.editTransfer(1);
     component.editForm.controls.dateOfTransfer.setValue('2023-10-31');
     component.editForm.controls.receivedDate.setValue('2023-11-14');
+    await verifyEditCode();
 
     component.saveTransfer();
 
@@ -230,17 +250,27 @@ describe('MyDashboardComponent', () => {
     }]);
   });
 
-  it('keeps the editor open and reports a failed update', () => {
+  it('keeps the editor open and reports a failed update after confirmation', async () => {
     transferService.updateTransfers.and.returnValue(
       throwError(() => new Error('Update failed'))
     );
     component.editTransfer(0);
+    await verifyEditCode();
 
     component.saveTransfer();
 
     expect(component.editingTransferIndex).toBe(0);
     expect(component.saveError).toBe('Update failed');
     expect(component.transfers).toEqual(transfers);
+  });
+
+  it('does not save an edited transfer until its confirmation code is verified', () => {
+    component.editTransfer(0);
+
+    component.saveTransfer();
+
+    expect(transferService.updateTransfers).not.toHaveBeenCalled();
+    expect(component.canSaveChanges).toBeFalse();
   });
 
   it('requires confirmation and saves the remaining transfers after deleting one', async () => {

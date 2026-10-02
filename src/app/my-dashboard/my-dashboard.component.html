@@ -1,30 +1,63 @@
 <main class="dashboard-page">
   <div class="dashboard-content">
-    <a routerLink="/" class="btn back-button">Back to portfolio</a>
+    <a routerLink="/" class="btn back-button">
+      <svg aria-hidden="true" viewBox="0 0 24 24">
+        <path d="m15 18-6-6 6-6"></path>
+        <path d="M9 12h12"></path>
+      </svg>
+      <span>Back to portfolio</span>
+    </a>
 
-    <header class="dashboard-header">
-      <p class="eyebrow">MY DASHBOARD</p>
-      <h1 class="heading">Australia to India <span>Transfers</span></h1>
-      <p>Transfer amounts and exchange rates from the public transfer records.</p>
-    </header>
+    <section class="transfer-data-accordion" aria-labelledby="transfer-data-title">
+      <header class="records-heading transfer-accordion-header">
+        <div class="records-toggle-copy transfer-accordion-copy">
+          <h2 class="records-title" id="transfer-data-title">Australia to India Transfers</h2>
+          <p class="records-description">
+            {{ !isLoading && !errorMessage ? transfers.length + ' transfer records' : 'Transfer amounts and exchange rates.' }}
+          </p>
+        </div>
+        <div class="records-actions">
+          <button type="button" class="control-button add-button" [disabled]="isSaving" (click)="addTransfer()">
+            Add new transfer
+          </button>
+          <button
+            type="button"
+            class="control-button accordion-toggle"
+            [attr.aria-expanded]="isTransferSectionExpanded"
+            aria-controls="transfer-data-panel"
+            [attr.aria-label]="isTransferSectionExpanded ? 'Collapse transfer dashboard' : 'Expand transfer dashboard'"
+            [title]="isTransferSectionExpanded ? 'Collapse transfer dashboard' : 'Expand transfer dashboard'"
+            (click)="toggleTransferSection()">
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path d="M5 12h14"></path>
+              @if (!isTransferSectionExpanded) {
+                <path d="M12 5v14"></path>
+              }
+            </svg>
+          </button>
+        </div>
+      </header>
 
-    @if (isLoading) {
-      <p class="status-message" role="status">Loading transfer records…</p>
-    }
-    @if (errorMessage) {
-      <p class="status-message error-message" role="alert">{{ errorMessage }}</p>
-    }
-    @if (toastMessage) {
-      <div class="dashboard-toast" role="status" aria-live="polite">
-        <span>{{ toastMessage }}</span>
-        <button type="button" aria-label="Dismiss notification" (click)="dismissToast()">&times;</button>
-      </div>
-    }
-    @if (!isLoading && !errorMessage && transfers.length === 0) {
-      <p class="status-message" role="status">No transfer records are available.</p>
-    }
+      @if (toastMessage) {
+        <div class="dashboard-toast" role="status" aria-live="polite">
+          <span>{{ toastMessage }}</span>
+          <button type="button" aria-label="Dismiss notification" (click)="dismissToast()">&times;</button>
+        </div>
+      }
 
-    @if (!isLoading && !errorMessage && transfers.length > 0) {
+      @if (isTransferSectionExpanded) {
+        <div id="transfer-data-panel">
+          @if (isLoading) {
+            <p class="status-message" role="status">Loading transfer records…</p>
+          }
+          @if (errorMessage) {
+            <p class="status-message error-message" role="alert">{{ errorMessage }}</p>
+          }
+          @if (!isLoading && !errorMessage && transfers.length === 0) {
+            <p class="status-message" role="status">No transfer records are available.</p>
+          }
+
+          @if (!isLoading && !errorMessage && transfers.length > 0) {
       <div class="summary-grid" aria-label="Transfer summary">
         <article class="summary-card">
           <h2>{{ transfers.length }}</h2>
@@ -156,9 +189,6 @@
             </span>
           </div>
           <div class="records-actions">
-            <button type="button" class="control-button add-button" (click)="addTransfer()">
-              Add new transfer
-            </button>
             <button
               type="button"
               class="control-button accordion-toggle"
@@ -255,8 +285,14 @@
         }
       </section>
     }
+        </div>
+      }
+    </section>
 
-    <app-kumar-pf-data></app-kumar-pf-data>
+    <div class="pf-data-sections">
+      <app-kumar-pf-data></app-kumar-pf-data>
+      <app-vasuki-pf-data></app-vasuki-pf-data>
+    </div>
   </div>
 
   @if (editingTransferIndex !== null || isAddingTransfer) {
@@ -325,6 +361,33 @@
             </label>
           </div>
 
+          @if (!isAddingTransfer) {
+            <label class="form-field confirmation-code-field">
+              <span>Enter confirmation code to save changes</span>
+              <input
+                type="password"
+                inputmode="numeric"
+                autocomplete="off"
+                autocapitalize="off"
+                spellcheck="false"
+                maxlength="8"
+                [formControl]="deleteConfirmationCode"
+                [disabled]="isSaving"
+                (input)="validateDeleteConfirmationCode()"
+                aria-describedby="edit-transfer-code-help">
+              <small id="edit-transfer-code-help">Enter the required 8-digit code to continue.</small>
+              @if (deleteConfirmationCode.touched && deleteConfirmationCode.invalid) {
+                <small class="field-error">Enter the correct 8-digit confirmation code.</small>
+              }
+              @if (isDeleteCodeVerifying) {
+                <small>Verifying code…</small>
+              }
+              @if (isDeleteCodeIncorrect) {
+                <small class="field-error">The confirmation code is incorrect.</small>
+              }
+            </label>
+          }
+
           @if (saveError) {
             <p class="form-error" role="alert">{{ saveError }}</p>
           }
@@ -333,7 +396,12 @@
             <button type="button" class="control-button" [disabled]="isSaving" (click)="closeEditModal()">
               Cancel
             </button>
-            <button type="submit" class="control-button primary-action" [disabled]="isSaving">
+            <button
+              type="submit"
+              class="control-button"
+              [class.primary-action]="isAddingTransfer"
+              [class.save-action]="!isAddingTransfer"
+              [disabled]="isSaving || (!isAddingTransfer && !canSaveChanges)">
               {{ isSaving ? 'Saving…' : isAddingTransfer ? 'Add transfer' : 'Save changes' }}
             </button>
           </footer>

@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Color, ScaleType } from '@swimlane/ngx-charts';
 import { Subscription, timer } from 'rxjs';
@@ -16,14 +16,14 @@ interface PfChartDatum {
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 @Component({
-  selector: 'app-kumar-pf-data',
-  templateUrl: './kumar-pf-data.component.html',
-  styleUrls: ['./kumar-pf-data.component.scss'],
+  selector: 'app-vasuki-pf-data',
+  templateUrl: './vasuki-pf-data.component.html',
+  styleUrls: ['./vasuki-pf-data.component.scss'],
   standalone: false
 })
-export class KumarPfDataComponent implements OnDestroy {
-  @Input() resourceId: PfResourceId = '2';
-  @Input() ownerName = 'Kumar';
+export class VasukiPfDataComponent implements OnDestroy {
+  readonly resourceId: PfResourceId = '3';
+  readonly ownerName = 'Vasuki';
 
   readonly editForm = new FormGroup({
     date: new FormControl('', {
@@ -65,7 +65,7 @@ export class KumarPfDataComponent implements OnDestroy {
   selectedMetric: PfMetric = 'pfAmount';
   readonly chartView: [number, number] = [900, 430];
   readonly colorScheme: Color = {
-    name: 'pf-balance',
+    name: 'vasuki-pf-balance',
     selectable: true,
     group: ScaleType.Ordinal,
     domain: ['#046a38', '#3875d7']

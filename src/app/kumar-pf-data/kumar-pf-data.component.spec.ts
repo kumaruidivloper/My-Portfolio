@@ -33,6 +33,12 @@ describe('KumarPfDataComponent', () => {
     component.toggleExpanded();
   });
 
+  async function verifyEditCode(): Promise<void> {
+    component.deleteConfirmationCode.setValue('12345678');
+    component.validateDeleteConfirmationCode();
+    await Promise.resolve();
+  }
+
   it('loads PF records only when the accordion is expanded', () => {
     pfDataService.getPfData.calls.reset();
     const collapsedComponent = new KumarPfDataComponent(pfDataService, changeDetector, confirmationCodeService);
@@ -44,6 +50,18 @@ describe('KumarPfDataComponent', () => {
     expect(pfDataService.getPfData).toHaveBeenCalled();
   });
 
+  it('toggles the monthly records sub-accordion independently', () => {
+    expect(component.areRecordsExpanded).toBeFalse();
+
+    component.toggleRecords();
+
+    expect(component.areRecordsExpanded).toBeTrue();
+
+    component.toggleRecords();
+
+    expect(component.areRecordsExpanded).toBeFalse();
+  });
+
   it('loads PF data and opens the add form without expanding when add is clicked while collapsed', () => {
     const collapsedComponent = new KumarPfDataComponent(pfDataService, changeDetector, confirmationCodeService);
 
@@ -53,6 +71,17 @@ describe('KumarPfDataComponent', () => {
     expect(collapsedComponent.isExpanded).toBeFalse();
     expect(collapsedComponent.isAddingRecord).toBeTrue();
     expect(collapsedComponent.editForm.controls.date.value).toBe('');
+  });
+
+  it('routes a PF component instance to the configured resource', () => {
+    const vasukiComponent = new KumarPfDataComponent(pfDataService, changeDetector, confirmationCodeService);
+    vasukiComponent.resourceId = '3';
+    vasukiComponent.ownerName = 'Vasuki';
+
+    vasukiComponent.toggleExpanded();
+
+    expect(pfDataService.getPfData).toHaveBeenCalledWith('3');
+    expect(vasukiComponent.ownerName).toBe('Vasuki');
   });
 
   it('creates chronological chart data from the newest-first response', () => {
@@ -84,13 +113,14 @@ describe('KumarPfDataComponent', () => {
         { date: "Oct'26", pfAmount: 2080000, difference: 24000 },
         ...initialData.pfRecords
       ]
-    });
+    }, '2');
     expect(component.records[0].date).toBe("Oct'26");
     expect(component.toastMessage).toBe('PF record added successfully.');
     expect(component.isAddingRecord).toBeFalse();
+    expect(component.areRecordsExpanded).toBeTrue();
   });
 
-  it('edits an existing PF record and rejects duplicate months', () => {
+  it('edits an existing PF record after confirmation and rejects duplicate months', async () => {
     component.editRecord(0);
     expect(component.editForm.getRawValue()).toEqual({
       date: '2026-09',
@@ -98,6 +128,7 @@ describe('KumarPfDataComponent', () => {
       difference: 23709
     });
     component.editForm.controls.pfAmount.setValue(2070000);
+    await verifyEditCode();
     component.saveRecord();
 
     expect(pfDataService.updatePfData).toHaveBeenCalledWith({
@@ -106,7 +137,7 @@ describe('KumarPfDataComponent', () => {
         { date: "Sep'26", pfAmount: 2070000, difference: 23709 },
         initialData.pfRecords[1]
       ]
-    });
+    }, '2');
     expect(component.toastMessage).toBe('PF record updated successfully.');
 
     component.addRecord();
@@ -115,6 +146,15 @@ describe('KumarPfDataComponent', () => {
 
     expect(component.editForm.controls.date.hasError('duplicateMonth')).toBeTrue();
     expect(pfDataService.updatePfData).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not update an edited PF record until its confirmation code is verified', () => {
+    component.editRecord(0);
+
+    component.saveRecord();
+
+    expect(pfDataService.updatePfData).not.toHaveBeenCalled();
+    expect(component.canSaveChanges).toBeFalse();
   });
 
   it('keeps the editor open and reports a failed save', () => {
@@ -144,7 +184,7 @@ describe('KumarPfDataComponent', () => {
     expect(pfDataService.updatePfData).toHaveBeenCalledWith({
       ...initialData,
       pfRecords: [initialData.pfRecords[1]]
-    });
+    }, '2');
     expect(component.records).toEqual([initialData.pfRecords[1]]);
     expect(component.pendingDeleteRecordIndex).toBeNull();
     expect(component.canDeleteRecord).toBeFalse();

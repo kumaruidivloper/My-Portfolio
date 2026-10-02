@@ -3,7 +3,14 @@ import { HttpClient } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 import { PfApiDocument, PfRecord } from '../model/pf-record';
 
-const PF_DATA_API_URL = 'https://64b76091df0839c97e168d79.mockapi.io/taskList/2';
+const PF_DATA_API_URL = 'https://64b76091df0839c97e168d79.mockapi.io/taskList';
+
+export type PfResourceId = '2' | '3';
+
+const PF_RESOURCE_NAMES: Record<PfResourceId, string> = {
+  '2': 'Kumar',
+  '3': 'Vasuki'
+};
 
 function isPfRecord(value: unknown): value is PfRecord {
   if (typeof value !== 'object' || value === null) {
@@ -18,7 +25,7 @@ function isPfRecord(value: unknown): value is PfRecord {
     && Number.isFinite(record['difference']);
 }
 
-export function parsePfDataResponse(response: unknown): PfApiDocument {
+export function parsePfDataResponse(response: unknown, fallbackName = 'Kumar'): PfApiDocument {
   if (typeof response !== 'object' || response === null) {
     throw new Error('The PF data API returned an unexpected response.');
   }
@@ -35,7 +42,7 @@ export function parsePfDataResponse(response: unknown): PfApiDocument {
 
   return {
     id: typeof document['id'] === 'string' ? document['id'] : '',
-    name: typeof document['name'] === 'string' ? document['name'] : 'Kumar',
+    name: typeof document['name'] === 'string' ? document['name'] : fallbackName,
     description: typeof document['description'] === 'string' ? document['description'] : '',
     pfRecords: records
   };
@@ -47,11 +54,15 @@ export function parsePfDataResponse(response: unknown): PfApiDocument {
 export class PfDataService {
   constructor(private http: HttpClient) {}
 
-  getPfData(): Observable<PfApiDocument> {
-    return this.http.get<unknown>(PF_DATA_API_URL).pipe(map(parsePfDataResponse));
+  getPfData(resourceId: PfResourceId = '2'): Observable<PfApiDocument> {
+    return this.http.get<unknown>(`${PF_DATA_API_URL}/${resourceId}`).pipe(
+      map((response) => parsePfDataResponse(response, PF_RESOURCE_NAMES[resourceId]))
+    );
   }
 
-  updatePfData(document: PfApiDocument): Observable<PfApiDocument> {
-    return this.http.put<unknown>(PF_DATA_API_URL, document).pipe(map(parsePfDataResponse));
+  updatePfData(document: PfApiDocument, resourceId: PfResourceId = '2'): Observable<PfApiDocument> {
+    return this.http.put<unknown>(`${PF_DATA_API_URL}/${resourceId}`, document).pipe(
+      map((response) => parsePfDataResponse(response, PF_RESOURCE_NAMES[resourceId]))
+    );
   }
 }

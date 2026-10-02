@@ -17,24 +17,28 @@
   margin: 0 0 2rem;
 }
 
-.dashboard-header {
+.transfer-data-accordion {
+  background: var(--bg-color);
+  border-radius: 1.2rem;
+  box-shadow: var(--box-shadow);
   margin-bottom: 2.5rem;
-  text-align: center;
+  min-height: 0;
+  padding: 2.5rem;
+}
 
-  .eyebrow {
-    color: var(--green);
-    font-size: 1.5rem;
-    font-weight: 700;
-    letter-spacing: 0.15rem;
-  }
+.transfer-accordion-header {
+  min-height: 4rem;
+}
 
-  .heading {
-    padding: 0.5rem 0;
-  }
+#transfer-data-panel {
+  margin-top: 2rem;
+}
 
-  p:last-child {
-    color: var(--light-color);
-    font-size: 1.6rem;
+.transfer-accordion-copy {
+  gap: 0.3rem;
+
+  .records-description {
+    margin: 0;
   }
 }
 
@@ -374,12 +378,12 @@ th {
     padding: 1.5rem;
   }
 
-  .dashboard-header .heading {
-    font-size: 3.5rem;
-  }
-
   .summary-grid {
     grid-template-columns: 1fr;
+  }
+
+  .transfer-data-accordion {
+    padding: 1.5rem;
   }
 
   .form-grid {

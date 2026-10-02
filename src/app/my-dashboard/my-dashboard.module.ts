@@ -6,9 +6,10 @@ import { ReactiveFormsModule } from '@angular/forms';
 
 import { MyDashboardComponent } from './my-dashboard.component';
 import { KumarPfDataComponent } from '../kumar-pf-data/kumar-pf-data.component';
+import { VasukiPfDataComponent } from '../vasuki-pf-data/vasuki-pf-data.component';
 
 @NgModule({
-  declarations: [MyDashboardComponent, KumarPfDataComponent],
+  declarations: [MyDashboardComponent, KumarPfDataComponent, VasukiPfDataComponent],
   imports: [
     CommonModule,
     NgxChartsModule,

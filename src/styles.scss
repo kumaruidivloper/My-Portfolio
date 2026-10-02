@@ -84,10 +84,28 @@ html body .dashboard-page button.control-button.primary-action:hover {
     color: var(--white);
 }
 
-html body .dashboard-page button.control-button.add-button:hover {
-    background: var(--green);
+html body .dashboard-page button.control-button.add-button:not(:disabled):hover {
+    background: var(--bg-color);
+    box-shadow: var(--box-shadow-inset);
+    color: var(--green);
+}
+
+html body .dashboard-page button.control-button.accordion-toggle:not(:disabled):hover {
+    background: var(--bg-color);
+    box-shadow: var(--box-shadow-inset);
+    color: var(--green);
+}
+
+html body .dashboard-page button.control-button.save-action {
+    background: transparent;
     box-shadow: var(--box-shadow);
-    color: var(--white);
+    color: var(--black);
+}
+
+html body .dashboard-page button.control-button.save-action:not(:disabled):hover {
+    background: transparent;
+    box-shadow: var(--box-shadow-inset);
+    color: var(--green);
 }
 
 html body .dashboard-page button.control-button:hover {
@@ -113,6 +131,23 @@ html body .dashboard-page .transfer-actions-cell {
     min-width: 14rem;
     text-align: center;
     vertical-align: middle;
+}
+
+html body .dashboard-page a.back-button {
+    align-items: center;
+    border-radius: 2rem;
+    display: inline-flex;
+    gap: .8rem;
+}
+
+html body .dashboard-page .back-button svg {
+    fill: none;
+    height: 1.8rem;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2;
+    width: 1.8rem;
 }
 
 html body .dashboard-page .pf-actions-cell {

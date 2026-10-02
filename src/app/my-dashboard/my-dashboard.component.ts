@@ -152,6 +152,7 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
   errorMessage = '';
   editingTransferIndex: number | null = null;
   isAddingTransfer = false;
+  isTransferSectionExpanded = false;
   areRecordsExpanded = false;
   isSaving = false;
   pendingDeleteIndex: number | null = null;
@@ -333,6 +334,7 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     this.isAddingTransfer = false;
     this.saveError = '';
     this.dismissToast();
+    this.resetDeleteConfirmationCode();
     this.editForm.reset({
       ...transfer,
       dateOfTransfer: toDateInputValue(transfer.dateOfTransfer),
@@ -346,6 +348,7 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     this.isAddingTransfer = true;
     this.saveError = '';
     this.dismissToast();
+    this.resetDeleteConfirmationCode();
     this.editForm.reset({
       dateOfTransfer: '',
       amountTransferredAUD: 0,
@@ -358,6 +361,10 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
 
   toggleRecords(): void {
     this.areRecordsExpanded = !this.areRecordsExpanded;
+  }
+
+  toggleTransferSection(): void {
+    this.isTransferSectionExpanded = !this.isTransferSectionExpanded;
   }
 
   requestDeleteTransfer(index: number): void {
@@ -472,12 +479,28 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     this.isAddingTransfer = false;
     this.saveError = '';
     this.editForm.reset();
+    this.resetDeleteConfirmationCode();
+  }
+
+  get canSaveChanges(): boolean {
+    return this.editingTransferIndex !== null &&
+      !this.isSaving &&
+      !this.isDeleteCodeVerifying &&
+      this.isDeleteCodeVerified &&
+      this.deleteConfirmationCode.valid &&
+      this.verifiedDeleteCode === this.deleteConfirmationCode.value;
   }
 
   saveTransfer(): void {
     const index = this.editingTransferIndex;
     if ((!this.isAddingTransfer && index === null) || this.editForm.invalid || this.isSaving) {
       this.editForm.markAllAsTouched();
+      return;
+    }
+    if (!this.isAddingTransfer && !this.canSaveChanges) {
+      if (this.deleteConfirmationCode.invalid) {
+        this.deleteConfirmationCode.markAsTouched();
+      }
       return;
     }
 
@@ -514,11 +537,13 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
         this.isSaving = false;
         this.editingTransferIndex = null;
         this.isAddingTransfer = false;
+        this.resetDeleteConfirmationCode();
         const message = isAddingTransfer
           ? 'New transfer added successfully.'
           : 'Transfer updated successfully.';
         this.showToast(message);
         if (isAddingTransfer) {
+          this.isTransferSectionExpanded = true;
           this.areRecordsExpanded = true;
         }
         this.changeDetectorRef.detectChanges();

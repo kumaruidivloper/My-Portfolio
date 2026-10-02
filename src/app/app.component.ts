@@ -87,6 +87,10 @@ export class AppComponent implements OnInit, OnDestroy {
   @ViewChild('header') header!: ElementRef;
   @ViewChild('themeToggler') themeToggler!: ElementRef;
   @ViewChild('overlay') overlay!: ElementRef;
+  @ViewChild('firstDashboardCodeInput')
+  set firstDashboardCodeInput(input: ElementRef<HTMLInputElement> | undefined) {
+    input?.nativeElement.focus();
+  }
 
   @HostListener('window:scroll', ['$event']) 
     scrollHandler(event: any): void {
