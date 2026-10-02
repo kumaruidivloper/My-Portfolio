@@ -506,7 +506,7 @@ html body .dashboard-page .modal-actions button.control-button.primary-action:no
 #theme-toggler{
     position: fixed;
     top:1.5rem; right: 2rem;
-    z-index: 1000;
+    z-index: 1002;
     height: 5rem;
     width: 5rem;
     line-height: 5rem;
@@ -522,6 +522,33 @@ html body .dashboard-page .modal-actions button.control-button.primary-action:no
 #theme-toggler:hover{
     color:var(--green);
     box-shadow: var(--box-shadow-inset);
+}
+
+html body app-responsive-table .responsive-grid-page-controls button {
+    align-items: center;
+    background: var(--bg-color);
+    border-radius: 50%;
+    box-shadow: var(--box-shadow);
+    color: var(--black);
+    display: inline-flex;
+    justify-content: center;
+}
+
+html body app-responsive-table .responsive-grid-page-controls button:not(:disabled):hover {
+    color: var(--green);
+    box-shadow: var(--box-shadow-inset);
+}
+
+html body app-responsive-table .responsive-grid-page-controls button svg {
+    display: block;
+    fill: none;
+    height: 2.4rem;
+    overflow: visible;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2.4;
+    width: 2.4rem;
 }
 
 .home{

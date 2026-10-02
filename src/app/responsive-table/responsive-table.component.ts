@@ -29,6 +29,9 @@ export class ResponsiveTableComponent {
 
   @Output() sortChange = new EventEmitter<string>();
 
+  pageSize = 5;
+  pageSizeInput = '5';
+  currentPageIndex = 0;
   private clientSortKey: string | null = null;
   private clientSortDirection: 'asc' | 'desc' = 'asc';
 
@@ -50,6 +53,27 @@ export class ResponsiveTableComponent {
         return orderedComparison || leftIndex - rightIndex;
       })
       .map(({ row }) => row);
+  }
+
+  get pageCount(): number {
+    return Math.max(1, Math.ceil(this.rows.length / this.pageSize));
+  }
+
+  get activePageIndex(): number {
+    return Math.min(this.currentPageIndex, this.pageCount - 1);
+  }
+
+  get pageRows(): readonly ResponsiveGridRow[] {
+    const startIndex = this.activePageIndex * this.pageSize;
+    return this.displayedRows.slice(startIndex, startIndex + this.pageSize);
+  }
+
+  get firstDisplayedRow(): number {
+    return this.rows.length === 0 ? 0 : this.activePageIndex * this.pageSize + 1;
+  }
+
+  get lastDisplayedRow(): number {
+    return Math.min((this.activePageIndex + 1) * this.pageSize, this.rows.length);
   }
 
   get activeSortKey(): string | null {
@@ -74,6 +98,47 @@ export class ResponsiveTableComponent {
 
     this.clientSortKey = key;
     this.clientSortDirection = 'asc';
+  }
+
+  setPageSize(event: Event): void {
+    if (!(event.target instanceof HTMLInputElement)) {
+      return;
+    }
+
+    const requestedPageSize = this.parsePageSize(event.target.value);
+    this.pageSize = requestedPageSize === null ? 5 : Math.max(5, requestedPageSize);
+    this.pageSizeInput = String(this.pageSize);
+    this.currentPageIndex = 0;
+  }
+
+  updatePageSize(event: Event): void {
+    if (!(event.target instanceof HTMLInputElement)) {
+      return;
+    }
+
+    this.pageSizeInput = event.target.value;
+    const requestedPageSize = this.parsePageSize(this.pageSizeInput);
+    if (requestedPageSize !== null && requestedPageSize >= 5) {
+      this.pageSize = requestedPageSize;
+      this.currentPageIndex = 0;
+    }
+  }
+
+  previousPage(): void {
+    this.currentPageIndex = Math.max(0, this.activePageIndex - 1);
+  }
+
+  nextPage(): void {
+    this.currentPageIndex = Math.min(this.pageCount - 1, this.activePageIndex + 1);
+  }
+
+  private parsePageSize(value: string): number | null {
+    if (!/^\d+$/.test(value)) {
+      return null;
+    }
+
+    const pageSize = Number(value);
+    return Number.isSafeInteger(pageSize) ? pageSize : null;
   }
 
   sortIndicator(key: string): string {

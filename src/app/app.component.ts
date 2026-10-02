@@ -7,6 +7,7 @@ import { DashboardAccessGuard } from './service/dashboard-access.guard';
 import { ConfirmationCodeService } from './service/confirmation-code.service';
 import { Config, Menu } from './accordion/types';
 import { TimeService } from './service/time.service';
+import { environment } from '../environments/environment';
 
 @Component({
     selector: 'app-root',
@@ -290,6 +291,14 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   openDashboardPrompt(): void {
+    if (!environment.production) {
+      this.isDashboardPromptOpen = true;
+      this.dashboardCodeError = '';
+      this.dashboardAccessGuard.grantOneTimeAccess();
+      void this.router.navigateByUrl('/dashboard');
+      return;
+    }
+
     this.dashboardCodeDigits.fill('');
     this.dashboardCodeError = '';
     this.isDashboardPromptOpen = true;

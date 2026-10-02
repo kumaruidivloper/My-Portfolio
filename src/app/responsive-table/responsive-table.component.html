@@ -21,14 +21,14 @@
       </tr>
     </thead>
     <tbody>
-      @for (row of displayedRows; track row.actionIndex ?? $index; let rowIndex = $index) {
+      @for (row of pageRows; track row.actionIndex ?? (activePageIndex * pageSize + $index); let rowIndex = $index) {
         <tr>
           @for (column of columns; track column.key) {
             <td [attr.data-label]="column.label" [class.actions-cell]="column.actions">
               @if (column.actions && actionsTemplate) {
                 <ng-container
                   [ngTemplateOutlet]="actionsTemplate"
-                  [ngTemplateOutletContext]="{ $implicit: row, index: row.actionIndex ?? rowIndex }">
+                  [ngTemplateOutletContext]="{ $implicit: row, index: row.actionIndex ?? (activePageIndex * pageSize + rowIndex) }">
                 </ng-container>
               } @else {
                 {{ row[column.key] }}
@@ -39,4 +39,33 @@
       }
     </tbody>
   </table>
+  <nav class="responsive-grid-pagination" aria-label="Grid pagination">
+    <label class="responsive-grid-page-size">
+      Rows per page
+      <input
+        type="text"
+        inputmode="numeric"
+        pattern="[0-9]*"
+        [value]="pageSizeInput"
+        aria-label="Rows per page"
+        (input)="updatePageSize($event)"
+        (change)="setPageSize($event)">
+    </label>
+    <span class="responsive-grid-page-summary" aria-live="polite">
+      Showing {{ firstDisplayedRow }}–{{ lastDisplayedRow }} of {{ rows.length }}
+    </span>
+    <div class="responsive-grid-page-controls">
+      <button type="button" (click)="previousPage()" [disabled]="activePageIndex === 0" aria-label="Previous page">
+        <svg aria-hidden="true" viewBox="0 0 24 24">
+          <path d="m15 18-6-6 6-6"></path>
+        </svg>
+      </button>
+      <span>Page {{ activePageIndex + 1 }} of {{ pageCount }}</span>
+      <button type="button" (click)="nextPage()" [disabled]="activePageIndex >= pageCount - 1" aria-label="Next page">
+        <svg aria-hidden="true" viewBox="0 0 24 24">
+          <path d="m9 18 6-6-6-6"></path>
+        </svg>
+      </button>
+    </div>
+  </nav>
 </div>

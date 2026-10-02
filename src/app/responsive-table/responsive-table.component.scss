@@ -8,6 +8,50 @@ app-responsive-table {
   overflow-x: auto;
 }
 
+.responsive-grid-pagination {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
+  justify-content: space-between;
+  padding: 1rem 1.2rem;
+}
+
+.responsive-grid-page-size,
+.responsive-grid-page-controls {
+  align-items: center;
+  display: flex;
+  gap: 0.6rem;
+}
+
+.responsive-grid-page-size input {
+  background: var(--bg-color);
+  border: var(--border);
+  border-radius: 0.5rem;
+  font: inherit;
+  padding: 0.5rem;
+  width: 6rem;
+}
+
+.responsive-grid-page-controls button {
+  cursor: pointer;
+  height: 3.6rem;
+  font: inherit;
+  padding: 0;
+  text-align: center;
+  width: 3.6rem;
+}
+
+.responsive-grid-page-controls button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.responsive-grid-page-controls button:focus-visible,
+.responsive-grid-page-size input:focus-visible {
+  outline: 0.2rem solid var(--green);
+}
+
 .responsive-grid-table {
   border-collapse: collapse;
   min-width: 55rem;
@@ -139,6 +183,16 @@ html body .dashboard-page app-responsive-table .responsive-grid-action-buttons b
 }
 
 @media (max-width: 600px) {
+  .responsive-grid-pagination {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .responsive-grid-page-controls {
+    justify-content: space-between;
+    width: 100%;
+  }
+
   .responsive-grid-scroll {
     overflow: visible;
   }

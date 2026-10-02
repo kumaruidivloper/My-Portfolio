@@ -54,6 +54,21 @@ describe('AppComponent', () => {
     expect(verify).toHaveBeenCalledWith('12345678');
   });
 
+  it('opens the dashboard directly without a code prompt in local development', () => {
+    const navigateByUrl = jasmine.createSpy('navigateByUrl');
+    const grantOneTimeAccess = jasmine.createSpy('grantOneTimeAccess');
+    Object.assign(component, {
+      router: { navigateByUrl },
+      dashboardAccessGuard: { grantOneTimeAccess }
+    });
+
+    component.openDashboardPrompt();
+
+    expect(grantOneTimeAccess).toHaveBeenCalled();
+    expect(navigateByUrl).toHaveBeenCalledWith('/dashboard');
+    expect(component.isDashboardPromptOpen).toBeFalse();
+  });
+
   it('routes to the dashboard only after code verification succeeds', async () => {
     const navigateByUrl = jasmine.createSpy('navigateByUrl');
     const grantOneTimeAccess = jasmine.createSpy('grantOneTimeAccess');
