@@ -214,10 +214,10 @@
                   @let transfer = row.transfer;
                   <tr>
                     <td>{{ formatDate(transfer.dateOfTransfer) }}</td>
-                    <td>{{ transfer.amountTransferredAUD | number:'1.2-2' }}</td>
+                    <td>{{ formatTransferCurrency(transfer.amountTransferredAUD, 'AUD') }}</td>
                     <td>{{ transfer.conversionRate | number:'1.2-4' }}</td>
                     <td>{{ formatDate(transfer.receivedDate) }}</td>
-                    <td>{{ transfer.amountReceivedINR | number:'1.2-2' }}</td>
+                    <td>{{ formatTransferCurrency(transfer.amountReceivedINR, 'INR') }}</td>
                     <td class="transfer-actions-cell">
                       <div class="transfer-actions">
                         <button

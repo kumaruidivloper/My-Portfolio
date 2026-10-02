@@ -155,9 +155,6 @@ export class KumarPfDataComponent implements OnDestroy {
     }
     if (!this.hasLoaded || !this.pfData) {
       this.openAddFormAfterLoad = true;
-      if (!this.isExpanded) {
-        this.isExpanded = true;
-      }
       if (!this.isLoading) {
         this.loadPfData();
       }
@@ -388,6 +385,10 @@ export class KumarPfDataComponent implements OnDestroy {
       currency: 'INR',
       maximumFractionDigits: 0
     }).format(value);
+  }
+
+  formatRupeesWithSpace(value: number): string {
+    return this.formatRupees(value).replace('₹', '₹ ');
   }
 
   private showToast(message: string): void {

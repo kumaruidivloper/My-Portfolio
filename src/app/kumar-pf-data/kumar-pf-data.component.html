@@ -108,7 +108,7 @@
               <ng-template #tooltipTemplate let-model="model">
                 <div class="chart-value-tooltip">
                   <strong>{{ model.name }}</strong>
-                  <span>{{ formatRupees(model.value) }}</span>
+                  <span>{{ formatRupeesWithSpace(model.value) }}</span>
                 </div>
               </ng-template>
             </ngx-charts-bar-vertical>
@@ -136,8 +136,8 @@
                 @for (record of records; track record.date) {
                   <tr>
                     <td>{{ formatMonth(record.date) }}</td>
-                    <td>{{ formatRupees(record.pfAmount) }}</td>
-                    <td>{{ formatRupees(record.difference) }}</td>
+                    <td>{{ formatRupeesWithSpace(record.pfAmount) }}</td>
+                    <td>{{ formatRupeesWithSpace(record.difference) }}</td>
                     <td class="pf-actions-cell">
                       <button
                         type="button"

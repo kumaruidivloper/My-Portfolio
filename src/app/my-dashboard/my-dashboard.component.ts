@@ -243,12 +243,20 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     }).format(value);
 
     if (this.selectedMetric === 'amountTransferredAUD') {
-      return `$${formattedValue}`;
+      return `$ ${formattedValue}`;
     }
     if (this.selectedMetric === 'amountReceivedINR') {
-      return `₹${formattedValue}`;
+      return `₹ ${formattedValue}`;
     }
-    return `₹${formattedValue} / AUD`;
+    return `₹ ${formattedValue} / AUD`;
+  }
+
+  formatTransferCurrency(value: number, currency: 'AUD' | 'INR'): string {
+    const formattedValue = new Intl.NumberFormat(currency === 'INR' ? 'en-IN' : 'en-AU', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(value);
+    return `${currency === 'AUD' ? '$' : '₹'} ${formattedValue}`;
   }
 
   get lineChartData(): { name: string; series: ChartDatum[] }[] {

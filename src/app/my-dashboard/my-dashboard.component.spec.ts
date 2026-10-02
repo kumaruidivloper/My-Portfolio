@@ -56,13 +56,18 @@ describe('MyDashboardComponent', () => {
   });
 
   it('formats chart tooltip values with the selected metric currency', () => {
-    expect(component.formatChartValue(1234.5)).toBe('$1,234.50');
+    expect(component.formatChartValue(1234.5)).toBe('$ 1,234.50');
 
     component.selectMetric('amountReceivedINR');
-    expect(component.formatChartValue(1234.5)).toBe('₹1,234.50');
+    expect(component.formatChartValue(1234.5)).toBe('₹ 1,234.50');
 
     component.selectMetric('conversionRate');
-    expect(component.formatChartValue(53.5)).toBe('₹53.50 / AUD');
+    expect(component.formatChartValue(53.5)).toBe('₹ 53.50 / AUD');
+  });
+
+  it('formats transfer grid amounts with spaced currency symbols', () => {
+    expect(component.formatTransferCurrency(1234.5, 'AUD')).toBe('$ 1,234.50');
+    expect(component.formatTransferCurrency(1234.5, 'INR')).toBe('₹ 1,234.50');
   });
 
   it('calculates summary totals from the loaded records', () => {

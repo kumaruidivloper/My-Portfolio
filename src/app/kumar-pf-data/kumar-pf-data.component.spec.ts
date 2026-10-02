@@ -44,13 +44,13 @@ describe('KumarPfDataComponent', () => {
     expect(pfDataService.getPfData).toHaveBeenCalled();
   });
 
-  it('loads PF data and opens the add form when add is clicked while collapsed', () => {
+  it('loads PF data and opens the add form without expanding when add is clicked while collapsed', () => {
     const collapsedComponent = new KumarPfDataComponent(pfDataService, changeDetector, confirmationCodeService);
 
     collapsedComponent.addRecord();
 
     expect(pfDataService.getPfData).toHaveBeenCalled();
-    expect(collapsedComponent.isExpanded).toBeTrue();
+    expect(collapsedComponent.isExpanded).toBeFalse();
     expect(collapsedComponent.isAddingRecord).toBeTrue();
     expect(collapsedComponent.editForm.controls.date.value).toBe('');
   });
@@ -69,6 +69,7 @@ describe('KumarPfDataComponent', () => {
 
   it('formats PF amounts as Indian rupees', () => {
     expect(component.formatRupees(2066449)).toBe('₹20,66,449');
+    expect(component.formatRupeesWithSpace(2066449)).toBe('₹ 20,66,449');
   });
 
   it('adds a PF record and updates the existing resource', () => {
