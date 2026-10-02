@@ -114,7 +114,6 @@
             <ngx-charts-bar-vertical
               [results]="chartData"
               [scheme]="colorScheme"
-              [view]="chartView"
               [xAxis]="true"
               [yAxis]="true"
               [showGridLines]="false"
@@ -134,7 +133,6 @@
             <ngx-charts-line-chart
               [results]="lineChartData"
               [scheme]="colorScheme"
-              [view]="chartView"
               [xAxis]="true"
               [yAxis]="true"
               [showGridLines]="false"
@@ -164,7 +162,6 @@
             <ngx-charts-pie-chart
               [results]="chartData"
               [scheme]="colorScheme"
-              [view]="chartView"
               [legend]="true"
               [labels]="true"
               [doughnut]="selectedChartType === 'doughnut'"
@@ -243,12 +240,12 @@
                 @for (row of sortedTransfers; track row.index) {
                   @let transfer = row.transfer;
                   <tr>
-                    <td>{{ formatDate(transfer.dateOfTransfer) }}</td>
-                    <td>{{ formatTransferCurrency(transfer.amountTransferredAUD, 'AUD') }}</td>
-                    <td>{{ transfer.conversionRate | number:'1.2-4' }}</td>
-                    <td>{{ formatDate(transfer.receivedDate) }}</td>
-                    <td>{{ formatTransferCurrency(transfer.amountReceivedINR, 'INR') }}</td>
-                    <td class="transfer-actions-cell">
+                    <td data-label="Transfer date">{{ formatDate(transfer.dateOfTransfer) }}</td>
+                    <td data-label="Sent (AUD)">{{ formatTransferCurrency(transfer.amountTransferredAUD, 'AUD') }}</td>
+                    <td data-label="Rate">{{ transfer.conversionRate | number:'1.2-4' }}</td>
+                    <td data-label="Received date">{{ formatDate(transfer.receivedDate) }}</td>
+                    <td data-label="Received (INR)">{{ formatTransferCurrency(transfer.amountReceivedINR, 'INR') }}</td>
+                    <td class="transfer-actions-cell" data-label="Actions">
                       <div class="transfer-actions">
                         <button
                           type="button"

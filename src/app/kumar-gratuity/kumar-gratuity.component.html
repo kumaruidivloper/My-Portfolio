@@ -65,7 +65,6 @@
             <ngx-charts-bar-vertical
               [results]="chartData"
               [scheme]="colorScheme"
-              [view]="chartView"
               [xAxis]="true"
               [yAxis]="true"
               [showGridLines]="false"
@@ -119,10 +118,10 @@
                 <tbody>
                   @for (record of records; track $index) {
                     <tr>
-                      <td>{{ formatMonth(record.date) }}</td>
-                      <td>{{ formatRupees(record.gratuity) }}</td>
-                      <td>{{ formatRupees(record.difference) }}</td>
-                      <td class="gratuity-actions">
+                      <td data-label="Month">{{ formatMonth(record.date) }}</td>
+                      <td [attr.data-label]="recordTypeLabel">{{ formatRupees(record.gratuity) }}</td>
+                      <td data-label="Difference">{{ formatRupees(record.difference) }}</td>
+                      <td class="gratuity-actions" data-label="Actions">
                         <button
                           type="button"
                           class="control-button transfer-action"

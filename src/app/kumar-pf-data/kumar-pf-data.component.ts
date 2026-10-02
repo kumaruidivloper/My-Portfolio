@@ -63,7 +63,6 @@ export class KumarPfDataComponent implements OnDestroy {
   private verifiedDeleteCode = '';
   private toastTimeout?: Subscription;
   selectedMetric: PfMetric = 'pfAmount';
-  readonly chartView: [number, number] = [900, 430];
   readonly colorScheme: Color = {
     name: 'pf-balance',
     selectable: true,

@@ -97,7 +97,6 @@
             <ngx-charts-bar-vertical
               [results]="chartData"
               [scheme]="colorScheme"
-              [view]="chartView"
               [xAxis]="true"
               [yAxis]="true"
               [showGridLines]="false"
@@ -153,10 +152,10 @@
               <tbody>
                 @for (record of records; track record.date) {
                   <tr>
-                    <td>{{ formatMonth(record.date) }}</td>
-                    <td>{{ formatRupeesWithSpace(record.pfAmount) }}</td>
-                    <td>{{ formatRupeesWithSpace(record.difference) }}</td>
-                    <td class="pf-actions-cell">
+                    <td data-label="Month">{{ formatMonth(record.date) }}</td>
+                    <td data-label="PF balance">{{ formatRupeesWithSpace(record.pfAmount) }}</td>
+                    <td data-label="Monthly difference">{{ formatRupeesWithSpace(record.difference) }}</td>
+                    <td class="pf-actions-cell" data-label="Actions">
                       <button
                         type="button"
                         class="control-button transfer-action"

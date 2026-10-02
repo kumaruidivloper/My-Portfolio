@@ -167,7 +167,6 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
   private amountCalculation?: Subscription;
   private deleteCodeValidationAttempt = 0;
   private verifiedDeleteCode = '';
-  readonly chartView: [number, number] = [900, 430];
   readonly colorScheme: Color = {
     name: 'transfers',
     selectable: true,

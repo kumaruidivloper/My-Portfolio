@@ -51,7 +51,6 @@ export class SumOfValueComponent implements OnDestroy {
   isLoading = false;
   errorMessage = '';
   monthlyTotals: MonthlyTotal[] = [];
-  readonly chartView: [number, number] = [900, 430];
   readonly colorScheme: Color = {
     name: 'combined-pf-totals',
     selectable: true,

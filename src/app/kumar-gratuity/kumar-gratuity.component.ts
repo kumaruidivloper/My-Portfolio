@@ -81,7 +81,6 @@ export class KumarGratuityComponent implements OnDestroy {
   private codeValidationAttempt = 0;
   private verifiedCode = '';
   private toastTimeout?: Subscription;
-  readonly chartView: [number, number] = [900, 430];
   readonly colorScheme: Color = {
     name: 'kumar-gratuity',
     selectable: true,
