@@ -35,6 +35,16 @@
         <p class="sum-of-value-status" role="status">No combined PF records are available.</p>
       }
       @if (!isLoading && !errorMessage && monthlyTotals.length > 0) {
+        <div class="sum-of-value-summary-grid" aria-label="Combined PF totals">
+          <article class="sum-of-value-summary-card">
+            <h3>{{ formatRupees(totalInterest) }}</h3>
+            <p>Total interest across monthly records</p>
+          </article>
+          <article class="sum-of-value-summary-card">
+            <h3>{{ formatRupees(finalTotalPfAmount ?? 0) }}</h3>
+            <p>Final total PF amount · {{ finalTotalPfMonth }}</p>
+          </article>
+        </div>
         <div class="sum-of-value-charts">
           <article class="sum-of-value-chart-card">
             <header class="pf-section-heading">

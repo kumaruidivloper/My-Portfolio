@@ -100,6 +100,32 @@
   margin-top: 2rem;
 }
 
+.sum-of-value-summary-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 2rem;
+}
+
+.sum-of-value-summary-card {
+  background: var(--bg-color);
+  border-radius: 1rem;
+  box-shadow: var(--box-shadow);
+  padding: 1.8rem;
+  text-align: center;
+}
+
+.sum-of-value-summary-card h3 {
+  color: var(--green);
+  font-size: 2.2rem;
+  overflow-wrap: anywhere;
+}
+
+.sum-of-value-summary-card p {
+  color: var(--light-color);
+  font-size: 1.4rem;
+}
+
 .sum-of-value-chart-card {
   background: var(--bg-color);
   border-radius: 1.2rem;
@@ -153,5 +179,9 @@
   .sum-of-value-chart-card {
     overflow-x: auto;
     padding: 1.5rem;
+  }
+
+  .sum-of-value-summary-grid {
+    grid-template-columns: 1fr;
   }
 }

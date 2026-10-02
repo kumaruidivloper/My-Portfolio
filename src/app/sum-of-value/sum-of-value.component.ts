@@ -84,6 +84,18 @@ export class SumOfValueComponent implements OnDestroy {
     return this.monthlyTotals.map(({ name, pfAmount }) => ({ name, value: pfAmount }));
   }
 
+  get totalInterest(): number {
+    return this.monthlyTotals.reduce((total, month) => total + month.difference, 0);
+  }
+
+  get finalTotalPfAmount(): number | null {
+    return this.monthlyTotals[this.monthlyTotals.length - 1]?.pfAmount ?? null;
+  }
+
+  get finalTotalPfMonth(): string | null {
+    return this.monthlyTotals[this.monthlyTotals.length - 1]?.name ?? null;
+  }
+
   formatRupees(value: number): string {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',

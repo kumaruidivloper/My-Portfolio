@@ -44,6 +44,9 @@ describe('SumOfValueComponent', () => {
       { name: 'Aug 2026', value: 4300 },
       { name: 'Sep 2026', value: 5000 }
     ]);
+    expect(component.totalInterest).toBe(930);
+    expect(component.finalTotalPfAmount).toBe(5000);
+    expect(component.finalTotalPfMonth).toBe('Sep 2026');
     expect(component.errorMessage).toBe('');
   });
 
