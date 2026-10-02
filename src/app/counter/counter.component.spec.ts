@@ -41,6 +41,18 @@ describe('CounterComponent', () => {
     expect(component.counters[0].intervalId).not.toBeNull();
   });
 
+  it('initializes counter rows before the first view check', () => {
+    const counterFixture = TestBed.createComponent(CounterComponent);
+    const counterComponent = counterFixture.componentInstance;
+    counterFixture.componentRef.setInput('stopRange', [42]);
+    counterFixture.componentRef.setInput('observeViewport', false);
+
+    expect(() => counterFixture.detectChanges()).not.toThrow();
+    expect(counterComponent.counters[0].value).toBe(0);
+
+    counterFixture.destroy();
+  });
+
   it('counts back to zero when the counter leaves the viewport', () => {
     component.counters = [{ value: 3, intervalId: 1, flip: false }];
 

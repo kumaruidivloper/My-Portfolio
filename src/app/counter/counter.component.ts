@@ -17,6 +17,7 @@ export class CounterComponent implements AfterViewInit, OnChanges, OnDestroy {
   digitWheel = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   private visibilityObserver?: IntersectionObserver;
   private viewInitialized = false;
+  private isInViewport = false;
 
   constructor(
     private elementRef: ElementRef<HTMLElement>,
@@ -31,19 +32,23 @@ export class CounterComponent implements AfterViewInit, OnChanges, OnDestroy {
     }
 
     this.visibilityObserver = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        this.startCounters(true);
-      } else {
-        this.startCounters(false);
-      }
+      this.isInViewport = entry.isIntersecting;
+      this.startCounters(this.isInViewport);
     }, { threshold: 0.15 });
 
     this.visibilityObserver.observe(this.elementRef.nativeElement);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    if (changes['stopRange']) {
+      this.stopCounters();
+      this.counters = this.stopRange.map(() => ({ value: 0, intervalId: null, flip: false }));
+    }
+
     if (this.viewInitialized && changes['active']) {
       this.startCounters(this.active);
+    } else if (this.viewInitialized && changes['stopRange']) {
+      this.startCounters(this.observeViewport ? this.isInViewport : this.active);
     }
   }
 

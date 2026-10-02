@@ -1,0 +1,392 @@
+<main class="dashboard-page">
+  <div class="dashboard-content">
+    <a routerLink="/" class="btn back-button">Back to portfolio</a>
+
+    <header class="dashboard-header">
+      <p class="eyebrow">MY DASHBOARD</p>
+      <h1 class="heading">Australia to India <span>Transfers</span></h1>
+      <p>Transfer amounts and exchange rates from the public transfer records.</p>
+    </header>
+
+    @if (isLoading) {
+      <p class="status-message" role="status">Loading transfer records…</p>
+    }
+    @if (errorMessage) {
+      <p class="status-message error-message" role="alert">{{ errorMessage }}</p>
+    }
+    @if (toastMessage) {
+      <div class="dashboard-toast" role="status" aria-live="polite">
+        <span>{{ toastMessage }}</span>
+        <button type="button" aria-label="Dismiss notification" (click)="dismissToast()">&times;</button>
+      </div>
+    }
+    @if (!isLoading && !errorMessage && transfers.length === 0) {
+      <p class="status-message" role="status">No transfer records are available.</p>
+    }
+
+    @if (!isLoading && !errorMessage && transfers.length > 0) {
+      <div class="summary-grid" aria-label="Transfer summary">
+        <article class="summary-card">
+          <h2>{{ transfers.length }}</h2>
+          <p>Transfers</p>
+        </article>
+        <article class="summary-card">
+          <h2>{{ formattedTotalTransferredAUD }}</h2>
+          <p>Total sent</p>
+        </article>
+        <article class="summary-card">
+          <h2>{{ formattedTotalReceivedINR }}</h2>
+          <p>Total received</p>
+        </article>
+      </div>
+
+      <section class="chart-card" aria-labelledby="chart-title">
+        <div class="chart-heading">
+          <div>
+            <h2 id="chart-title">{{ selectedMetricOption.label }}</h2>
+            <p>{{ transfers.length }} transfer records</p>
+          </div>
+        </div>
+
+        <div class="control-group" aria-label="Transfer metric">
+          <span class="control-label">Metric</span>
+          @for (metric of metrics; track metric.key) {
+            <button
+              type="button"
+              class="control-button"
+              [class.selected]="selectedMetric === metric.key"
+              [attr.aria-pressed]="selectedMetric === metric.key"
+              (click)="selectMetric(metric.key)">
+              {{ metric.label }}
+            </button>
+          }
+        </div>
+
+        <div class="control-group" aria-label="Chart types">
+          <span class="control-label">Chart type</span>
+          @for (chart of chartTypes; track chart.value) {
+            <button
+              type="button"
+              class="control-button"
+              [class.selected]="selectedChartType === chart.value"
+              [attr.aria-pressed]="selectedChartType === chart.value"
+              (click)="selectChartType(chart.value)">
+              {{ chart.label }}
+            </button>
+          }
+        </div>
+
+        <div class="chart-container">
+          @if (selectedChartType === 'bar') {
+            <ngx-charts-bar-vertical
+              [results]="chartData"
+              [scheme]="colorScheme"
+              [view]="chartView"
+              [xAxis]="true"
+              [yAxis]="true"
+              [showGridLines]="false"
+              [showXAxisLabel]="true"
+              [showYAxisLabel]="true"
+              xAxisLabel="Transfer date"
+              [yAxisLabel]="selectedMetricOption.axisLabel">
+            </ngx-charts-bar-vertical>
+          }
+          @if (selectedChartType === 'line') {
+            <ngx-charts-line-chart
+              [results]="lineChartData"
+              [scheme]="colorScheme"
+              [view]="chartView"
+              [xAxis]="true"
+              [yAxis]="true"
+              [showGridLines]="false"
+              [showXAxisLabel]="true"
+              [showYAxisLabel]="true"
+              xAxisLabel="Transfer date"
+              [yAxisLabel]="selectedMetricOption.axisLabel">
+            </ngx-charts-line-chart>
+          }
+          @if (selectedChartType === 'pie' || selectedChartType === 'doughnut') {
+            <ngx-charts-pie-chart
+              [results]="chartData"
+              [scheme]="colorScheme"
+              [view]="chartView"
+              [legend]="true"
+              [labels]="true"
+              [doughnut]="selectedChartType === 'doughnut'"
+              [arcWidth]="0.25">
+            </ngx-charts-pie-chart>
+          }
+        </div>
+      </section>
+
+      <section class="records-card" aria-labelledby="records-title">
+        <header class="records-heading">
+          <div class="records-toggle-copy">
+            <h2 class="records-title" id="records-title">Transfer records</h2>
+            <span class="records-description">
+              {{ transfers.length }} records · {{ areRecordsExpanded ? 'Select a record to edit.' : 'Expand to view or edit records.' }}
+            </span>
+          </div>
+          <div class="records-actions">
+            <button type="button" class="control-button add-button" (click)="addTransfer()">
+              Add new transfer
+            </button>
+            <button
+              type="button"
+              class="control-button accordion-toggle"
+              [attr.aria-expanded]="areRecordsExpanded"
+              aria-controls="transfer-records-panel"
+              [attr.aria-label]="areRecordsExpanded ? 'Collapse transfer records' : 'Expand transfer records'"
+              [title]="areRecordsExpanded ? 'Collapse transfer records' : 'Expand transfer records'"
+              (click)="toggleRecords()">
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <path d="M5 12h14"></path>
+                @if (!areRecordsExpanded) {
+                  <path d="M12 5v14"></path>
+                }
+              </svg>
+            </button>
+          </div>
+        </header>
+        @if (areRecordsExpanded) {
+          <div class="table-scroll" id="transfer-records-panel">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col" [attr.aria-sort]="sortKey === 'dateOfTransfer' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'">
+                    <button type="button" class="sortable-header" (click)="sortTransfers('dateOfTransfer')">
+                      Transfer date <span aria-hidden="true">{{ sortIndicator('dateOfTransfer') }}</span>
+                    </button>
+                  </th>
+                  <th scope="col" [attr.aria-sort]="sortKey === 'amountTransferredAUD' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'">
+                    <button type="button" class="sortable-header" (click)="sortTransfers('amountTransferredAUD')">
+                      Sent (AUD) <span aria-hidden="true">{{ sortIndicator('amountTransferredAUD') }}</span>
+                    </button>
+                  </th>
+                  <th scope="col" [attr.aria-sort]="sortKey === 'conversionRate' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'">
+                    <button type="button" class="sortable-header" (click)="sortTransfers('conversionRate')">
+                      Rate <span aria-hidden="true">{{ sortIndicator('conversionRate') }}</span>
+                    </button>
+                  </th>
+                  <th scope="col" [attr.aria-sort]="sortKey === 'receivedDate' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'">
+                    <button type="button" class="sortable-header" (click)="sortTransfers('receivedDate')">
+                      Received date <span aria-hidden="true">{{ sortIndicator('receivedDate') }}</span>
+                    </button>
+                  </th>
+                  <th scope="col" [attr.aria-sort]="sortKey === 'amountReceivedINR' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'">
+                    <button type="button" class="sortable-header" (click)="sortTransfers('amountReceivedINR')">
+                      Received (INR) <span aria-hidden="true">{{ sortIndicator('amountReceivedINR') }}</span>
+                    </button>
+                  </th>
+                  <th scope="col" class="transfer-actions-cell"><span class="visually-hidden">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of sortedTransfers; track row.index) {
+                  @let transfer = row.transfer;
+                  <tr>
+                    <td>{{ transfer.dateOfTransfer }}</td>
+                    <td>{{ transfer.amountTransferredAUD | number:'1.2-2' }}</td>
+                    <td>{{ transfer.conversionRate | number:'1.2-4' }}</td>
+                    <td>{{ transfer.receivedDate }}</td>
+                    <td>{{ transfer.amountReceivedINR | number:'1.2-2' }}</td>
+                    <td class="transfer-actions-cell">
+                      <div class="transfer-actions">
+                        <button
+                          type="button"
+                          class="control-button transfer-action"
+                          [attr.aria-label]="'Update transfer from ' + transfer.dateOfTransfer"
+                          [title]="'Update transfer from ' + transfer.dateOfTransfer"
+                          (click)="editTransfer(row.index)">
+                          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8">
+                            <path d="M12 20h9"></path>
+                            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"></path>
+                          </svg>
+                        </button>
+                        <button
+                          type="button"
+                          class="control-button transfer-action delete-action"
+                          [disabled]="isSaving"
+                          [attr.aria-label]="'Delete transfer from ' + transfer.dateOfTransfer"
+                          [title]="'Delete transfer from ' + transfer.dateOfTransfer"
+                          (click)="requestDeleteTransfer(row.index)">
+                          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8">
+                            <path d="M3 6h18"></path>
+                            <path d="M8 6V4h8v2"></path>
+                            <path d="m19 6-1 14H6L5 6"></path>
+                            <path d="M10 11v5M14 11v5"></path>
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+    }
+  </div>
+
+  @if (editingTransferIndex !== null || isAddingTransfer) {
+    <div class="modal-backdrop" (click)="closeEditModal()">
+      <section
+        class="edit-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="edit-modal-title"
+        (click)="$event.stopPropagation()">
+        <header class="modal-heading">
+          <div>
+            <p class="eyebrow">TRANSFER DETAILS</p>
+            <h2 id="edit-modal-title">{{ isAddingTransfer ? 'Add new transfer' : 'Update transfer' }}</h2>
+          </div>
+          <button
+            type="button"
+            class="modal-close"
+            aria-label="Close edit dialog"
+            [disabled]="isSaving"
+            (click)="closeEditModal()">
+            &times;
+          </button>
+        </header>
+
+        <form [formGroup]="editForm" (ngSubmit)="saveTransfer()">
+          <div class="form-grid">
+            <label class="form-field">
+              <span>Transfer date</span>
+              <input type="date" formControlName="dateOfTransfer">
+              @if (editForm.controls.dateOfTransfer.touched && editForm.controls.dateOfTransfer.invalid) {
+                <small class="field-error">Select a valid transfer date.</small>
+              }
+            </label>
+
+            <label class="form-field">
+              <span>Amount sent (AUD)</span>
+              <input type="number" min="0" step="0.01" formControlName="amountTransferredAUD">
+              @if (editForm.controls.amountTransferredAUD.touched && editForm.controls.amountTransferredAUD.invalid) {
+                <small class="field-error">Enter an amount greater than or equal to zero.</small>
+              }
+            </label>
+
+            <label class="form-field">
+              <span>Exchange rate</span>
+              <input type="number" min="0.0001" step="0.0001" formControlName="conversionRate">
+              @if (editForm.controls.conversionRate.touched && editForm.controls.conversionRate.invalid) {
+                <small class="field-error">Enter a rate greater than zero.</small>
+              }
+            </label>
+
+            <label class="form-field">
+              <span>Received date</span>
+              <input type="date" formControlName="receivedDate">
+              @if (editForm.controls.receivedDate.touched && editForm.controls.receivedDate.invalid) {
+                <small class="field-error">Select a valid received date.</small>
+              }
+            </label>
+
+            <label class="form-field">
+              <span>Amount received (INR) · Calculated</span>
+              <input type="number" min="0" step="0.01" formControlName="amountReceivedINR" readonly>
+              @if (editForm.controls.amountReceivedINR.touched && editForm.controls.amountReceivedINR.invalid) {
+                <small class="field-error">Enter an amount greater than or equal to zero.</small>
+              }
+            </label>
+          </div>
+
+          @if (saveError) {
+            <p class="form-error" role="alert">{{ saveError }}</p>
+          }
+
+          <footer class="modal-actions">
+            <button type="button" class="control-button" [disabled]="isSaving" (click)="closeEditModal()">
+              Cancel
+            </button>
+            <button type="submit" class="control-button primary-action" [disabled]="isSaving">
+              {{ isSaving ? 'Saving…' : isAddingTransfer ? 'Add transfer' : 'Save changes' }}
+            </button>
+          </footer>
+        </form>
+      </section>
+    </div>
+  }
+
+  @if (pendingDeleteIndex !== null) {
+    <div class="modal-backdrop" (click)="cancelDeleteTransfer()">
+      <section
+        class="edit-modal delete-modal"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="delete-modal-title"
+        aria-describedby="delete-modal-description"
+        (click)="$event.stopPropagation()">
+        <header class="modal-heading">
+          <div>
+            <p class="eyebrow">DELETE TRANSFER</p>
+            <h2 id="delete-modal-title">Confirm deletion</h2>
+          </div>
+        </header>
+        <p id="delete-modal-description">
+          Are you sure you want to permanently delete the transfer from
+          {{ transfers[pendingDeleteIndex].dateOfTransfer }}? This change will be saved to the backend.
+        </p>
+        <dl class="delete-transfer-details">
+          <div>
+            <dt>Transfer date</dt>
+            <dd>{{ transfers[pendingDeleteIndex].dateOfTransfer }}</dd>
+          </div>
+          <div>
+            <dt>Amount sent (AUD)</dt>
+            <dd>{{ transfers[pendingDeleteIndex].amountTransferredAUD | number:'1.2-2' }}</dd>
+          </div>
+          <div>
+            <dt>Exchange rate</dt>
+            <dd>{{ transfers[pendingDeleteIndex].conversionRate | number:'1.2-4' }}</dd>
+          </div>
+          <div>
+            <dt>Received date</dt>
+            <dd>{{ transfers[pendingDeleteIndex].receivedDate }}</dd>
+          </div>
+          <div>
+            <dt>Amount received (INR)</dt>
+            <dd>{{ transfers[pendingDeleteIndex].amountReceivedINR | number:'1.2-2' }}</dd>
+          </div>
+        </dl>
+        <label class="form-field">
+          <span>Enter confirmation code to delete</span>
+          <input
+            type="text"
+            inputmode="numeric"
+            autocomplete="off"
+            maxlength="8"
+            [formControl]="deleteConfirmationCode"
+            aria-describedby="delete-code-help">
+          <small id="delete-code-help">Enter the required 8-digit code to continue.</small>
+          @if (deleteConfirmationCode.touched && deleteConfirmationCode.invalid) {
+            <small class="field-error">Enter the correct 8-digit confirmation code.</small>
+          }
+        </label>
+        @if (saveError) {
+          <p class="form-error" role="alert">{{ saveError }}</p>
+        }
+        <footer class="modal-actions">
+          <button
+            type="button"
+            class="control-button"
+            [disabled]="isSaving"
+            (click)="cancelDeleteTransfer()">
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="control-button primary-action"
+            [disabled]="isSaving || deleteConfirmationCode.invalid"
+            (click)="deleteTransfer()">
+            {{ isSaving ? 'Deleting…' : 'Delete transfer' }}
+          </button>
+        </footer>
+      </section>
+    </div>
+  }
+</main>

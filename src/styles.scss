@@ -78,6 +78,239 @@ section{
     color:var(--green);
 }
 
+html body .dashboard-page button.control-button.primary-action:hover {
+    background: var(--green);
+    box-shadow: var(--box-shadow);
+    color: var(--white);
+}
+
+html body .dashboard-page button.control-button.add-button:hover {
+    background: var(--green);
+    box-shadow: var(--box-shadow);
+    color: var(--white);
+}
+
+html body .dashboard-page button.control-button:hover {
+    box-shadow: var(--box-shadow);
+}
+
+body.active .dashboard-page .chart-container svg text {
+    fill: #fff !important;
+}
+
+body.night .dashboard-page .chart-container svg text {
+    fill: #fff !important;
+}
+
+body.active .dashboard-page .ngx-charts .legend-label,
+body.active .dashboard-page .ngx-charts .legend-title-text,
+body.night .dashboard-page .ngx-charts .legend-label,
+body.night .dashboard-page .ngx-charts .legend-title-text {
+    color: var(--black);
+}
+
+html body .dashboard-page .transfer-actions-cell {
+    min-width: 14rem;
+    text-align: center;
+    vertical-align: middle;
+}
+
+html body .dashboard-page .sortable-header {
+    align-items: center;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    font: inherit;
+    gap: .6rem;
+    padding: 0;
+}
+
+html body .dashboard-page .sortable-header:focus-visible {
+    outline: .2rem solid var(--green);
+    outline-offset: .3rem;
+}
+
+html body .dashboard-page .transfer-actions {
+    align-items: center;
+    display: flex;
+    gap: 2.2rem;
+    justify-content: center;
+    width: 100px;
+    float: right;
+}
+
+html body .dashboard-page button.control-button.transfer-action {
+    align-items: center;
+    border-radius: 50%;
+    display: inline-flex;
+    flex: 0 0 3.8rem;
+    height: 3.8rem;
+    justify-content: center;
+    margin: 0;
+    padding: .8rem;
+    width: 3.8rem;
+}
+
+html body .dashboard-page button.control-button.transfer-action:first-child {
+    color: var(--green);
+}
+
+html body .dashboard-page button.control-button.transfer-action.delete-action {
+    background: #fdecea;
+    color: #c0392b;
+}
+
+html body .dashboard-page .transfer-action svg {
+    flex: 0 0 1.8rem;
+    height: 1.8rem;
+    width: 1.8rem;
+}
+
+html body .dashboard-page .modal-actions button.control-button {
+    transition: transform .2s ease, filter .2s ease, color .2s ease;
+}
+
+html body .dashboard-page .modal-actions button.control-button:not(.primary-action):not(:disabled):hover {
+    color: var(--green);
+    transform: translateY(-2px);
+}
+
+html body .dashboard-page .modal-actions button.control-button.primary-action:not(:disabled):hover {
+    filter: brightness(1.08);
+    transform: translateY(-2px);
+}
+
+.dashboard-toast {
+    align-items: center;
+    background: var(--green);
+    border-radius: .8rem;
+    box-shadow: var(--box-shadow);
+    color: var(--white);
+    display: flex;
+    font-size: 1.5rem;
+    gap: 1.5rem;
+    justify-content: space-between;
+    max-width: calc(100vw - 3rem);
+    padding: 1.2rem 1.6rem;
+    position: fixed;
+    left: 50%;
+    top: 2rem;
+    transform: translateX(-50%);
+    z-index: 1200;
+}
+
+.dashboard-toast button {
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font-size: 2.2rem;
+    line-height: 1;
+}
+
+.dashboard-code-backdrop {
+    align-items: center;
+    background: rgb(0 0 0 / 65%);
+    display: flex;
+    inset: 0;
+    justify-content: center;
+    padding: 2rem;
+    position: fixed;
+    z-index: 1300;
+}
+
+.dashboard-code-modal {
+    background: var(--bg-color);
+    border-radius: 1.2rem;
+    box-shadow: var(--box-shadow);
+    color: var(--black);
+    flex: 0 1 auto;
+    max-width: 44rem;
+    min-height: 0;
+    padding: 2.5rem;
+    width: 100%;
+}
+
+.dashboard-code-modal h2 {
+    color: var(--black);
+    font-size: 2.4rem;
+}
+
+.dashboard-code-modal > p {
+    color: var(--light-color);
+    font-size: 1.5rem;
+    margin-top: .5rem;
+}
+
+.dashboard-code-inputs {
+    display: flex;
+    gap: .8rem;
+    justify-content: center;
+    margin: 2.5rem 0 1rem;
+}
+
+.dashboard-code-input {
+    background: var(--bg-color);
+    border-radius: .6rem;
+    box-shadow: var(--box-shadow-inset);
+    color: var(--black);
+    font-size: 2rem;
+    height: 4.5rem;
+    text-align: center;
+    width: 4rem;
+}
+
+.dashboard-code-input:focus-visible {
+    outline: .2rem solid var(--green);
+}
+
+.dashboard-code-error {
+    color: #c0392b;
+    font-size: 1.3rem;
+    text-align: center;
+}
+
+.dashboard-code-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.dashboard-code-actions .btn {
+    margin-top: 1rem;
+}
+
+.delete-transfer-details {
+    display: grid;
+    gap: 1rem 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    margin: 1.5rem 0;
+}
+
+.delete-modal #delete-modal-description {
+    font-size: 1 rem;
+    line-height: 1.6;
+}
+
+.delete-transfer-details div {
+    background: var(--bg-color);
+    border-radius: .6rem;
+    box-shadow: var(--box-shadow-inset);
+    padding: 1rem;
+}
+
+.delete-transfer-details dt {
+    color: var(--light-color);
+    font-size: 1.2rem;
+}
+
+.delete-transfer-details dd {
+    color: var(--black);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-top: .4rem;
+}
+
 .heading{
     text-align: center;
     font-size: 5rem;

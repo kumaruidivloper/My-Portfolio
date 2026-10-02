@@ -29,6 +29,7 @@
       @for (item of appOptions; track item) {
         <a [attr.href]="'#'+item" (click)="selectedOption(item)">{{item}}</a>
       }
+      <a href="#" class="dashboard-nav-link" (click)="$event.preventDefault(); openDashboardPrompt()">My Dashboard</a>
     </nav>
   </header>
   <!-- header section ends -->
@@ -166,4 +167,44 @@
     <span> © Copyright {{currentYear}} &nbsp;</span>created by
     <span>mr. Kumar Shan</span> | all rights reserved
   </footer>
+}
+<router-outlet></router-outlet>
+
+@if (isDashboardPromptOpen) {
+  <div class="dashboard-code-backdrop" (click)="closeDashboardPrompt()">
+    <section
+      class="dashboard-code-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="dashboard-code-title"
+      (click)="$event.stopPropagation()"
+      (keydown.escape)="closeDashboardPrompt()">
+      <h2 id="dashboard-code-title">Enter dashboard code</h2>
+      <p>Enter the 8-digit code to continue.</p>
+      <div>
+        <div class="dashboard-code-inputs">
+          @for (digit of dashboardCodeDigits; track $index; let i = $index) {
+            <input
+              class="dashboard-code-input"
+              type="text"
+              inputmode="numeric"
+              pattern="[0-9]"
+              maxlength="1"
+              autocomplete="one-time-code"
+              [value]="digit"
+              [attr.aria-label]="'Code digit ' + (i + 1)"
+              (input)="onDashboardCodeInput($event, i)"
+              (keydown)="onDashboardCodeKeydown($event, i)"
+              (paste)="onDashboardCodePaste($event)">
+          }
+        </div>
+        @if (dashboardCodeError) {
+          <p class="dashboard-code-error" role="alert">{{ dashboardCodeError }}</p>
+        }
+        <div class="dashboard-code-actions">
+          <button type="button" class="btn" (click)="closeDashboardPrompt()">Cancel</button>
+      </div>
+      </div>
+    </section>
+  </div>
 }

@@ -3,13 +3,14 @@
 }
 
 .portfolio {
-  padding: 2rem 0;
+  padding: 2rem;
 }
 
 .portfolio .box-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(27rem, 1fr));
   gap: 2rem;
+  padding: 2rem;
 }
 
 .portfolio .box-container .box {

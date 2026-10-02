@@ -1,7 +1,10 @@
 
 import { Component, ViewChild, ElementRef, OnInit, OnDestroy, HostListener, Renderer2, Inject, DOCUMENT, ChangeDetectionStrategy } from '@angular/core';
+import { Router } from '@angular/router';
 import { AppOptions } from './model/model';
 import { DataService } from './service/data.service';
+import { DashboardAccessGuard } from './service/dashboard-access.guard';
+import { ConfirmationCodeService } from './service/confirmation-code.service';
 import { Config, Menu } from './accordion/types';
 import { TimeService } from './service/time.service';
 
@@ -13,6 +16,9 @@ import { TimeService } from './service/time.service';
     standalone: false
 })
 export class AppComponent implements OnInit, OnDestroy {
+  readonly dashboardCodeDigits = Array.from({ length: 8 }, () => '');
+  isDashboardPromptOpen = false;
+  dashboardCodeError = '';
 
       // signle open mode
       options: Config = { multi: false };
@@ -105,7 +111,10 @@ export class AppComponent implements OnInit, OnDestroy {
     @Inject(DOCUMENT) private document: 
     Document, private renderer: Renderer2, 
     private dataService: DataService,
-    private timeService: TimeService
+    private timeService: TimeService,
+    private router: Router,
+    private dashboardAccessGuard: DashboardAccessGuard,
+    private confirmationCodeService: ConfirmationCodeService
     ) {
       this.renderer.removeClass(document.body, 'active');
     }
@@ -271,6 +280,89 @@ export class AppComponent implements OnInit, OnDestroy {
     this.isOverlay = true;
     this.renderer.addClass(document.body, 'scrollOff');
   }
+
+  openDashboardPrompt(): void {
+    this.dashboardCodeDigits.fill('');
+    this.dashboardCodeError = '';
+    this.isDashboardPromptOpen = true;
+  }
+
+  closeDashboardPrompt(): void {
+    this.isDashboardPromptOpen = false;
+    this.dashboardCodeError = '';
+  }
+
+  onDashboardCodeInput(event: Event, index: number): void {
+    const input = event.target as HTMLInputElement;
+    const digit = input.value.replace(/\D/g, '').slice(-1);
+    this.dashboardCodeDigits[index] = digit;
+    input.value = digit;
+    this.dashboardCodeError = '';
+
+    if (digit) {
+      this.dashboardCodeInputs()[index + 1]?.focus();
+    }
+
+    if (this.dashboardCodeDigits.every((codeDigit) => codeDigit !== '')) {
+      void this.submitDashboardCode();
+    }
+  }
+
+  onDashboardCodeKeydown(event: KeyboardEvent, index: number): void {
+    if (event.key === 'Backspace' && !this.dashboardCodeDigits[index]) {
+      this.dashboardCodeInputs()[index - 1]?.focus();
+    }
+
+    if (event.key === 'ArrowLeft') {
+      this.dashboardCodeInputs()[index - 1]?.focus();
+    } else if (event.key === 'ArrowRight') {
+      this.dashboardCodeInputs()[index + 1]?.focus();
+    }
+  }
+
+  onDashboardCodePaste(event: ClipboardEvent): void {
+    event.preventDefault();
+    const digits = event.clipboardData?.getData('text').replace(/\D/g, '').slice(0, 8) ?? '';
+    this.dashboardCodeDigits.fill('');
+    Array.from(digits).forEach((digit, index) => {
+      this.dashboardCodeDigits[index] = digit;
+    });
+    this.dashboardCodeInputs()[Math.min(digits.length, 7)]?.focus();
+    this.dashboardCodeError = '';
+    if (this.dashboardCodeDigits.every((digit) => digit !== '')) {
+      void this.submitDashboardCode();
+    }
+  }
+
+  async submitDashboardCode(): Promise<void> {
+    const enteredCode = this.dashboardCodeDigits.join('');
+    if (!/^\d{8}$/.test(enteredCode)) {
+      this.dashboardCodeError = 'Enter the correct 8-digit code to open the dashboard.';
+      return;
+    }
+
+    let isValid: boolean;
+    try {
+      isValid = await this.confirmationCodeService.verify(enteredCode);
+    } catch {
+      this.dashboardCodeError = 'Code verification is unavailable. Please try again.';
+      return;
+    }
+
+    if (!isValid) {
+      this.dashboardCodeError = 'Enter the correct 8-digit code to open the dashboard.';
+      return;
+    }
+
+    this.dashboardAccessGuard.grantOneTimeAccess();
+    this.closeDashboardPrompt();
+    void this.router.navigateByUrl('/dashboard');
+  }
+
+  private dashboardCodeInputs(): NodeListOf<HTMLInputElement> {
+    return this.document.querySelectorAll<HTMLInputElement>('.dashboard-code-input');
+  }
+
   closeOverlay(): void {
     this.renderer.removeClass(document.body, 'scrollOff');
     this.isOverlay = false;
