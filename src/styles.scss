@@ -188,6 +188,49 @@ html body .dashboard-page .pf-delete-details dd {
     margin-top: .4rem;
 }
 
+html body .dashboard-page .gratuity-modal-close {
+    background: transparent;
+    color: var(--light-color);
+    cursor: pointer;
+    font-size: 2.8rem;
+    line-height: 1;
+}
+
+html body .dashboard-page .gratuity-field {
+    display: flex;
+    flex-direction: column;
+    gap: .7rem;
+    margin-top: 1.5rem;
+    min-width: 0;
+}
+
+html body .dashboard-page .gratuity-field span {
+    color: var(--black);
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+html body .dashboard-page .gratuity-field input {
+    background: var(--bg-color);
+    border: var(--border);
+    border-radius: .6rem;
+    box-shadow: var(--box-shadow-inset);
+    color: var(--black);
+    font-size: 1.5rem;
+    min-width: 0;
+    padding: 1rem 1.2rem;
+    width: 100%;
+}
+
+html body .dashboard-page .gratuity-field small {
+    color: var(--light-color);
+    font-size: 1.3rem;
+}
+
+html body .dashboard-page .gratuity-field small.gratuity-field-error {
+    color: #c0392b;
+}
+
 html body .dashboard-page .sortable-header {
     align-items: center;
     background: transparent;

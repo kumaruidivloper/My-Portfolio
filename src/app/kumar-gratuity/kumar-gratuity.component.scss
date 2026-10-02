@@ -1,0 +1,328 @@
+.gratuity-accordion {
+  background: var(--bg-color);
+  border-radius: 1.2rem;
+  box-shadow: var(--box-shadow);
+  margin-top: 2.5rem;
+  min-height: 0;
+  padding: 2.5rem;
+}
+
+.gratuity-heading,
+.gratuity-heading-copy,
+.gratuity-modal-heading,
+.gratuity-modal-actions,
+.gratuity-actions {
+  align-items: center;
+  display: flex;
+}
+
+.gratuity-heading {
+  gap: 1.5rem;
+  justify-content: space-between;
+  min-height: 4rem;
+}
+
+.gratuity-heading-actions {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  gap: 1rem;
+}
+
+.add-button {
+  margin: 0;
+}
+
+.gratuity-heading-copy {
+  align-items: flex-start;
+  flex: 1 1 30rem;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.gratuity-heading h2 {
+  color: var(--black);
+  font-size: 2.4rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.gratuity-heading p,
+.gratuity-chart-card header p {
+  color: var(--light-color);
+  font-size: 1.4rem;
+  margin: 0;
+}
+
+.control-button {
+  background: var(--bg-color);
+  border: 0;
+  border-radius: 2rem;
+  box-shadow: var(--box-shadow);
+  color: var(--black);
+  cursor: pointer;
+  font-size: 1.4rem;
+  padding: 0.8rem 1.6rem;
+}
+
+.accordion-toggle {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 4rem;
+  height: 4rem;
+  justify-content: center;
+  margin: 0;
+  padding: 1rem;
+  width: 4rem;
+}
+
+.accordion-toggle {
+  border-radius: 50%;
+}
+
+.accordion-toggle svg {
+  display: block;
+  fill: none;
+  height: 1.8rem;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+  width: 1.8rem;
+}
+
+.control-button:hover:not(:disabled) {
+  box-shadow: var(--box-shadow-inset);
+  color: var(--green);
+}
+
+.control-button:focus-visible,
+.gratuity-modal-close:focus-visible {
+  outline: 0.2rem solid var(--green);
+  outline-offset: 0.2rem;
+}
+
+.gratuity-summary {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 2rem;
+}
+
+.gratuity-summary-card,
+.gratuity-chart-card,
+.gratuity-records-card {
+  background: var(--bg-color);
+  border-radius: 1rem;
+  box-shadow: var(--box-shadow);
+  padding: 2rem;
+}
+
+.gratuity-records-heading {
+  align-items: center;
+  display: flex;
+  gap: 1.5rem;
+  justify-content: space-between;
+}
+
+.gratuity-summary-card {
+  text-align: center;
+}
+
+.gratuity-summary-card h3 {
+  color: var(--green);
+  font-size: 2.2rem;
+  overflow-wrap: anywhere;
+}
+
+.gratuity-summary-card p,
+.gratuity-status {
+  color: var(--light-color);
+  font-size: 1.4rem;
+}
+
+.gratuity-chart-card,
+.gratuity-records-card {
+  margin-top: 2rem;
+}
+
+.gratuity-chart-card header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.gratuity-chart-card h3,
+.gratuity-records-card h3 {
+  color: var(--black);
+  font-size: 2rem;
+  margin: 0;
+}
+
+.gratuity-records-heading p {
+  color: var(--light-color);
+  font-size: 1.4rem;
+  margin-top: 0.5rem;
+}
+
+.gratuity-chart-container {
+  height: min(52vh, 42rem);
+  margin-top: 1.5rem;
+  min-height: 28rem;
+}
+
+.gratuity-table-scroll {
+  margin-top: 1.5rem;
+  overflow-x: auto;
+}
+
+.gratuity-records-card table {
+  border-collapse: collapse;
+  min-width: 62rem;
+  width: 100%;
+}
+
+.gratuity-records-card th,
+.gratuity-records-card td {
+  border-bottom: var(--border);
+  color: var(--black);
+  font-size: 1.4rem;
+  padding: 1.2rem 1rem;
+  text-align: left;
+}
+
+.gratuity-records-card th {
+  color: var(--green);
+}
+
+.gratuity-actions {
+  gap: 0.8rem;
+  justify-content: center;
+}
+
+.gratuity-actions .transfer-action {
+  align-items: center;
+  background: var(--bg-color);
+  border-radius: 50%;
+  box-shadow: var(--box-shadow);
+  color: var(--green);
+  display: inline-flex;
+  flex: 0 0 3.8rem;
+  height: 3.8rem;
+  justify-content: center;
+  margin: 0;
+  padding: 0.8rem;
+  width: 3.8rem;
+}
+
+.gratuity-actions .transfer-action.delete-action {
+  background: #fdecea;
+  color: #c0392b;
+}
+
+.gratuity-actions .transfer-action svg {
+  display: block;
+  fill: none;
+  flex: 0 0 1.8rem;
+  height: 1.8rem;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+  width: 1.8rem;
+}
+
+.gratuity-actions .transfer-action:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.actions-heading {
+  text-align: center !important;
+}
+
+.gratuity-status {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.gratuity-error,
+.gratuity-field-error {
+  color: #c0392b;
+}
+
+.gratuity-modal-backdrop {
+  align-items: center;
+  background: rgb(0 0 0 / 58%);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  overflow-y: auto;
+  padding: 2rem;
+  position: fixed;
+  z-index: 1010;
+}
+
+.gratuity-modal {
+  background: var(--bg-color);
+  border: var(--border);
+  border-radius: 1.2rem;
+  box-shadow: var(--box-shadow);
+  color: var(--black);
+  max-height: calc(100vh - 4rem);
+  max-width: 64rem;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 2.5rem;
+  width: 100%;
+}
+
+.gratuity-modal-heading {
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.gratuity-eyebrow {
+  color: var(--green);
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: 0.12rem;
+  margin: 0;
+}
+
+.gratuity-modal-heading h2 {
+  color: var(--black);
+  font-size: 2.4rem;
+  margin-top: 0.4rem;
+}
+
+.gratuity-form-grid {
+  display: grid;
+  gap: 1.6rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.gratuity-modal-actions {
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+}
+
+.gratuity-modal-actions .primary-action {
+  background: var(--green);
+  color: var(--white);
+}
+
+@media (max-width: 700px) {
+  .gratuity-accordion {
+    padding: 1.5rem;
+  }
+
+  .gratuity-summary,
+  .gratuity-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
