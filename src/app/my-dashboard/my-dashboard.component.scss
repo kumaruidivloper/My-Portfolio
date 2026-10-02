@@ -365,6 +365,18 @@
     grid-template-columns: 1fr;
   }
 
+  .records-heading {
+    flex-wrap: nowrap;
+  }
+
+  .records-toggle-copy {
+    flex: 1 1 auto;
+  }
+
+  .records-actions {
+    flex: 0 0 auto;
+  }
+
   .modal-backdrop {
     padding: 1rem;
   }
