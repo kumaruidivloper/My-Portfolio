@@ -372,7 +372,6 @@
                 spellcheck="false"
                 maxlength="8"
                 [formControl]="deleteConfirmationCode"
-                [disabled]="isSaving"
                 (input)="validateDeleteConfirmationCode()"
                 aria-describedby="edit-transfer-code-help">
               <small id="edit-transfer-code-help">Enter the required 8-digit code to continue.</small>
@@ -461,7 +460,6 @@
             spellcheck="false"
             maxlength="8"
             [formControl]="deleteConfirmationCode"
-            [disabled]="isSaving"
             (input)="validateDeleteConfirmationCode()"
             aria-describedby="delete-code-help">
           <small id="delete-code-help">Enter the required 8-digit code to continue.</small>

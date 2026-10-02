@@ -259,13 +259,13 @@ export class KumarPfDataComponent implements OnDestroy {
       records[this.editingRecordIndex] = record;
     }
 
-    this.isSaving = true;
+    this.setSavingState(true);
     this.saveError = '';
     this.dismissToast();
     this.pfDataService.updatePfData({ ...this.pfData, pfRecords: records }, this.resourceId).subscribe({
       next: (data) => {
         this.pfData = data;
-        this.isSaving = false;
+        this.setSavingState(false);
         this.closeEditModal();
         if (addingRecord) {
           this.areRecordsExpanded = true;
@@ -274,7 +274,7 @@ export class KumarPfDataComponent implements OnDestroy {
         this.changeDetectorRef.detectChanges();
       },
       error: (error: unknown) => {
-        this.isSaving = false;
+        this.setSavingState(false);
         this.saveError = error instanceof Error ? error.message : 'Unable to save the PF record.';
         this.changeDetectorRef.detectChanges();
       }
@@ -343,20 +343,20 @@ export class KumarPfDataComponent implements OnDestroy {
     }
 
     const records = this.records.filter((_, recordIndex) => recordIndex !== index);
-    this.isSaving = true;
+    this.setSavingState(true);
     this.saveError = '';
     this.dismissToast();
     this.pfDataService.updatePfData({ ...this.pfData, pfRecords: records }, this.resourceId).subscribe({
       next: (data) => {
         this.pfData = data;
-        this.isSaving = false;
+        this.setSavingState(false);
         this.pendingDeleteRecordIndex = null;
         this.resetDeleteConfirmationCode();
         this.showToast('PF record deleted successfully.');
         this.changeDetectorRef.detectChanges();
       },
       error: (error: unknown) => {
-        this.isSaving = false;
+        this.setSavingState(false);
         this.saveError = error instanceof Error ? error.message : 'Unable to delete the PF record.';
         this.changeDetectorRef.detectChanges();
       }
@@ -405,6 +405,17 @@ export class KumarPfDataComponent implements OnDestroy {
     this.isDeleteCodeVerified = false;
     this.isDeleteCodeIncorrect = false;
     this.verifiedDeleteCode = '';
+  }
+
+  private setSavingState(isSaving: boolean): void {
+    this.isSaving = isSaving;
+    if (isSaving) {
+      this.editForm.disable();
+      this.deleteConfirmationCode.disable();
+    } else {
+      this.editForm.enable();
+      this.deleteConfirmationCode.enable();
+    }
   }
 
   formatRupees(value: number): string {

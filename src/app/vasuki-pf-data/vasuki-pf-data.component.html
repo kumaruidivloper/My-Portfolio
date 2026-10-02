@@ -289,7 +289,7 @@
         <div class="pf-form-grid">
           <label class="pf-form-field">
             <span>Month</span>
-            <input type="month" formControlName="date" [disabled]="isSaving">
+            <input type="month" formControlName="date">
             @if (editForm.controls.date.touched && editForm.controls.date.hasError('required')) {
               <small class="pf-field-error">Select a month.</small>
             }
@@ -299,14 +299,14 @@
           </label>
           <label class="pf-form-field">
             <span>PF balance (INR)</span>
-            <input type="number" min="0" step="1" formControlName="pfAmount" [disabled]="isSaving">
+            <input type="number" min="0" step="1" formControlName="pfAmount">
             @if (editForm.controls.pfAmount.touched && editForm.controls.pfAmount.invalid) {
               <small class="pf-field-error">Enter a valid non-negative balance.</small>
             }
           </label>
           <label class="pf-form-field">
             <span>Monthly difference (INR)</span>
-            <input type="number" min="0" step="1" formControlName="difference" [disabled]="isSaving">
+            <input type="number" min="0" step="1" formControlName="difference">
             @if (editForm.controls.difference.touched && editForm.controls.difference.invalid) {
               <small class="pf-field-error">Enter a valid non-negative amount.</small>
             }
@@ -321,7 +321,6 @@
               autocomplete="off"
               maxlength="8"
               [formControl]="deleteConfirmationCode"
-              [disabled]="isSaving"
               (input)="validateDeleteConfirmationCode()"
               [attr.aria-describedby]="'pf-edit-code-help-' + resourceId">
             <small [id]="'pf-edit-code-help-' + resourceId">Enter the required 8-digit code to continue.</small>

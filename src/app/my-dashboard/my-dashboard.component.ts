@@ -439,20 +439,20 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     }
 
     const updatedTransfers = this.transfers.filter((_, transferIndex) => transferIndex !== index);
-    this.isSaving = true;
+    this.setSavingState(true);
     this.saveError = '';
     this.dismissToast();
     this.transferService.updateTransfers(updatedTransfers).subscribe({
       next: (transfers) => {
         this.transfers = transfers;
-        this.isSaving = false;
+        this.setSavingState(false);
         this.pendingDeleteIndex = null;
         this.resetDeleteConfirmationCode();
         this.showToast('Transfer deleted successfully.');
         this.changeDetectorRef.detectChanges();
       },
       error: (error: unknown) => {
-        this.isSaving = false;
+        this.setSavingState(false);
         this.saveError = error instanceof Error
           ? error.message
           : 'Unable to delete this transfer. Please try again.';
@@ -468,6 +468,17 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     this.isDeleteCodeVerified = false;
     this.isDeleteCodeIncorrect = false;
     this.verifiedDeleteCode = '';
+  }
+
+  private setSavingState(isSaving: boolean): void {
+    this.isSaving = isSaving;
+    if (isSaving) {
+      this.editForm.disable();
+      this.deleteConfirmationCode.disable();
+    } else {
+      this.editForm.enable();
+      this.deleteConfirmationCode.enable();
+    }
   }
 
   closeEditModal(): void {
@@ -528,13 +539,13 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
       );
     const isAddingTransfer = this.isAddingTransfer;
 
-    this.isSaving = true;
+    this.setSavingState(true);
     this.saveError = '';
     this.dismissToast();
     this.transferService.updateTransfers(updatedTransfers).subscribe({
       next: (transfers) => {
         this.transfers = transfers;
-        this.isSaving = false;
+        this.setSavingState(false);
         this.editingTransferIndex = null;
         this.isAddingTransfer = false;
         this.resetDeleteConfirmationCode();
@@ -549,7 +560,7 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
         this.changeDetectorRef.detectChanges();
       },
       error: (error: unknown) => {
-        this.isSaving = false;
+        this.setSavingState(false);
         this.saveError = error instanceof Error
           ? error.message
           : 'Unable to update this transfer. Please try again.';
