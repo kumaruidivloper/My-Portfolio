@@ -82,6 +82,10 @@ export class AppComponent implements OnInit, OnDestroy {
   private timeUpdateTimeout?: ReturnType<typeof setTimeout>;
   private timeUpdateInterval?: ReturnType<typeof setInterval>;
 
+  get showAutoScroll(): boolean {
+    return !this.router.url.startsWith('/dashboard');
+  }
+
 
   @ViewChild('menubtn') menubtn!: ElementRef;
   @ViewChild('header') header!: ElementRef;

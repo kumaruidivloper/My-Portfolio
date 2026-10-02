@@ -46,15 +46,17 @@
       }
     </div>
   </div>
-  <div class="auto-scroll" (click)="scrollTop()">
-    @if (!isScrollBottom) {
-      <i class="fa fa-caret-up"></i>
-    }
-    @if (isScrollBottom) {
-      <i class="fa fa-caret-down"></i>
-    }
-    <i class="fa-regular fa-circle-down"></i>
-  </div>
+  @if (showAutoScroll) {
+    <div class="auto-scroll" (click)="scrollTop()">
+      @if (!isScrollBottom) {
+        <i class="fa fa-caret-up"></i>
+      }
+      @if (isScrollBottom) {
+        <i class="fa fa-caret-down"></i>
+      }
+      <i class="fa-regular fa-circle-down"></i>
+    </div>
+  }
   <div id="theme-toggler" #themeToggler  (click)="themeTogglerClick()" class="fas fa-moon">
   </div>
   <!-- home section starts  -->

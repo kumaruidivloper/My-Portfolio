@@ -26,6 +26,17 @@ describe('AppComponent', () => {
     expect(component.barRange(89)).toBe('89%');
   });
 
+  it('shows auto-scroll on the portfolio page but not in the dashboard', () => {
+    Object.assign(component, { router: { url: '/' } });
+    expect(component.showAutoScroll).toBeTrue();
+
+    Object.assign(component, { router: { url: '/dashboard' } });
+    expect(component.showAutoScroll).toBeFalse();
+
+    Object.assign(component, { router: { url: '/dashboard?tab=pf' } });
+    expect(component.showAutoScroll).toBeFalse();
+  });
+
   it('keeps the dashboard prompt open for an incorrect code', async () => {
     const verify = jasmine.createSpy('verify').and.resolveTo(false);
     Object.assign(component, {
