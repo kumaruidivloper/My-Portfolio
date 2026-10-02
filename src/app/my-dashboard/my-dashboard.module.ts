@@ -11,6 +11,7 @@ import { SumOfValueComponent } from '../sum-of-value/sum-of-value.component';
 import { KumarGratuityComponent } from '../kumar-gratuity/kumar-gratuity.component';
 import { VasukiGratuityComponent } from '../vasuki-gratuity/vasuki-gratuity.component';
 import { VasukiSuperComponent } from '../vasuki-super/vasuki-super.component';
+import { ResponsiveTableComponent } from '../responsive-table/responsive-table.component';
 
 @NgModule({
   declarations: [
@@ -20,7 +21,8 @@ import { VasukiSuperComponent } from '../vasuki-super/vasuki-super.component';
     SumOfValueComponent,
     KumarGratuityComponent,
     VasukiGratuityComponent,
-    VasukiSuperComponent
+    VasukiSuperComponent,
+    ResponsiveTableComponent
   ],
   imports: [
     CommonModule,

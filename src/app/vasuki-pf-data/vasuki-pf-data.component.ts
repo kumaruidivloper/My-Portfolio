@@ -5,6 +5,7 @@ import { Subscription, timer } from 'rxjs';
 import { PfDataService, PfResourceId } from '../service/pf-data.service';
 import { PfApiDocument, PfRecord } from '../model/pf-record';
 import { ConfirmationCodeService } from '../service/confirmation-code.service';
+import { ResponsiveGridColumn, ResponsiveGridRow } from '../responsive-table/responsive-table.component';
 
 type PfMetric = 'pfAmount' | 'difference';
 
@@ -63,6 +64,12 @@ export class VasukiPfDataComponent implements OnDestroy {
   private verifiedDeleteCode = '';
   private toastTimeout?: Subscription;
   selectedMetric: PfMetric = 'pfAmount';
+  readonly gridColumns: readonly ResponsiveGridColumn[] = [
+    { key: 'month', label: 'Month', sortable: true },
+    { key: 'balance', label: 'PF balance', sortable: true, numeric: true },
+    { key: 'difference', label: 'Monthly difference', sortable: true, numeric: true },
+    { key: 'actions', label: 'Actions', actions: true }
+  ];
   readonly colorScheme: Color = {
     name: 'vasuki-pf-balance',
     selectable: true,
@@ -115,6 +122,15 @@ export class VasukiPfDataComponent implements OnDestroy {
 
   get records(): PfRecord[] {
     return this.pfData?.pfRecords ?? [];
+  }
+
+  get gridRows(): ResponsiveGridRow[] {
+    return this.records.map((record, actionIndex) => ({
+      actionIndex,
+      month: this.formatMonth(record.date),
+      balance: this.formatRupeesWithSpace(record.pfAmount),
+      difference: this.formatRupeesWithSpace(record.difference)
+    }));
   }
 
   get chartData(): PfChartDatum[] {

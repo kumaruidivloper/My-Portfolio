@@ -204,81 +204,46 @@
           </div>
         </header>
         @if (areRecordsExpanded) {
-          <div class="table-scroll" id="transfer-records-panel">
-            <table>
-              <thead>
-                <tr>
-                  <th scope="col" [attr.aria-sort]="sortKey === 'dateOfTransfer' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'">
-                    <button type="button" class="sortable-header" (click)="sortTransfers('dateOfTransfer')">
-                      Transfer date <span aria-hidden="true">{{ sortIndicator('dateOfTransfer') }}</span>
-                    </button>
-                  </th>
-                  <th scope="col" [attr.aria-sort]="sortKey === 'amountTransferredAUD' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'">
-                    <button type="button" class="sortable-header" (click)="sortTransfers('amountTransferredAUD')">
-                      Sent (AUD) <span aria-hidden="true">{{ sortIndicator('amountTransferredAUD') }}</span>
-                    </button>
-                  </th>
-                  <th scope="col" [attr.aria-sort]="sortKey === 'conversionRate' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'">
-                    <button type="button" class="sortable-header" (click)="sortTransfers('conversionRate')">
-                      Rate <span aria-hidden="true">{{ sortIndicator('conversionRate') }}</span>
-                    </button>
-                  </th>
-                  <th scope="col" [attr.aria-sort]="sortKey === 'receivedDate' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'">
-                    <button type="button" class="sortable-header" (click)="sortTransfers('receivedDate')">
-                      Received date <span aria-hidden="true">{{ sortIndicator('receivedDate') }}</span>
-                    </button>
-                  </th>
-                  <th scope="col" [attr.aria-sort]="sortKey === 'amountReceivedINR' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'">
-                    <button type="button" class="sortable-header" (click)="sortTransfers('amountReceivedINR')">
-                      Received (INR) <span aria-hidden="true">{{ sortIndicator('amountReceivedINR') }}</span>
-                    </button>
-                  </th>
-                  <th scope="col" class="transfer-actions-cell">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (row of sortedTransfers; track row.index) {
-                  @let transfer = row.transfer;
-                  <tr>
-                    <td data-label="Transfer date">{{ formatDate(transfer.dateOfTransfer) }}</td>
-                    <td data-label="Sent (AUD)">{{ formatTransferCurrency(transfer.amountTransferredAUD, 'AUD') }}</td>
-                    <td data-label="Rate">{{ transfer.conversionRate | number:'1.2-4' }}</td>
-                    <td data-label="Received date">{{ formatDate(transfer.receivedDate) }}</td>
-                    <td data-label="Received (INR)">{{ formatTransferCurrency(transfer.amountReceivedINR, 'INR') }}</td>
-                    <td class="transfer-actions-cell" data-label="Actions">
-                      <div class="transfer-actions">
-                        <button
-                          type="button"
-                          class="control-button transfer-action"
-                          [attr.aria-label]="'Update transfer from ' + formatDate(transfer.dateOfTransfer)"
-                          [title]="'Update transfer from ' + formatDate(transfer.dateOfTransfer)"
-                          (click)="editTransfer(row.index)">
-                          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8">
-                            <path d="M12 20h9"></path>
-                            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"></path>
-                          </svg>
-                        </button>
-                        <button
-                          type="button"
-                          class="control-button transfer-action delete-action"
-                          [disabled]="isSaving"
-                          [attr.aria-label]="'Delete transfer from ' + formatDate(transfer.dateOfTransfer)"
-                          [title]="'Delete transfer from ' + formatDate(transfer.dateOfTransfer)"
-                          (click)="requestDeleteTransfer(row.index)">
-                          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8">
-                            <path d="M3 6h18"></path>
-                            <path d="M8 6V4h8v2"></path>
-                            <path d="m19 6-1 14H6L5 6"></path>
-                            <path d="M10 11v5M14 11v5"></path>
-                          </svg>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
+          <app-responsive-table
+            class="responsive-record-table"
+            id="transfer-records-panel"
+            ariaLabel="Transfer records"
+            [columns]="gridColumns"
+            [rows]="transferGridRows"
+            [sortKey]="sortKey"
+            [sortDirection]="sortDirection"
+            sortMode="external"
+            (sortChange)="sortGrid($event)">
+            <ng-template #gridActions let-index="index">
+              <div class="responsive-grid-action-buttons">
+                <button
+                  type="button"
+                  class="control-button transfer-action"
+                  [attr.aria-label]="'Update transfer from ' + formatDate(sortedTransfers[index].transfer.dateOfTransfer)"
+                  [title]="'Update transfer from ' + formatDate(sortedTransfers[index].transfer.dateOfTransfer)"
+                  (click)="editTransfer(sortedTransfers[index].index)">
+                  <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8">
+                    <path d="M12 20h9"></path>
+                    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"></path>
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="control-button transfer-action delete-action"
+                  [disabled]="isSaving"
+                  [attr.aria-label]="'Delete transfer from ' + formatDate(sortedTransfers[index].transfer.dateOfTransfer)"
+                  [title]="'Delete transfer from ' + formatDate(sortedTransfers[index].transfer.dateOfTransfer)"
+                  (click)="requestDeleteTransfer(sortedTransfers[index].index)">
+                  <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8">
+                    <path d="M3 6h18"></path>
+                    <path d="M8 6V4h8v2"></path>
+                    <path d="m19 6-1 14H6L5 6"></path>
+                    <path d="M10 11v5M14 11v5"></path>
+                  </svg>
+                </button>
+              </div>
+            </ng-template>
+          </app-responsive-table>
         }
       </section>
     }

@@ -1,0 +1,42 @@
+<div class="responsive-grid-scroll">
+  <table class="responsive-grid-table" [attr.aria-label]="ariaLabel">
+    <thead>
+      <tr>
+        @for (column of columns; track column.key) {
+          <th
+            scope="col"
+            [class.numeric-column]="column.numeric"
+            [class.actions-heading]="column.actions"
+            [attr.aria-sort]="column.sortable ? sortLabel(column.sortKey || column.key) : null">
+            @if (column.sortable) {
+              <button type="button" class="responsive-grid-sort" (click)="requestSort(column)">
+                {{ column.label }}
+                <span aria-hidden="true">{{ sortIndicator(column.sortKey || column.key) }}</span>
+              </button>
+            } @else {
+              {{ column.label }}
+            }
+          </th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of displayedRows; track row.actionIndex ?? $index; let rowIndex = $index) {
+        <tr>
+          @for (column of columns; track column.key) {
+            <td [attr.data-label]="column.label" [class.actions-cell]="column.actions">
+              @if (column.actions && actionsTemplate) {
+                <ng-container
+                  [ngTemplateOutlet]="actionsTemplate"
+                  [ngTemplateOutletContext]="{ $implicit: row, index: row.actionIndex ?? rowIndex }">
+                </ng-container>
+              } @else {
+                {{ row[column.key] }}
+              }
+            </td>
+          }
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

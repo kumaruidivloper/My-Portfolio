@@ -1,0 +1,213 @@
+app-responsive-table {
+  display: block;
+  min-width: 0;
+}
+
+.responsive-grid-scroll {
+  margin-top: 1.5rem;
+  overflow-x: auto;
+}
+
+.responsive-grid-table {
+  border-collapse: collapse;
+  min-width: 55rem;
+  width: 100%;
+}
+
+.responsive-grid-table th,
+.responsive-grid-table td {
+  border-bottom: var(--border);
+  color: var(--black);
+  font-size: 1.4rem;
+  padding: 1.2rem 1rem;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.responsive-grid-table tbody tr {
+  transition: background-color 0.18s ease;
+}
+
+.responsive-grid-table tbody tr:hover {
+  background-color: color-mix(in srgb, var(--green) 8%, var(--bg-color));
+}
+
+.responsive-grid-table th {
+  color: var(--green);
+  font-weight: 600;
+}
+
+.responsive-grid-table .numeric-column,
+.responsive-grid-table td:not(:first-child):not(.actions-cell) {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.responsive-grid-table .actions-heading,
+.responsive-grid-table .actions-cell {
+  text-align: center;
+}
+
+.responsive-grid-sort {
+  align-items: center;
+  background: transparent;
+  box-sizing: border-box;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  gap: 0.6rem;
+  justify-content: flex-start;
+  min-height: 4rem;
+  padding: 0;
+  text-align: left;
+  width: 100%;
+}
+
+.responsive-grid-table th.numeric-column .responsive-grid-sort {
+  justify-content: flex-end;
+}
+
+.responsive-grid-sort:focus-visible {
+  outline: 0.2rem solid var(--green);
+  outline-offset: 0.3rem;
+}
+
+.responsive-grid-sort:hover {
+  color: var(--black);
+}
+
+.responsive-grid-action-buttons {
+  align-items: center;
+  display: flex;
+  gap: 0.8rem;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+html body .dashboard-page app-responsive-table .responsive-grid-action-buttons button.control-button.transfer-action {
+  align-items: center;
+  background: var(--bg-color);
+  border: 0;
+  border-radius: 50%;
+  box-shadow: var(--box-shadow);
+  color: var(--black);
+  cursor: pointer;
+  display: inline-flex;
+  height: 4rem;
+  justify-content: center;
+  margin: 0;
+  padding: 1rem;
+  width: 4rem;
+}
+
+html body .dashboard-page app-responsive-table .responsive-grid-action-buttons button.control-button.transfer-action:not(:disabled):hover {
+  background: var(--bg-color);
+  box-shadow: var(--box-shadow-inset);
+  color: var(--green);
+}
+
+html body .dashboard-page app-responsive-table .responsive-grid-action-buttons button.control-button.transfer-action:first-child {
+  color: var(--green);
+}
+
+html body .dashboard-page app-responsive-table .responsive-grid-action-buttons button.control-button.transfer-action.delete-action {
+  background: #fdecea;
+  color: #c0392b;
+}
+
+html body .dashboard-page app-responsive-table .responsive-grid-action-buttons button.control-button.transfer-action.delete-action:not(:disabled):hover {
+  background: #fdecea;
+  box-shadow: var(--box-shadow-inset);
+  color: #c0392b;
+}
+
+html body .dashboard-page app-responsive-table .responsive-grid-action-buttons button.control-button.transfer-action:focus-visible {
+  outline: 0.2rem solid var(--green);
+  outline-offset: 0.2rem;
+}
+
+html body .dashboard-page app-responsive-table .responsive-grid-action-buttons button.control-button.transfer-action svg {
+  display: block;
+  fill: none;
+  height: 1.8rem;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+  width: 1.8rem;
+}
+
+@media (max-width: 600px) {
+  .responsive-grid-scroll {
+    overflow: visible;
+  }
+
+  .responsive-grid-table {
+    border-collapse: separate;
+    border-spacing: 0 1.2rem;
+    display: block;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .responsive-grid-table thead {
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+  }
+
+  .responsive-grid-table tbody,
+  .responsive-grid-table tbody tr {
+    display: block;
+    width: 100%;
+  }
+
+  .responsive-grid-table tbody tr {
+    background: var(--bg-color);
+    border-radius: 1rem;
+    box-shadow: var(--box-shadow);
+    margin-bottom: 1.2rem;
+    padding: 0.6rem 1.2rem;
+  }
+
+  .responsive-grid-table td {
+    align-items: flex-start;
+    border-bottom: var(--border);
+    display: flex;
+    gap: 1.2rem;
+    justify-content: space-between;
+    min-width: 0;
+    padding: 1rem 0;
+    text-align: right;
+    white-space: normal;
+  }
+
+  .responsive-grid-table td::before {
+    color: var(--light-color);
+    content: attr(data-label);
+    flex: 0 0 42%;
+    font-weight: 600;
+    text-align: left;
+  }
+
+  .responsive-grid-table td:last-child {
+    border-bottom: 0;
+  }
+
+  .responsive-grid-table .actions-cell {
+    align-items: center;
+    min-width: 0;
+    justify-content: space-between;
+  }
+
+  .responsive-grid-action-buttons {
+    flex: 0 0 auto;
+    gap: 0.6rem;
+    justify-content: flex-start;
+  }
+}

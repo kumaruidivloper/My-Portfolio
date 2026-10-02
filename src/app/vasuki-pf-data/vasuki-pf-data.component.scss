@@ -196,11 +196,6 @@
   min-height: 28rem;
 }
 
-.table-scroll {
-  margin-top: 1.5rem;
-  overflow-x: auto;
-}
-
 .pf-modal-backdrop {
   align-items: center;
   background: rgb(0 0 0 / 58%);
@@ -316,35 +311,6 @@
   }
 }
 
-table {
-  border-collapse: collapse;
-  min-width: 55rem;
-  width: 100%;
-}
-
-th,
-td {
-  border-bottom: 0.1rem solid rgba(128, 128, 128, 0.25);
-  color: var(--black);
-  font-size: 1.5rem;
-  padding: 1.2rem 1rem;
-  text-align: left;
-}
-
-th {
-  color: var(--green);
-  font-weight: 700;
-}
-
-th.numeric-column {
-  text-align: right;
-}
-
-td:not(:first-child) {
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-}
-
 @media (max-width: 700px) {
   .pf-data-accordion {
     padding: 1.5rem;
@@ -361,6 +327,22 @@ td:not(:first-child) {
   .pf-section-heading {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .pf-records-heading {
+    align-items: center;
+    flex-direction: row;
+    flex-wrap: nowrap;
+  }
+
+  .pf-records-heading-copy {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .pf-records-heading .records-actions {
+    flex: 0 0 auto;
+    margin-left: auto;
   }
 
 }

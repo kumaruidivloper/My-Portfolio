@@ -203,31 +203,6 @@
   width: 4rem;
 }
 
-.table-scroll {
-  overflow-x: auto;
-}
-
-table {
-  border-collapse: collapse;
-  min-width: 82rem;
-  width: 100%;
-}
-
-th,
-td {
-  border-bottom: var(--border);
-  color: var(--black);
-  font-size: 1.35rem;
-  padding: 1.1rem 1rem;
-  text-align: left;
-  white-space: nowrap;
-}
-
-th {
-  color: var(--green);
-  font-weight: 600;
-}
-
 .visually-hidden {
   clip: rect(0, 0, 0, 0);
   clip-path: inset(50%);

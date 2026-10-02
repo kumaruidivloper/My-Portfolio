@@ -5,6 +5,7 @@ import { merge, Subscription, timer } from 'rxjs';
 import { TransferRecord } from '../model/transfer';
 import { TransferService } from '../service/transfer.service';
 import { ConfirmationCodeService } from '../service/confirmation-code.service';
+import { ResponsiveGridColumn, ResponsiveGridRow } from '../responsive-table/responsive-table.component';
 
 type DashboardChartType = 'bar' | 'line' | 'pie' | 'doughnut';
 type TransferMetric = 'amountTransferredAUD' | 'amountReceivedINR' | 'conversionRate';
@@ -92,6 +93,10 @@ function dateSortValue(value: string): number | null {
     : null;
 }
 
+function isTransferSortKey(key: string): key is TransferSortKey {
+  return ['dateOfTransfer', 'amountTransferredAUD', 'conversionRate', 'receivedDate', 'amountReceivedINR'].includes(key);
+}
+
 @Component({
   selector: 'app-my-dashboard',
   templateUrl: './my-dashboard.component.html',
@@ -143,6 +148,14 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
       axisLabel: 'INR per AUD',
       format: (value) => `${value.toFixed(2)} INR/AUD`
     }
+  ];
+  readonly gridColumns: readonly ResponsiveGridColumn[] = [
+    { key: 'transferDate', label: 'Transfer date', sortable: true, sortKey: 'dateOfTransfer' },
+    { key: 'sent', label: 'Sent (AUD)', sortable: true, sortKey: 'amountTransferredAUD', numeric: true },
+    { key: 'rate', label: 'Rate', sortable: true, sortKey: 'conversionRate', numeric: true },
+    { key: 'receivedDate', label: 'Received date', sortable: true, sortKey: 'receivedDate' },
+    { key: 'received', label: 'Received (INR)', sortable: true, sortKey: 'amountReceivedINR', numeric: true },
+    { key: 'actions', label: 'Actions', actions: true }
   ];
 
   selectedChartType: DashboardChartType = 'bar';
@@ -288,13 +301,29 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     if (sortKey === null) {
       return rows;
     }
-
     return rows.sort((left, right) => {
       const comparison = this.compareTransferValues(left.transfer, right.transfer, sortKey);
       return comparison === 0
         ? left.index - right.index
         : this.sortDirection === 'asc' ? comparison : -comparison;
     });
+  }
+
+  get transferGridRows(): ResponsiveGridRow[] {
+    return this.sortedTransfers.map(({ transfer }, actionIndex) => ({
+      actionIndex,
+      transferDate: this.formatDate(transfer.dateOfTransfer),
+      sent: this.formatTransferCurrency(transfer.amountTransferredAUD, 'AUD'),
+      rate: transfer.conversionRate.toFixed(2),
+      receivedDate: this.formatDate(transfer.receivedDate),
+      received: this.formatTransferCurrency(transfer.amountReceivedINR, 'INR')
+    }));
+  }
+
+  sortGrid(key: string): void {
+    if (isTransferSortKey(key)) {
+      this.sortTransfers(key);
+    }
   }
 
   sortTransfers(key: TransferSortKey): void {
@@ -305,14 +334,6 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
 
     this.sortKey = key;
     this.sortDirection = 'asc';
-  }
-
-  sortIndicator(key: TransferSortKey): string {
-    if (this.sortKey !== key) {
-      return '↕';
-    }
-
-    return this.sortDirection === 'asc' ? '↑' : '↓';
   }
 
   selectChartType(type: DashboardChartType): void {

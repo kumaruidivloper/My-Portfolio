@@ -5,6 +5,7 @@ import { Subscription, timer } from 'rxjs';
 import { GratuityApiDocument, GratuityRecord } from '../model/gratuity-record';
 import { ConfirmationCodeService } from '../service/confirmation-code.service';
 import { GratuityDataService, GratuityResourceId } from '../service/gratuity-data.service';
+import { ResponsiveGridColumn, ResponsiveGridRow } from '../responsive-table/responsive-table.component';
 
 interface ChartDatum {
   name: string;
@@ -102,8 +103,26 @@ export class KumarGratuityComponent implements OnDestroy {
     return this.gratuityData?.gratuityRecords ?? [];
   }
 
+  get gridRows(): ResponsiveGridRow[] {
+    return this.records.map((record, actionIndex) => ({
+      actionIndex,
+      month: this.formatMonth(record.date),
+      value: this.formatRupees(record.gratuity),
+      difference: this.formatRupees(record.difference)
+    }));
+  }
+
   get recordTypeLabel(): string {
     return this.gratuityData?.type || (this.resourceId === '6' ? 'Super' : 'Gratuity');
+  }
+
+  get gridColumns(): readonly ResponsiveGridColumn[] {
+    return [
+      { key: 'month', label: 'Month', sortable: true },
+      { key: 'value', label: this.recordTypeLabel, sortable: true, numeric: true },
+      { key: 'difference', label: 'Difference', sortable: true, numeric: true },
+      { key: 'actions', label: 'Actions', actions: true }
+    ];
   }
 
   get chartData(): ChartDatum[] {
