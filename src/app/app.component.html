@@ -186,11 +186,13 @@
           @for (digit of dashboardCodeDigits; track $index; let i = $index) {
             <input
               class="dashboard-code-input"
-              type="text"
+              type="password"
               inputmode="numeric"
               pattern="[0-9]"
               maxlength="1"
-              autocomplete="one-time-code"
+              autocomplete="off"
+              autocapitalize="off"
+              spellcheck="false"
               [value]="digit"
               [attr.aria-label]="'Code digit ' + (i + 1)"
               (input)="onDashboardCodeInput($event, i)"

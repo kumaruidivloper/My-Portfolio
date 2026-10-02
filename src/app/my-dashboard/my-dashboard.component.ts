@@ -155,12 +155,17 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
   areRecordsExpanded = false;
   isSaving = false;
   pendingDeleteIndex: number | null = null;
+  isDeleteCodeVerifying = false;
+  isDeleteCodeVerified = false;
+  isDeleteCodeIncorrect = false;
   saveError = '';
   toastMessage = '';
   sortKey: TransferSortKey | null = null;
   sortDirection: SortDirection = 'asc';
   private toastTimeout?: Subscription;
   private amountCalculation?: Subscription;
+  private deleteCodeValidationAttempt = 0;
+  private verifiedDeleteCode = '';
   readonly chartView: [number, number] = [900, 430];
   readonly colorScheme: Color = {
     name: 'transfers',
@@ -213,9 +218,19 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
 
   get chartData(): ChartDatum[] {
     return this.transfers.map((transfer) => ({
-      name: transfer.dateOfTransfer,
+      name: this.formatDate(transfer.dateOfTransfer),
       value: transfer[this.selectedMetric]
     }));
+  }
+
+  formatDate(value: string): string {
+    const dateInputValue = toDateInputValue(value);
+    if (!dateInputValue) {
+      return value;
+    }
+
+    const [year, month, day] = dateInputValue.split('-');
+    return `${day} ${MONTHS[Number(month) - 1]} ${year}`;
   }
 
   get lineChartData(): { name: string; series: ChartDatum[] }[] {
@@ -326,7 +341,7 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
 
     this.pendingDeleteIndex = index;
     this.saveError = '';
-    this.deleteConfirmationCode.reset('');
+    this.resetDeleteConfirmationCode();
     this.dismissToast();
   }
 
@@ -337,7 +352,40 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
 
     this.pendingDeleteIndex = null;
     this.saveError = '';
-    this.deleteConfirmationCode.reset('');
+    this.resetDeleteConfirmationCode();
+  }
+
+  validateDeleteConfirmationCode(): void {
+    const code = this.deleteConfirmationCode.value;
+    const attempt = ++this.deleteCodeValidationAttempt;
+    this.isDeleteCodeVerifying = false;
+    this.isDeleteCodeVerified = false;
+    this.isDeleteCodeIncorrect = false;
+    this.verifiedDeleteCode = '';
+    this.saveError = '';
+
+    if (this.deleteConfirmationCode.invalid) {
+      return;
+    }
+
+    this.isDeleteCodeVerifying = true;
+    void this.confirmationCodeService.verify(code).then((isValid) => {
+      if (attempt !== this.deleteCodeValidationAttempt) {
+        return;
+      }
+      this.isDeleteCodeVerifying = false;
+      this.isDeleteCodeVerified = isValid;
+      this.isDeleteCodeIncorrect = !isValid;
+      this.verifiedDeleteCode = isValid ? code : '';
+      this.changeDetectorRef.detectChanges();
+    }).catch(() => {
+      if (attempt !== this.deleteCodeValidationAttempt) {
+        return;
+      }
+      this.isDeleteCodeVerifying = false;
+      this.saveError = 'Code verification is unavailable. Please try again.';
+      this.changeDetectorRef.detectChanges();
+    });
   }
 
   async deleteTransfer(): Promise<void> {
@@ -349,23 +397,16 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
       this.deleteConfirmationCode.markAsTouched();
       return;
     }
-    this.isSaving = true;
-    let isCodeValid: boolean;
-    try {
-      isCodeValid = await this.confirmationCodeService.verify(this.deleteConfirmationCode.value);
-    } catch {
-      this.isSaving = false;
-      this.saveError = 'Code verification is unavailable. Please try again.';
-      return;
-    }
-    if (!isCodeValid) {
-      this.isSaving = false;
-      this.deleteConfirmationCode.setErrors({ confirmationCode: true });
-      this.deleteConfirmationCode.markAsTouched();
+    if (
+      this.isDeleteCodeVerifying ||
+      !this.isDeleteCodeVerified ||
+      this.verifiedDeleteCode !== this.deleteConfirmationCode.value
+    ) {
       return;
     }
 
     const updatedTransfers = this.transfers.filter((_, transferIndex) => transferIndex !== index);
+    this.isSaving = true;
     this.saveError = '';
     this.dismissToast();
     this.transferService.updateTransfers(updatedTransfers).subscribe({
@@ -373,7 +414,7 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
         this.transfers = transfers;
         this.isSaving = false;
         this.pendingDeleteIndex = null;
-        this.deleteConfirmationCode.reset('');
+        this.resetDeleteConfirmationCode();
         this.showToast('Transfer deleted successfully.');
         this.changeDetectorRef.detectChanges();
       },
@@ -385,6 +426,15 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
         this.changeDetectorRef.detectChanges();
       }
     });
+  }
+
+  private resetDeleteConfirmationCode(): void {
+    this.deleteCodeValidationAttempt += 1;
+    this.deleteConfirmationCode.reset('');
+    this.isDeleteCodeVerifying = false;
+    this.isDeleteCodeVerified = false;
+    this.isDeleteCodeIncorrect = false;
+    this.verifiedDeleteCode = '';
   }
 
   closeEditModal(): void {

@@ -51,7 +51,7 @@ describe('MyDashboardComponent', () => {
   it('charts received INR amounts from the loaded transfer records', () => {
     component.selectMetric('amountReceivedINR');
 
-    expect(component.chartData.map((datum) => datum.name)).toEqual(['29-Sep-23', '31-Oct-23']);
+    expect(component.chartData.map((datum) => datum.name)).toEqual(['29 Sep 2023', '31 Oct 2023']);
     expect(component.chartData.map((datum) => datum.value)).toEqual([5350, 10800]);
   });
 
@@ -82,6 +82,11 @@ describe('MyDashboardComponent', () => {
 
     expect(component.editForm.controls.dateOfTransfer.value).toBe('2024-08-07');
     expect(component.editForm.controls.receivedDate.value).toBe('2026-07-05');
+  });
+
+  it('formats transfer and received dates consistently for display', () => {
+    expect(component.formatDate('29-Sep-23')).toBe('29 Sep 2023');
+    expect(component.formatDate('2026-07-05')).toBe('05 Jul 2026');
   });
 
   it('starts with records collapsed', () => {
@@ -231,6 +236,9 @@ describe('MyDashboardComponent', () => {
     expect(transferService.updateTransfers).not.toHaveBeenCalled();
 
     component.deleteConfirmationCode.setValue('12345678');
+    component.validateDeleteConfirmationCode();
+    await Promise.resolve();
+    expect(component.isDeleteCodeVerified).toBeTrue();
     await component.deleteTransfer();
 
     expect(transferService.updateTransfers).toHaveBeenCalledWith(remainingTransfers);
@@ -246,12 +254,15 @@ describe('MyDashboardComponent', () => {
     confirmationCodeService.verify.and.resolveTo(false);
     component.requestDeleteTransfer(0);
     component.deleteConfirmationCode.setValue('12345678');
+    component.validateDeleteConfirmationCode();
+    await Promise.resolve();
 
     await component.deleteTransfer();
 
     expect(transferService.updateTransfers).not.toHaveBeenCalled();
     expect(component.pendingDeleteIndex).toBe(0);
-    expect(component.deleteConfirmationCode.touched).toBeTrue();
+    expect(component.isDeleteCodeVerified).toBeFalse();
+    expect(component.isDeleteCodeIncorrect).toBeTrue();
   });
 
   it('keeps the delete confirmation open when the backend update fails', async () => {
@@ -260,6 +271,8 @@ describe('MyDashboardComponent', () => {
     );
     component.requestDeleteTransfer(0);
     component.deleteConfirmationCode.setValue('12345678');
+    component.validateDeleteConfirmationCode();
+    await Promise.resolve();
 
     await component.deleteTransfer();
 

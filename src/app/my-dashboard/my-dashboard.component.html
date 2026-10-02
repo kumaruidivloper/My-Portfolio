@@ -185,18 +185,18 @@
                 @for (row of sortedTransfers; track row.index) {
                   @let transfer = row.transfer;
                   <tr>
-                    <td>{{ transfer.dateOfTransfer }}</td>
+                    <td>{{ formatDate(transfer.dateOfTransfer) }}</td>
                     <td>{{ transfer.amountTransferredAUD | number:'1.2-2' }}</td>
                     <td>{{ transfer.conversionRate | number:'1.2-4' }}</td>
-                    <td>{{ transfer.receivedDate }}</td>
+                    <td>{{ formatDate(transfer.receivedDate) }}</td>
                     <td>{{ transfer.amountReceivedINR | number:'1.2-2' }}</td>
                     <td class="transfer-actions-cell">
                       <div class="transfer-actions">
                         <button
                           type="button"
                           class="control-button transfer-action"
-                          [attr.aria-label]="'Update transfer from ' + transfer.dateOfTransfer"
-                          [title]="'Update transfer from ' + transfer.dateOfTransfer"
+                          [attr.aria-label]="'Update transfer from ' + formatDate(transfer.dateOfTransfer)"
+                          [title]="'Update transfer from ' + formatDate(transfer.dateOfTransfer)"
                           (click)="editTransfer(row.index)">
                           <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8">
                             <path d="M12 20h9"></path>
@@ -207,8 +207,8 @@
                           type="button"
                           class="control-button transfer-action delete-action"
                           [disabled]="isSaving"
-                          [attr.aria-label]="'Delete transfer from ' + transfer.dateOfTransfer"
-                          [title]="'Delete transfer from ' + transfer.dateOfTransfer"
+                          [attr.aria-label]="'Delete transfer from ' + formatDate(transfer.dateOfTransfer)"
+                          [title]="'Delete transfer from ' + formatDate(transfer.dateOfTransfer)"
                           (click)="requestDeleteTransfer(row.index)">
                           <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8">
                             <path d="M3 6h18"></path>
@@ -329,12 +329,12 @@
         </header>
         <p id="delete-modal-description">
           Are you sure you want to permanently delete the transfer from
-          {{ transfers[pendingDeleteIndex].dateOfTransfer }}? This change will be saved to the backend.
+          {{ formatDate(transfers[pendingDeleteIndex].dateOfTransfer) }}? This change will be saved to the backend.
         </p>
         <dl class="delete-transfer-details">
           <div>
             <dt>Transfer date</dt>
-            <dd>{{ transfers[pendingDeleteIndex].dateOfTransfer }}</dd>
+            <dd>{{ formatDate(transfers[pendingDeleteIndex].dateOfTransfer) }}</dd>
           </div>
           <div>
             <dt>Amount sent (AUD)</dt>
@@ -346,7 +346,7 @@
           </div>
           <div>
             <dt>Received date</dt>
-            <dd>{{ transfers[pendingDeleteIndex].receivedDate }}</dd>
+            <dd>{{ formatDate(transfers[pendingDeleteIndex].receivedDate) }}</dd>
           </div>
           <div>
             <dt>Amount received (INR)</dt>
@@ -356,15 +356,25 @@
         <label class="form-field">
           <span>Enter confirmation code to delete</span>
           <input
-            type="text"
+            type="password"
             inputmode="numeric"
             autocomplete="off"
+            autocapitalize="off"
+            spellcheck="false"
             maxlength="8"
             [formControl]="deleteConfirmationCode"
+            [disabled]="isSaving"
+            (input)="validateDeleteConfirmationCode()"
             aria-describedby="delete-code-help">
           <small id="delete-code-help">Enter the required 8-digit code to continue.</small>
           @if (deleteConfirmationCode.touched && deleteConfirmationCode.invalid) {
             <small class="field-error">Enter the correct 8-digit confirmation code.</small>
+          }
+          @if (isDeleteCodeVerifying) {
+            <small>Verifying code…</small>
+          }
+          @if (isDeleteCodeIncorrect) {
+            <small class="field-error">The confirmation code is incorrect.</small>
           }
         </label>
         @if (saveError) {
@@ -381,9 +391,9 @@
           <button
             type="button"
             class="control-button primary-action"
-            [disabled]="isSaving || deleteConfirmationCode.invalid"
+            [disabled]="isSaving || isDeleteCodeVerifying || !isDeleteCodeVerified || deleteConfirmationCode.invalid"
             (click)="deleteTransfer()">
-            {{ isSaving ? 'Deleting…' : 'Delete transfer' }}
+            {{ isSaving ? 'Deleting…' : isDeleteCodeVerifying ? 'Verifying…' : 'Delete transfer' }}
           </button>
         </footer>
       </section>
