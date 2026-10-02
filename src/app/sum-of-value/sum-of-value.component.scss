@@ -1,0 +1,157 @@
+.sum-of-value-accordion {
+  background: var(--bg-color);
+  border-radius: 1.2rem;
+  box-shadow: var(--box-shadow);
+  margin-top: 2.5rem;
+  min-height: 0;
+  padding: 2.5rem;
+}
+
+.pf-accordion-header {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: space-between;
+  min-height: 4rem;
+}
+
+.pf-accordion-copy {
+  display: flex;
+  flex: 1 1 30rem;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.records-title {
+  color: var(--black);
+  font-size: 2.4rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.records-description {
+  color: var(--light-color);
+  font-size: 1.4rem;
+  margin: 0;
+}
+
+.records-actions {
+  align-self: center;
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-left: auto;
+}
+
+.control-button {
+  background: var(--bg-color);
+  border: 0;
+  border-radius: 2rem;
+  box-shadow: var(--box-shadow);
+  color: var(--black);
+  cursor: pointer;
+  font-size: 1.4rem;
+  padding: 0.8rem 1.6rem;
+}
+
+.accordion-toggle {
+  align-items: center;
+  border: 0;
+  border-radius: 50%;
+  display: inline-flex;
+  flex: 0 0 4rem;
+  height: 4rem;
+  justify-content: center;
+  margin: 0;
+  padding: 1rem;
+  vertical-align: middle;
+  width: 4rem;
+}
+
+.accordion-toggle:hover {
+  box-shadow: var(--box-shadow-inset);
+  color: var(--green);
+}
+
+.accordion-toggle:focus-visible {
+  outline: 0.2rem solid var(--green);
+  outline-offset: 0.2rem;
+}
+
+.accordion-toggle svg {
+  display: block;
+  flex: 0 0 1.8rem;
+  fill: none;
+  height: 1.8rem;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 2;
+  width: 1.8rem;
+}
+
+.sum-of-value-charts {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: 1fr;
+  margin-top: 2rem;
+}
+
+.sum-of-value-chart-card {
+  background: var(--bg-color);
+  border-radius: 1.2rem;
+  box-shadow: var(--box-shadow);
+  min-width: 0;
+  padding: 2rem;
+}
+
+.sum-of-value-chart-card h3 {
+  color: var(--black);
+  font-size: 2rem;
+  margin: 0;
+}
+
+.sum-of-value-chart-card p {
+  color: var(--light-color);
+  font-size: 1.4rem;
+  margin-top: 0.5rem;
+}
+
+.pf-section-heading {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: space-between;
+}
+
+.pf-chart-container {
+  height: min(52vh, 42rem);
+  margin-top: 1.5rem;
+  min-height: 28rem;
+}
+
+.sum-of-value-status {
+  color: var(--black);
+  font-size: 1.6rem;
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.sum-of-value-error {
+  color: #c0392b;
+}
+
+@media (max-width: 700px) {
+  .sum-of-value-accordion {
+    padding: 1.5rem;
+  }
+
+  .sum-of-value-chart-card {
+    overflow-x: auto;
+    padding: 1.5rem;
+  }
+}

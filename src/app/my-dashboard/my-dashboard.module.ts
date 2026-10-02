@@ -7,9 +7,10 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { MyDashboardComponent } from './my-dashboard.component';
 import { KumarPfDataComponent } from '../kumar-pf-data/kumar-pf-data.component';
 import { VasukiPfDataComponent } from '../vasuki-pf-data/vasuki-pf-data.component';
+import { SumOfValueComponent } from '../sum-of-value/sum-of-value.component';
 
 @NgModule({
-  declarations: [MyDashboardComponent, KumarPfDataComponent, VasukiPfDataComponent],
+  declarations: [MyDashboardComponent, KumarPfDataComponent, VasukiPfDataComponent, SumOfValueComponent],
   imports: [
     CommonModule,
     NgxChartsModule,

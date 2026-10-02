@@ -1,0 +1,100 @@
+<section class="pf-data-accordion sum-of-value-accordion" aria-labelledby="sum-of-value-title">
+  <header class="records-heading pf-accordion-header">
+    <div class="records-toggle-copy pf-accordion-copy">
+      <h2 class="records-title" id="sum-of-value-title">Sum of values · Combined PF</h2>
+      <p class="records-description">Kumar + Vasuki · Monthly interest and total PF amount</p>
+    </div>
+    <div class="records-actions">
+      <button
+        type="button"
+        class="control-button accordion-toggle"
+        [attr.aria-expanded]="isExpanded"
+        aria-controls="sum-of-value-panel"
+        [attr.aria-label]="isExpanded ? 'Collapse combined PF charts' : 'Expand combined PF charts'"
+        [title]="isExpanded ? 'Collapse combined PF charts' : 'Expand combined PF charts'"
+        (click)="toggleExpanded()">
+        <svg aria-hidden="true" viewBox="0 0 24 24">
+          <path d="M5 12h14"></path>
+          @if (!isExpanded) {
+            <path d="M12 5v14"></path>
+          }
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  @if (isExpanded) {
+    <div id="sum-of-value-panel">
+      @if (isLoading) {
+        <p class="sum-of-value-status" role="status">Loading combined PF records…</p>
+      }
+      @if (errorMessage) {
+        <p class="sum-of-value-status sum-of-value-error" role="alert">{{ errorMessage }}</p>
+      }
+      @if (!isLoading && !errorMessage && monthlyTotals.length === 0) {
+        <p class="sum-of-value-status" role="status">No combined PF records are available.</p>
+      }
+      @if (!isLoading && !errorMessage && monthlyTotals.length > 0) {
+        <div class="sum-of-value-charts">
+          <article class="sum-of-value-chart-card">
+            <header class="pf-section-heading">
+              <div>
+                <h3>Interest per month sum</h3>
+                <p>Sum of both monthly difference values</p>
+              </div>
+            </header>
+            <div class="chart-container pf-chart-container">
+              <ngx-charts-bar-vertical
+                [results]="interestChartData"
+                [scheme]="colorScheme"
+                [view]="chartView"
+                [xAxis]="true"
+                [yAxis]="true"
+                [showGridLines]="false"
+                [showXAxisLabel]="true"
+                [showYAxisLabel]="true"
+                xAxisLabel="Month"
+                yAxisLabel="Monthly interest (INR)">
+                <ng-template #tooltipTemplate let-model="model">
+                  <div class="chart-value-tooltip">
+                    <strong>{{ model.name }}</strong>
+                    <span>{{ formatRupees(model.value) }}</span>
+                  </div>
+                </ng-template>
+              </ngx-charts-bar-vertical>
+            </div>
+          </article>
+
+          <article class="sum-of-value-chart-card">
+            <header class="pf-section-heading">
+              <div>
+                <h3>Total PF Amount</h3>
+                <p>Sum of Kumar and Vasuki PF balances by month</p>
+              </div>
+            </header>
+            <div class="chart-container pf-chart-container">
+              <ngx-charts-bar-vertical
+                [results]="totalPfChartData"
+                [scheme]="colorScheme"
+                [view]="chartView"
+                [xAxis]="true"
+                [yAxis]="true"
+                [showGridLines]="false"
+                [showXAxisLabel]="true"
+                [showYAxisLabel]="true"
+                xAxisLabel="Month"
+                yAxisLabel="Total PF amount (INR)">
+                <ng-template #tooltipTemplate let-model="model">
+                  <div class="chart-value-tooltip">
+                    <strong>{{ model.name }}</strong>
+                    <span>{{ formatRupees(model.value) }}</span>
+                  </div>
+                </ng-template>
+              </ngx-charts-bar-vertical>
+            </div>
+          </article>
+        </div>
+      }
+    </div>
+  }
+</section>
