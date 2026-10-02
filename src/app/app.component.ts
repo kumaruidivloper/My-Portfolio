@@ -1,5 +1,6 @@
 
 import { Component, ViewChild, ElementRef, OnInit, OnDestroy, HostListener, Renderer2, Inject, DOCUMENT, ChangeDetectionStrategy } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
 import { AppOptions } from './model/model';
 import { DataService } from './service/data.service';
@@ -82,6 +83,9 @@ export class AppComponent implements OnInit, OnDestroy {
   private barAnimationTimeout?: ReturnType<typeof setTimeout>;
   private timeUpdateTimeout?: ReturnType<typeof setTimeout>;
   private timeUpdateInterval?: ReturnType<typeof setInterval>;
+  private dataSubscription?: Subscription;
+  private loadedTimeout?: ReturnType<typeof setTimeout>;
+  private contentHeightTimeout?: ReturnType<typeof setTimeout>;
 
   get showAutoScroll(): boolean {
     return !this.router.url.startsWith('/dashboard');
@@ -130,13 +134,13 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.checkTimeCondition();
-    this.dataService.getData().subscribe((res) => {
+    this.dataSubscription = this.dataService.getData().subscribe((res) => {
        this.data = res;
     },() => {
     }, () => {
-      setTimeout(() => {
+      this.loadedTimeout = setTimeout(() => {
         this.isDataLoaded = true;
-        setTimeout(() => {this.contentHeight = document.body.scrollHeight}, 5000)
+        this.contentHeightTimeout = setTimeout(() => {this.contentHeight = document.body.scrollHeight}, 5000)
       },3500)
       
       //console.log("pross completed");
@@ -167,6 +171,10 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.dataSubscription?.unsubscribe();
+    clearTimeout(this.loadedTimeout);
+    clearTimeout(this.contentHeightTimeout);
+    this.renderer.removeClass(this.document.body, 'scrollOff');
     if (this.barAnimationTimeout) {
       clearTimeout(this.barAnimationTimeout);
     }

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 
 @Component({
@@ -20,7 +20,7 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
     changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
-export class TimerComponent implements OnInit {
+export class TimerComponent implements OnInit, OnDestroy {
   @Input() duration: number = 0; // duration in milliseconds
   userInputDuration: number = 0;
   timerState: 'running' | 'paused' = 'paused';
@@ -31,6 +31,10 @@ export class TimerComponent implements OnInit {
 
   ngOnInit() {
     this.updateTimer();
+  }
+
+  ngOnDestroy() {
+    clearInterval(this.timerInterval);
   }
 
   setAndStartTimer() {
@@ -44,6 +48,7 @@ export class TimerComponent implements OnInit {
   }
 
   startTimer() {
+    clearInterval(this.timerInterval);
     this.timerState = 'running';
     this.timerInterval = setInterval(() => {
       this.duration -= 10;
