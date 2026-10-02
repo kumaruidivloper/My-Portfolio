@@ -17,6 +17,10 @@ app-responsive-table {
   padding: 1rem 1.2rem;
 }
 
+.responsive-grid-pagination {
+  color: var(--black);
+}
+
 .responsive-grid-page-size,
 .responsive-grid-page-controls {
   align-items: center;
@@ -28,6 +32,7 @@ app-responsive-table {
   background: var(--bg-color);
   border: var(--border);
   border-radius: 0.5rem;
+  color: var(--black);
   font: inherit;
   padding: 0.5rem;
   width: 6rem;
@@ -184,13 +189,25 @@ html body .dashboard-page app-responsive-table .responsive-grid-action-buttons b
 
 @media (max-width: 600px) {
   .responsive-grid-pagination {
-    align-items: flex-start;
+    align-items: center;
     flex-direction: column;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .responsive-grid-page-size,
+  .responsive-grid-page-summary {
+    justify-content: center;
   }
 
   .responsive-grid-page-controls {
     justify-content: space-between;
     width: 100%;
+  }
+
+  .responsive-grid-page-controls > span {
+    flex: 1;
+    text-align: center;
   }
 
   .responsive-grid-scroll {

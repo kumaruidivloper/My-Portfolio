@@ -292,7 +292,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   openDashboardPrompt(): void {
     if (!environment.production) {
-      this.isDashboardPromptOpen = true;
+      this.isDashboardPromptOpen = false;
       this.dashboardCodeError = '';
       this.dashboardAccessGuard.grantOneTimeAccess();
       void this.router.navigateByUrl('/dashboard');
