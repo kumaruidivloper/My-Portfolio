@@ -233,6 +233,24 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     return `${day} ${MONTHS[Number(month) - 1]} ${year}`;
   }
 
+  formatChartValue(value: number): string {
+    const locale = this.selectedMetric === 'amountReceivedINR' || this.selectedMetric === 'conversionRate'
+      ? 'en-IN'
+      : 'en-AU';
+    const formattedValue = new Intl.NumberFormat(locale, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(value);
+
+    if (this.selectedMetric === 'amountTransferredAUD') {
+      return `$${formattedValue}`;
+    }
+    if (this.selectedMetric === 'amountReceivedINR') {
+      return `₹${formattedValue}`;
+    }
+    return `₹${formattedValue} / AUD`;
+  }
+
   get lineChartData(): { name: string; series: ChartDatum[] }[] {
     return [{
       name: this.selectedMetricOption.label,

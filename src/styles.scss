@@ -115,6 +115,44 @@ html body .dashboard-page .transfer-actions-cell {
     vertical-align: middle;
 }
 
+html body .dashboard-page .pf-actions-cell {
+    display: flex;
+    gap: .8rem;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+html body .dashboard-page .pf-actions-heading {
+    min-width: 8rem;
+    text-align: center;
+}
+
+html body .dashboard-page .pf-delete-details {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    margin: 1.5rem 0;
+}
+
+html body .dashboard-page .pf-delete-details div {
+    background: var(--bg-color);
+    border-radius: .6rem;
+    box-shadow: var(--box-shadow-inset);
+    padding: 1rem;
+}
+
+html body .dashboard-page .pf-delete-details dt {
+    color: var(--light-color);
+    font-size: 1.2rem;
+}
+
+html body .dashboard-page .pf-delete-details dd {
+    color: var(--black);
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-top: .4rem;
+}
+
 html body .dashboard-page .sortable-header {
     align-items: center;
     background: transparent;
@@ -134,10 +172,9 @@ html body .dashboard-page .sortable-header:focus-visible {
 html body .dashboard-page .transfer-actions {
     align-items: center;
     display: flex;
-    gap: 2.2rem;
+    gap: .8rem;
     justify-content: center;
-    width: 100px;
-    float: right;
+    white-space: nowrap;
 }
 
 html body .dashboard-page button.control-button.transfer-action {

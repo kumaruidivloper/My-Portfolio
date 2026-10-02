@@ -5,9 +5,10 @@ import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
 
 import { MyDashboardComponent } from './my-dashboard.component';
+import { KumarPfDataComponent } from '../kumar-pf-data/kumar-pf-data.component';
 
 @NgModule({
-  declarations: [MyDashboardComponent],
+  declarations: [MyDashboardComponent, KumarPfDataComponent],
   imports: [
     CommonModule,
     NgxChartsModule,

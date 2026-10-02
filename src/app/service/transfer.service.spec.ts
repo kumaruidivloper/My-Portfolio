@@ -5,6 +5,7 @@ import { parseTransferResponse } from './transfer.service';
 import { TransferService } from './transfer.service';
 
 const TRANSFERS_API_URL = 'https://64b76091df0839c97e168d79.mockapi.io/taskList';
+const TRANSFERS_RESOURCE_URL = `${TRANSFERS_API_URL}/1`;
 
 describe('TransferService', () => {
   let service: TransferService;
@@ -18,7 +19,7 @@ describe('TransferService', () => {
 
   afterEach(() => http.verify());
 
-  it('posts the complete transfers array to the collection URL', () => {
+  it('updates the existing transfer resource instead of creating a duplicate', () => {
     const updatedTransfers = [{
       dateOfTransfer: '29-Sep-23',
       amountTransferredAUD: 9985,
@@ -32,8 +33,8 @@ describe('TransferService', () => {
       result = transfers;
     });
 
-    const request = http.expectOne(TRANSFERS_API_URL);
-    expect(request.request.method).toBe('POST');
+    const request = http.expectOne(TRANSFERS_RESOURCE_URL);
+    expect(request.request.method).toBe('PUT');
     expect(request.request.body).toEqual({ transfers: updatedTransfers });
     request.flush({ transfers: updatedTransfers });
 

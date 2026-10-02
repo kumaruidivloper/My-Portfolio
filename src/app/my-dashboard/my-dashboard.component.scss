@@ -174,8 +174,10 @@
   gap: 1rem;
 
   svg {
+    flex: 0 0 1.8rem;
     fill: none;
     height: 1.8rem;
+    display: block;
     stroke: currentColor;
     stroke-linecap: round;
     stroke-width: 2;

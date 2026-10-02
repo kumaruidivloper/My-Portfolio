@@ -5,6 +5,7 @@ import { map, Observable } from 'rxjs';
 import { TransferApiDocument, TransferRecord } from '../model/transfer';
 
 const TRANSFERS_API_URL = 'https://64b76091df0839c97e168d79.mockapi.io/taskList';
+const TRANSFERS_RESOURCE_URL = `${TRANSFERS_API_URL}/1`;
 
 function isTransferRecord(value: unknown): value is TransferRecord {
   if (typeof value !== 'object' || value === null) {
@@ -49,7 +50,7 @@ export class TransferService {
 
   updateTransfers(transfers: TransferRecord[]): Observable<TransferRecord[]> {
     const document: TransferApiDocument = { transfers };
-    return this.http.post<unknown>(TRANSFERS_API_URL, document).pipe(
+    return this.http.put<unknown>(TRANSFERS_RESOURCE_URL, document).pipe(
       map(parseTransferResponse)
     );
   }

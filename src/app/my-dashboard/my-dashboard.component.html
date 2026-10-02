@@ -89,6 +89,12 @@
               [showYAxisLabel]="true"
               xAxisLabel="Transfer date"
               [yAxisLabel]="selectedMetricOption.axisLabel">
+              <ng-template #tooltipTemplate let-model="model">
+                <div class="chart-value-tooltip">
+                  <strong>{{ model.name }}</strong>
+                  <span>{{ formatChartValue(model.value) }}</span>
+                </div>
+              </ng-template>
             </ngx-charts-bar-vertical>
           }
           @if (selectedChartType === 'line') {
@@ -103,6 +109,22 @@
               [showYAxisLabel]="true"
               xAxisLabel="Transfer date"
               [yAxisLabel]="selectedMetricOption.axisLabel">
+              <ng-template #tooltipTemplate let-model="model">
+                <div class="chart-value-tooltip">
+                  <strong>{{ model.name }}</strong>
+                  <span>{{ formatChartValue(model.value) }}</span>
+                </div>
+              </ng-template>
+              <ng-template #seriesTooltipTemplate let-model="model">
+                <div class="chart-value-tooltip">
+                  @for (tooltipItem of model; track $index) {
+                    <div>
+                      <strong>{{ tooltipItem.name }}</strong>
+                      <span>{{ formatChartValue(tooltipItem.value) }}</span>
+                    </div>
+                  }
+                </div>
+              </ng-template>
             </ngx-charts-line-chart>
           }
           @if (selectedChartType === 'pie' || selectedChartType === 'doughnut') {
@@ -114,6 +136,12 @@
               [labels]="true"
               [doughnut]="selectedChartType === 'doughnut'"
               [arcWidth]="0.25">
+              <ng-template #tooltipTemplate let-model="model">
+                <div class="chart-value-tooltip">
+                  <strong>{{ model.name }}</strong>
+                  <span>{{ formatChartValue(model.value) }}</span>
+                </div>
+              </ng-template>
             </ngx-charts-pie-chart>
           }
         </div>
@@ -178,7 +206,7 @@
                       Received (INR) <span aria-hidden="true">{{ sortIndicator('amountReceivedINR') }}</span>
                     </button>
                   </th>
-                  <th scope="col" class="transfer-actions-cell"><span class="visually-hidden">Actions</span></th>
+                  <th scope="col" class="transfer-actions-cell">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -227,6 +255,8 @@
         }
       </section>
     }
+
+    <app-kumar-pf-data></app-kumar-pf-data>
   </div>
 
   @if (editingTransferIndex !== null || isAddingTransfer) {

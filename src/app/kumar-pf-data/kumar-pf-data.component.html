@@ -1,0 +1,307 @@
+@if (toastMessage) {
+  <div class="dashboard-toast" role="status" aria-live="polite">
+    <span>{{ toastMessage }}</span>
+    <button type="button" aria-label="Dismiss notification" (click)="dismissToast()">&times;</button>
+  </div>
+}
+
+<section class="pf-data-accordion" aria-labelledby="pf-data-title">
+  <header class="records-heading pf-accordion-header">
+    <div class="records-toggle-copy pf-accordion-copy">
+      <h2 class="records-title" id="pf-data-title">{{ pfData?.name || 'Kumar' }} · PF DATA</h2>
+      <p class="records-description">
+        Provident Fund Overview ·
+        {{ pfData ? records.length + ' monthly records' : 'Expand to view PF balance history.' }}
+      </p>
+    </div>
+    <div class="records-actions">
+      <button
+        type="button"
+        class="control-button add-button"
+        [disabled]="isSaving"
+        (click)="addRecord()">
+        {{ isLoading && !pfData ? 'Loading…' : 'Add new PF record' }}
+      </button>
+      <button
+        type="button"
+        class="control-button accordion-toggle"
+        [attr.aria-expanded]="isExpanded"
+        aria-controls="pf-data-panel"
+        [attr.aria-label]="isExpanded ? 'Collapse Kumar PF data' : 'Expand Kumar PF data'"
+        [title]="isExpanded ? 'Collapse Kumar PF data' : 'Expand Kumar PF data'"
+        (click)="toggleExpanded()">
+        <svg aria-hidden="true" viewBox="0 0 24 24">
+          <path d="M5 12h14"></path>
+          @if (!isExpanded) {
+            <path d="M12 5v14"></path>
+          }
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  @if (isExpanded) {
+    <div id="pf-data-panel">
+      @if (isLoading) {
+        <p class="status-message" role="status">Loading PF records…</p>
+      }
+      @if (errorMessage) {
+        <p class="status-message error-message" role="alert">{{ errorMessage }}</p>
+      }
+      @if (!isLoading && !errorMessage && records.length === 0) {
+        <p class="status-message" role="status">No PF records are available.</p>
+      }
+
+      @if (!isLoading && !errorMessage && records.length > 0) {
+        <div class="summary-grid pf-summary-grid" aria-label="PF summary">
+          <article class="summary-card">
+            <h3>{{ formatRupees(latestBalance ?? 0) }}</h3>
+            <p>Latest PF balance · {{ formatMonth(records[0].date) }}</p>
+          </article>
+          <article class="summary-card">
+            <h3>{{ formatRupees(latestDifference ?? 0) }}</h3>
+            <p>Latest monthly difference</p>
+          </article>
+          <article class="summary-card">
+            <h3>{{ records.length }}</h3>
+            <p>Monthly records</p>
+          </article>
+        </div>
+
+        <div class="pf-chart-card">
+          <div class="pf-section-heading">
+            <div>
+              <h3>{{ metricLabel }}</h3>
+              <p>{{ records.length }} monthly records</p>
+            </div>
+            <div class="pf-metric-controls" aria-label="Chart metric">
+              <button
+                type="button"
+                class="control-button"
+                [class.selected]="selectedMetric === 'pfAmount'"
+                [attr.aria-pressed]="selectedMetric === 'pfAmount'"
+                (click)="selectMetric('pfAmount')">
+                PF balance
+              </button>
+              <button
+                type="button"
+                class="control-button"
+                [class.selected]="selectedMetric === 'difference'"
+                [attr.aria-pressed]="selectedMetric === 'difference'"
+                (click)="selectMetric('difference')">
+                Monthly difference
+              </button>
+            </div>
+          </div>
+          <div class="chart-container pf-chart-container">
+            <ngx-charts-bar-vertical
+              [results]="chartData"
+              [scheme]="colorScheme"
+              [view]="chartView"
+              [xAxis]="true"
+              [yAxis]="true"
+              [showGridLines]="false"
+              [showXAxisLabel]="true"
+              [showYAxisLabel]="true"
+              xAxisLabel="Month"
+              [yAxisLabel]="axisLabel">
+              <ng-template #tooltipTemplate let-model="model">
+                <div class="chart-value-tooltip">
+                  <strong>{{ model.name }}</strong>
+                  <span>{{ formatRupees(model.value) }}</span>
+                </div>
+              </ng-template>
+            </ngx-charts-bar-vertical>
+          </div>
+        </div>
+
+        <div class="pf-records-card">
+          <header class="pf-section-heading">
+            <div>
+              <h3>Monthly PF records</h3>
+              <p>{{ records.length }} records from the PF data API</p>
+            </div>
+          </header>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Month</th>
+                  <th scope="col" class="numeric-column">PF balance</th>
+                  <th scope="col" class="numeric-column">Monthly difference</th>
+                  <th scope="col" class="pf-actions-heading">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (record of records; track record.date) {
+                  <tr>
+                    <td>{{ formatMonth(record.date) }}</td>
+                    <td>{{ formatRupees(record.pfAmount) }}</td>
+                    <td>{{ formatRupees(record.difference) }}</td>
+                    <td class="pf-actions-cell">
+                      <button
+                        type="button"
+                        class="control-button transfer-action"
+                        [disabled]="isSaving"
+                        [attr.aria-label]="'Edit PF record for ' + formatMonth(record.date)"
+                        [title]="'Edit PF record for ' + formatMonth(record.date)"
+                        (click)="editRecord($index)">
+                        <svg aria-hidden="true" viewBox="0 0 24 24">
+                          <path d="M12 20h9"></path>
+                          <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"></path>
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        class="control-button transfer-action delete-action"
+                        [disabled]="isSaving"
+                        [attr.aria-label]="'Delete PF record for ' + formatMonth(record.date)"
+                        [title]="'Delete PF record for ' + formatMonth(record.date)"
+                        (click)="requestDeleteRecord($index)">
+                        <svg aria-hidden="true" viewBox="0 0 24 24">
+                          <path d="M3 6h18"></path>
+                          <path d="M8 6V4h8v2"></path>
+                          <path d="m19 6-1 14H6L5 6"></path>
+                          <path d="M10 11v5M14 11v5"></path>
+                        </svg>
+                      </button>
+                    </td>
+                  </tr>
+                }
+
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</section>
+
+@if (pendingDeleteRecordIndex !== null) {
+  <div class="pf-modal-backdrop" (click)="cancelDeleteRecord()">
+    <section
+      class="pf-edit-modal"
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="pf-delete-title"
+      aria-describedby="pf-delete-description"
+      (click)="$event.stopPropagation()">
+      <header class="pf-modal-heading">
+        <div>
+          <p class="eyebrow">DELETE PF RECORD</p>
+          <h2 id="pf-delete-title">Confirm deletion</h2>
+        </div>
+        <button type="button" class="pf-modal-close" aria-label="Close dialog" [disabled]="isSaving" (click)="cancelDeleteRecord()">
+          &times;
+        </button>
+      </header>
+      <p id="pf-delete-description">
+        Delete the PF record for {{ formatMonth(records[pendingDeleteRecordIndex].date) }}?
+      </p>
+      <dl class="pf-delete-details">
+        <div>
+          <dt>PF balance</dt>
+          <dd>{{ formatRupees(records[pendingDeleteRecordIndex].pfAmount) }}</dd>
+        </div>
+        <div>
+          <dt>Monthly difference</dt>
+          <dd>{{ formatRupees(records[pendingDeleteRecordIndex].difference) }}</dd>
+        </div>
+      </dl>
+      <label class="pf-form-field">
+        <span>Enter confirmation code to delete</span>
+        <input
+          type="password"
+          inputmode="numeric"
+          autocomplete="off"
+          maxlength="8"
+          [formControl]="deleteConfirmationCode"
+          [disabled]="isSaving"
+          (input)="validateDeleteConfirmationCode()"
+          aria-describedby="pf-delete-code-help">
+        <small id="pf-delete-code-help">Enter the required 8-digit code to continue.</small>
+        @if (deleteConfirmationCode.touched && deleteConfirmationCode.invalid) {
+          <small class="field-error">Enter the correct 8-digit confirmation code.</small>
+        }
+        @if (isDeleteCodeVerifying) {
+          <small>Verifying code…</small>
+        }
+        @if (isDeleteCodeIncorrect) {
+          <small class="field-error">The confirmation code is incorrect.</small>
+        }
+      </label>
+      @if (saveError) {
+        <p class="pf-save-error" role="alert">{{ saveError }}</p>
+      }
+      <footer class="pf-modal-actions">
+        <button type="button" class="control-button" [disabled]="isSaving" (click)="cancelDeleteRecord()">Cancel</button>
+        <button
+          type="button"
+          class="control-button primary-action"
+          [disabled]="!canDeleteRecord"
+          (click)="deleteRecord()">
+          {{ isSaving ? 'Deleting…' : isDeleteCodeVerifying ? 'Verifying…' : 'Delete PF record' }}
+        </button>
+      </footer>
+    </section>
+  </div>
+}
+
+@if (isAddingRecord || editingRecordIndex !== null) {
+  <div class="pf-modal-backdrop" (click)="closeEditModal()">
+    <section
+      class="pf-edit-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="pf-edit-modal-title"
+      (click)="$event.stopPropagation()">
+      <header class="pf-modal-heading">
+        <div>
+          <p class="eyebrow">PROVIDENT FUND DETAILS</p>
+          <h2 id="pf-edit-modal-title">{{ isAddingRecord ? 'Add new PF record' : 'Edit PF record' }}</h2>
+        </div>
+        <button type="button" class="pf-modal-close" aria-label="Close dialog" [disabled]="isSaving" (click)="closeEditModal()">
+          &times;
+        </button>
+      </header>
+      <form [formGroup]="editForm" (ngSubmit)="saveRecord()">
+        <div class="pf-form-grid">
+          <label class="pf-form-field">
+            <span>Month</span>
+            <input type="month" formControlName="date" [disabled]="isSaving">
+            @if (editForm.controls.date.touched && editForm.controls.date.hasError('required')) {
+              <small class="pf-field-error">Select a month.</small>
+            }
+            @if (editForm.controls.date.touched && editForm.controls.date.hasError('duplicateMonth')) {
+              <small class="pf-field-error">A PF record already exists for this month.</small>
+            }
+          </label>
+          <label class="pf-form-field">
+            <span>PF balance (INR)</span>
+            <input type="number" min="0" step="1" formControlName="pfAmount" [disabled]="isSaving">
+            @if (editForm.controls.pfAmount.touched && editForm.controls.pfAmount.invalid) {
+              <small class="pf-field-error">Enter a valid non-negative balance.</small>
+            }
+          </label>
+          <label class="pf-form-field">
+            <span>Monthly difference (INR)</span>
+            <input type="number" min="0" step="1" formControlName="difference" [disabled]="isSaving">
+            @if (editForm.controls.difference.touched && editForm.controls.difference.invalid) {
+              <small class="pf-field-error">Enter a valid non-negative amount.</small>
+            }
+          </label>
+        </div>
+        @if (saveError) {
+          <p class="pf-save-error" role="alert">{{ saveError }}</p>
+        }
+        <footer class="pf-modal-actions">
+          <button type="button" class="control-button" [disabled]="isSaving" (click)="closeEditModal()">Cancel</button>
+          <button type="submit" class="control-button primary-action" [disabled]="isSaving">
+            {{ isSaving ? 'Saving…' : isAddingRecord ? 'Add PF record' : 'Save changes' }}
+          </button>
+        </footer>
+      </form>
+    </section>
+  </div>
+}

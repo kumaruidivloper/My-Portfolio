@@ -55,6 +55,16 @@ describe('MyDashboardComponent', () => {
     expect(component.chartData.map((datum) => datum.value)).toEqual([5350, 10800]);
   });
 
+  it('formats chart tooltip values with the selected metric currency', () => {
+    expect(component.formatChartValue(1234.5)).toBe('$1,234.50');
+
+    component.selectMetric('amountReceivedINR');
+    expect(component.formatChartValue(1234.5)).toBe('₹1,234.50');
+
+    component.selectMetric('conversionRate');
+    expect(component.formatChartValue(53.5)).toBe('₹53.50 / AUD');
+  });
+
   it('calculates summary totals from the loaded records', () => {
     expect(component.totalTransferredAUD).toBe(300);
     expect(component.totalReceivedINR).toBe(16150);
