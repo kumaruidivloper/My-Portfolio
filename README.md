@@ -123,3 +123,6 @@ https://jsonserver-eudl.onrender.com
 - Local preview URL: `http://192.168.68.100:4200/`
 - Network host mode: `ng serve --host 0.0.0.0`
 - Local IP example: `192.168.0.7`
+
+## 8. Mock api
+  https://mockapi.io/projects/64b76091df0839c97e168d7a
