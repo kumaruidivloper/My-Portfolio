@@ -1,0 +1,29 @@
+<ol class="stepper-progress" aria-label="Form progress">
+  @for (label of labels; track label; let i = $index) {
+    <li [class.done]="i < step" [class.current]="i === step" [attr.aria-current]="i === step ? 'step' : null">
+      <button type="button" [disabled]="i >= step || saving" [attr.aria-label]="'Go to ' + label" (click)="goTo(i)">
+        <span class="stepper-dot">{{ i < step ? '✓' : i + 1 }}</span>
+        <span class="stepper-label">{{ label }}</span>
+      </button>
+    </li>
+  }
+</ol>
+
+<div class="stepper-body">
+  <ng-content></ng-content>
+</div>
+
+<footer class="stepper-actions">
+  <button type="button" class="control-button" [disabled]="saving" (click)="cancel.emit()">Cancel</button>
+  <span class="stepper-spacer"></span>
+  @if (!isFirst) {
+    <button type="button" class="control-button" [disabled]="saving" (click)="back()">Back</button>
+  }
+  @if (isLast) {
+    <button type="submit" class="control-button" [ngClass]="submitClass" [disabled]="submitDisabled">
+      {{ submitLabel }}
+    </button>
+  } @else {
+    <button type="button" class="control-button primary-action" (click)="next()">Next</button>
+  }
+</footer>

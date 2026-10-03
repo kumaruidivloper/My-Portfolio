@@ -272,7 +272,19 @@
         </button>
       </header>
       <form [formGroup]="editForm" (ngSubmit)="saveRecord()">
-        <div class="pf-form-grid">
+        <app-form-stepper
+          #stepper
+          [labels]="['Month', 'Balance', 'Review']"
+          [startStep]="isAddingRecord ? 0 : 2"
+          [stepValid]="stepper.step === 0 ? editForm.controls.date.valid : editForm.controls.pfAmount.valid"
+          [saving]="isSaving"
+          [submitLabel]="isSaving ? 'Saving…' : isAddingRecord ? 'Add PF record' : 'Save changes'"
+          [submitClass]="isAddingRecord ? 'primary-action' : 'save-action'"
+          [submitDisabled]="isSaving || (!isAddingRecord && !canSaveChanges)"
+          (invalidNext)="editForm.markAllAsTouched()"
+          (cancel)="closeEditModal()">
+          <div [hidden]="stepper.step !== 0">
+            <div class="pf-form-grid">
           <label class="pf-form-field">
             <span>Month</span>
             <input type="month" formControlName="date">
@@ -283,6 +295,10 @@
               <small class="pf-field-error">A PF record already exists for this month.</small>
             }
           </label>
+            </div>
+          </div>
+          <div [hidden]="stepper.step !== 1">
+            <div class="pf-form-grid">
           <label class="pf-form-field">
             <span>PF balance (INR)</span>
             <input type="number" min="0" step="1" formControlName="pfAmount">
@@ -291,13 +307,20 @@
             }
           </label>
           <label class="pf-form-field">
-            <span>Monthly difference (INR) · auto-calculated</span>
+            <span>Monthly difference (INR)</span>
             <input type="number" step="1" formControlName="difference" readonly>
             @if (editForm.controls.difference.touched && editForm.controls.difference.invalid) {
               <small class="pf-field-error">Enter a valid non-negative amount.</small>
             }
           </label>
-        </div>
+            </div>
+          </div>
+          <div [hidden]="stepper.step !== 2">
+            <dl class="review-summary">
+              <div><dt>Month</dt><dd>{{ editForm.controls.date.value }}</dd></div>
+              <div><dt>PF balance</dt><dd>₹ {{ editForm.controls.pfAmount.value | number }}</dd></div>
+              <div><dt>Monthly difference</dt><dd>₹ {{ editForm.controls.difference.value | number }}</dd></div>
+            </dl>
         @if (!isAddingRecord) {
           <label class="pf-form-field">
             <span>Enter confirmation code to save changes</span>
@@ -324,16 +347,8 @@
         @if (saveError) {
           <p class="pf-save-error" role="alert">{{ saveError }}</p>
         }
-        <footer class="pf-modal-actions">
-          <button type="button" class="control-button" [disabled]="isSaving" (click)="closeEditModal()">Cancel</button>
-          <button
-            type="submit"
-            class="control-button primary-action"
-            [class.save-action]="!isAddingRecord"
-            [disabled]="isSaving || (!isAddingRecord && !canSaveChanges)">
-            {{ isSaving ? 'Saving…' : isAddingRecord ? 'Add PF record' : 'Save changes' }}
-          </button>
-        </footer>
+          </div>
+        </app-form-stepper>
       </form>
     </section>
   </div>

@@ -238,7 +238,19 @@
         </button>
       </header>
       <form [formGroup]="editForm" (ngSubmit)="isAddingRecord ? addNewRecord() : saveChanges()">
-        <div class="gratuity-form-grid">
+        <app-form-stepper
+          #stepper
+          [labels]="['Month', 'Value', 'Review']"
+          [startStep]="isAddingRecord ? 0 : 2"
+          [stepValid]="stepper.step === 0 ? editForm.controls.date.valid : editForm.controls.gratuity.valid && editForm.controls.previousMonthValue.valid"
+          [saving]="isSaving"
+          [submitLabel]="isSaving ? 'Saving…' : isAddingRecord ? 'Add ' + recordTypeLabel : isCodeVerifying ? 'Verifying…' : 'Save changes'"
+          [submitClass]="isAddingRecord ? 'primary-action' : 'save-action'"
+          [submitDisabled]="isSaving || (!isAddingRecord && !canSaveChanges)"
+          (invalidNext)="editForm.markAllAsTouched()"
+          (cancel)="closeEditModal()">
+          <div [hidden]="stepper.step !== 0">
+            <div class="gratuity-form-grid">
           <label class="gratuity-field">
             <span>Month</span>
             <input type="month" formControlName="date">
@@ -249,6 +261,10 @@
               <small class="gratuity-field-error">A {{ recordTypeLabel.toLowerCase() }} record already exists for this month.</small>
             }
           </label>
+            </div>
+          </div>
+          <div [hidden]="stepper.step !== 1">
+            <div class="gratuity-form-grid">
           <label class="gratuity-field">
             <span>{{ recordTypeLabel }} (INR)</span>
             <input
@@ -287,7 +303,14 @@
               <small class="gratuity-field-error">Enter a valid difference amount.</small>
             }
           </label>
-        </div>
+            </div>
+          </div>
+          <div [hidden]="stepper.step !== 2">
+            <dl class="review-summary">
+              <div><dt>Month</dt><dd>{{ editForm.controls.date.value }}</dd></div>
+              <div><dt>{{ recordTypeLabel }}</dt><dd>₹ {{ editForm.controls.gratuity.value | number }}</dd></div>
+              <div><dt>Difference</dt><dd>₹ {{ editForm.controls.difference.value | number }}</dd></div>
+            </dl>
         @if (!isAddingRecord) {
         <label class="gratuity-field gratuity-confirmation-field">
           <span>Enter confirmation code to save changes</span>
@@ -314,16 +337,8 @@
         @if (saveError) {
           <p class="gratuity-field-error" role="alert">{{ saveError }}</p>
         }
-        <footer class="gratuity-modal-actions modal-actions">
-          <button type="button" class="control-button" [disabled]="isSaving" (click)="closeEditModal()">Cancel</button>
-          <button
-            type="submit"
-            class="control-button save-action"
-            [class.primary-action]="isAddingRecord"
-            [disabled]="isSaving || (!isAddingRecord && !canSaveChanges)">
-            {{ isSaving ? 'Saving…' : isAddingRecord ? 'Add ' + recordTypeLabel : isCodeVerifying ? 'Verifying…' : 'Save changes' }}
-          </button>
-        </footer>
+          </div>
+        </app-form-stepper>
       </form>
     </section>
   </div>

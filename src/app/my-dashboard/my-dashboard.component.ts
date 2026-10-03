@@ -614,7 +614,7 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  private formatCurrency(value: number, currency: 'AUD' | 'INR'): string {
+  formatCurrency(value: number, currency: 'AUD' | 'INR'): string {
     if (currency === 'INR') {
       return `₹ ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(value)}`;
     }

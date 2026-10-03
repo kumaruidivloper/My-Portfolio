@@ -1,0 +1,181 @@
+:host {
+  display: block;
+}
+
+.stepper-progress {
+  display: flex;
+  list-style: none;
+  margin: 0.5rem 0 2rem;
+  padding: 0;
+
+  li {
+    position: relative;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    opacity: 0.6;
+    transition: opacity 0.25s;
+
+    &.current,
+    &.done {
+      opacity: 1;
+    }
+
+    // connector drawn between the dot centres only, so it never crosses the labels
+    &:not(:first-child)::before {
+      content: '';
+      position: absolute;
+      top: 1.35rem;
+      left: calc(-50% + 1.8rem);
+      right: calc(50% + 1.8rem);
+      height: 3px;
+      border-radius: 3px;
+      background: rgba(128, 128, 128, 0.4);
+      transition: background 0.35s;
+    }
+
+    &.done::before,
+    &.current::before {
+      background: var(--green, #2e7d32);
+    }
+  }
+
+  button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.8rem;
+    background: none;
+    border: 0;
+    padding: 0;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+
+    &:disabled {
+      cursor: default;
+    }
+  }
+}
+
+.stepper-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background: var(--bg-color);
+  box-shadow: var(--box-shadow);
+  font-size: 1.3rem;
+  font-weight: 600;
+  transition: background 0.25s, color 0.25s, box-shadow 0.25s;
+}
+
+.done .stepper-dot {
+  background: var(--green, #2e7d32);
+  color: var(--white, #fff);
+}
+
+.current .stepper-dot {
+  box-shadow: var(--box-shadow-inset);
+  color: var(--green, #2e7d32);
+  outline: 2px solid var(--green, #2e7d32);
+  outline-offset: 2px;
+}
+
+.stepper-label {
+  font-size: 1.2rem;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.stepper-count {
+  display: none;
+}
+
+.stepper-body {
+  min-height: 9rem;
+
+  ::ng-deep > div:not([hidden]) {
+    animation: stepper-in 0.25s ease;
+  }
+}
+
+@keyframes stepper-in {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.stepper-actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 2rem;
+}
+
+.control-button {
+  background: var(--bg-color);
+  border: 0;
+  border-radius: 2rem;
+  box-shadow: var(--box-shadow);
+  color: var(--black);
+  cursor: pointer;
+  font-size: 1.4rem;
+  margin: 0;
+  min-width: 9rem;
+  padding: 0.8rem 1.8rem;
+  transition: box-shadow 0.15s, color 0.15s, background 0.15s;
+
+  &:hover:not(:disabled) {
+    box-shadow: var(--box-shadow-inset);
+    color: var(--green);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  &.primary-action {
+    background: var(--green);
+    color: var(--white);
+
+    &:hover:not(:disabled) {
+      background: var(--green);
+      box-shadow: var(--box-shadow);
+      color: var(--white);
+      filter: brightness(1.08);
+    }
+  }
+
+  &.save-action {
+    background: transparent;
+  }
+}
+
+.stepper-spacer {
+  flex: 1;
+}
+
+@media (max-width: 600px) {
+  .stepper-actions {
+    flex-wrap: wrap;
+  }
+
+  .control-button {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .stepper-label {
+    font-size: 1.1rem;
+  }
+}

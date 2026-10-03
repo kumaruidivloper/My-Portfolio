@@ -1,3 +1,4 @@
+import { FormStepperComponent } from '../form-stepper/form-stepper.component';
 import { ThemeSelectComponent } from '../theme-select/theme-select.component';
 import { TotalBalanceComponent } from '../total-balance/total-balance.component';
 import { NgModule } from '@angular/core';
@@ -23,6 +24,7 @@ import { ResponsiveTableComponent } from '../responsive-table/responsive-table.c
     SumOfValueComponent,
     TotalBalanceComponent,
     ThemeSelectComponent,
+    FormStepperComponent,
     KumarGratuityComponent,
     VasukiGratuityComponent,
     VasukiSuperComponent,

@@ -279,48 +279,72 @@
         </header>
 
         <form [formGroup]="editForm" (ngSubmit)="saveTransfer()">
-          <div class="form-grid">
-            <label class="form-field">
-              <span>Transfer date</span>
-              <input type="date" formControlName="dateOfTransfer">
-              @if (editForm.controls.dateOfTransfer.touched && editForm.controls.dateOfTransfer.invalid) {
-                <small class="field-error">Select a valid transfer date.</small>
-              }
-            </label>
+          <app-form-stepper
+            #stepper
+            [labels]="['Transfer', 'Exchange', 'Review']"
+            [startStep]="isAddingTransfer ? 0 : 2"
+            [stepValid]="stepper.step === 0
+              ? editForm.controls.dateOfTransfer.valid && editForm.controls.amountTransferredAUD.valid
+              : editForm.controls.conversionRate.valid && editForm.controls.receivedDate.valid"
+            [saving]="isSaving"
+            [submitLabel]="isSaving ? 'Saving…' : isAddingTransfer ? 'Add transfer' : 'Save changes'"
+            [submitClass]="isAddingTransfer ? 'primary-action' : 'save-action'"
+            [submitDisabled]="isSaving || (!isAddingTransfer && !canSaveChanges)"
+            (invalidNext)="editForm.markAllAsTouched()"
+            (cancel)="closeEditModal()">
+            <div [hidden]="stepper.step !== 0">
+              <div class="form-grid">
+              <label class="form-field">
+                <span>Transfer date</span>
+                <input type="date" formControlName="dateOfTransfer">
+                @if (editForm.controls.dateOfTransfer.touched && editForm.controls.dateOfTransfer.invalid) {
+                  <small class="field-error">Select a valid transfer date.</small>
+                }
+              </label>
+              <label class="form-field">
+                <span>Amount sent (AUD)</span>
+                <input type="number" min="0" step="0.01" formControlName="amountTransferredAUD">
+                @if (editForm.controls.amountTransferredAUD.touched && editForm.controls.amountTransferredAUD.invalid) {
+                  <small class="field-error">Enter an amount greater than or equal to zero.</small>
+                }
+              </label>
+              </div>
+            </div>
 
-            <label class="form-field">
-              <span>Amount sent (AUD)</span>
-              <input type="number" min="0" step="0.01" formControlName="amountTransferredAUD">
-              @if (editForm.controls.amountTransferredAUD.touched && editForm.controls.amountTransferredAUD.invalid) {
-                <small class="field-error">Enter an amount greater than or equal to zero.</small>
-              }
-            </label>
+            <div [hidden]="stepper.step !== 1">
+              <div class="form-grid">
+              <label class="form-field">
+                <span>Exchange rate</span>
+                <input type="number" min="0.0001" step="0.0001" formControlName="conversionRate">
+                @if (editForm.controls.conversionRate.touched && editForm.controls.conversionRate.invalid) {
+                  <small class="field-error">Enter a rate greater than zero.</small>
+                }
+              </label>
+              <label class="form-field">
+                <span>Received date</span>
+                <input type="date" formControlName="receivedDate">
+                @if (editForm.controls.receivedDate.touched && editForm.controls.receivedDate.invalid) {
+                  <small class="field-error">Select a valid received date.</small>
+                }
+              </label>
+              <label class="form-field">
+                <span>Amount received (INR)</span>
+                <input type="number" min="0" step="0.01" readonly formControlName="amountReceivedINR">
+                @if (editForm.controls.amountReceivedINR.touched && editForm.controls.amountReceivedINR.invalid) {
+                  <small class="field-error">Enter an amount greater than or equal to zero.</small>
+                }
+              </label>
+              </div>
+            </div>
 
-            <label class="form-field">
-              <span>Exchange rate</span>
-              <input type="number" min="0.0001" step="0.0001" formControlName="conversionRate">
-              @if (editForm.controls.conversionRate.touched && editForm.controls.conversionRate.invalid) {
-                <small class="field-error">Enter a rate greater than zero.</small>
-              }
-            </label>
-
-            <label class="form-field">
-              <span>Received date</span>
-              <input type="date" formControlName="receivedDate">
-              @if (editForm.controls.receivedDate.touched && editForm.controls.receivedDate.invalid) {
-                <small class="field-error">Select a valid received date.</small>
-              }
-            </label>
-
-            <label class="form-field">
-              <span>Amount received (INR) · Calculated</span>
-              <input type="number" min="0" step="0.01" formControlName="amountReceivedINR" readonly>
-              @if (editForm.controls.amountReceivedINR.touched && editForm.controls.amountReceivedINR.invalid) {
-                <small class="field-error">Enter an amount greater than or equal to zero.</small>
-              }
-            </label>
-          </div>
-
+            <div [hidden]="stepper.step !== 2">
+              <dl class="review-summary">
+                <div><dt>Transfer date</dt><dd>{{ formatDate(editForm.controls.dateOfTransfer.value ?? '') }}</dd></div>
+                <div><dt>Amount sent</dt><dd>{{ formatCurrency(editForm.controls.amountTransferredAUD.value ?? 0, 'AUD') }}</dd></div>
+                <div><dt>Exchange rate</dt><dd>{{ editForm.controls.conversionRate.value }}</dd></div>
+                <div><dt>Received date</dt><dd>{{ formatDate(editForm.controls.receivedDate.value ?? '') }}</dd></div>
+                <div><dt>Amount received</dt><dd>{{ formatCurrency(editForm.controls.amountReceivedINR.value ?? 0, 'INR') }}</dd></div>
+              </dl>
           @if (!isAddingTransfer) {
             <label class="form-field confirmation-code-field">
               <span>Enter confirmation code to save changes</span>
@@ -350,20 +374,8 @@
           @if (saveError) {
             <p class="form-error" role="alert">{{ saveError }}</p>
           }
-
-          <footer class="modal-actions">
-            <button type="button" class="control-button" [disabled]="isSaving" (click)="closeEditModal()">
-              Cancel
-            </button>
-            <button
-              type="submit"
-              class="control-button"
-              [class.primary-action]="isAddingTransfer"
-              [class.save-action]="!isAddingTransfer"
-              [disabled]="isSaving || (!isAddingTransfer && !canSaveChanges)">
-              {{ isSaving ? 'Saving…' : isAddingTransfer ? 'Add transfer' : 'Save changes' }}
-            </button>
-          </footer>
+            </div>
+          </app-form-stepper>
         </form>
       </section>
     </div>
