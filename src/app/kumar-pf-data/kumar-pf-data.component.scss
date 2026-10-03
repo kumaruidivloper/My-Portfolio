@@ -321,24 +321,40 @@
   }
 
   .pf-section-heading {
-    align-items: flex-start;
+    align-items: stretch;
     flex-direction: column;
   }
 
-  .pf-records-heading {
+  .pf-accordion-header {
     align-items: center;
     flex-direction: row;
     flex-wrap: nowrap;
   }
 
+  .pf-accordion-copy {
+    flex: 1 1 0;
+  }
+
+  .pf-accordion-header .records-actions {
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+
+  .pf-records-heading {
+    align-items: stretch;
+    flex-direction: column;
+    flex-wrap: nowrap;
+  }
+
   .pf-records-heading-copy {
-    flex: 1 1 auto;
+    flex: 0 0 auto;
     min-width: 0;
   }
 
   .pf-records-heading .records-actions {
     flex: 0 0 auto;
-    margin-left: auto;
+    justify-content: flex-end;
+    margin-left: 0;
   }
 
 }

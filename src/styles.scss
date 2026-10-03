@@ -1220,3 +1220,10 @@ body.night {
     opacity: 1;
   }
 }
+
+body:has(.dashboard-page) {
+  #menu-btn,
+  .header .navbar {
+    display: none !important;
+  }
+}

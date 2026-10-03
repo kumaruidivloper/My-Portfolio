@@ -256,4 +256,23 @@
     grid-template-columns: 1fr;
   }
 
+  .gratuity-records-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .gratuity-heading {
+    align-items: center;
+    flex-direction: row;
+  }
+
+  .gratuity-heading-copy {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .gratuity-heading-actions {
+    justify-content: flex-end;
+  }
+
 }

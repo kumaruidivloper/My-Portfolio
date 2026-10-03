@@ -298,7 +298,13 @@ export class AppComponent implements OnInit, OnDestroy {
     this.renderer.addClass(document.body, 'scrollOff');
   }
 
+  private closeSideMenu(): void {
+    this.menubtn?.nativeElement.classList.remove('fa-times');
+    this.header?.nativeElement.classList.remove('active');
+  }
+
   openDashboardPrompt(): void {
+    this.closeSideMenu();
     if (!environment.production) {
       this.isDashboardPromptOpen = false;
       this.dashboardCodeError = '';
@@ -381,6 +387,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.dashboardAccessGuard.grantOneTimeAccess();
     this.closeDashboardPrompt();
+    this.closeSideMenu();
     void this.router.navigateByUrl('/dashboard');
   }
 

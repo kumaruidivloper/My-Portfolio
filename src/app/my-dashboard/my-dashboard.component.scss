@@ -380,14 +380,30 @@
   }
 
   .records-heading {
+    align-items: stretch;
+    flex-direction: column;
     flex-wrap: nowrap;
   }
 
   .records-toggle-copy {
-    flex: 1 1 auto;
+    flex: 0 0 auto;
   }
 
   .records-actions {
+    flex: 0 0 auto;
+    justify-content: flex-end;
+  }
+
+  .transfer-accordion-header {
+    align-items: center;
+    flex-direction: row;
+  }
+
+  .transfer-accordion-copy {
+    flex: 1 1 0;
+  }
+
+  .transfer-accordion-header .records-actions {
     flex: 0 0 auto;
   }
 

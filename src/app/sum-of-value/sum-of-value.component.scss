@@ -184,3 +184,20 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 700px) {
+  .pf-accordion-header {
+    align-items: center;
+    flex-direction: row;
+    flex-wrap: nowrap;
+  }
+
+  .pf-accordion-copy {
+    flex: 1 1 0;
+  }
+
+  .pf-accordion-header .records-actions {
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+}
