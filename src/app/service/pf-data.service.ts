@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { map, Observable } from 'rxjs';
+import { map, Observable, tap } from 'rxjs';
 import { PfApiDocument, PfRecord } from '../model/pf-record';
+import { TotalBalanceService } from './total-balance.service';
 
 const PF_DATA_API_URL = 'https://64b76091df0839c97e168d79.mockapi.io/taskList';
 
@@ -52,7 +53,7 @@ export function parsePfDataResponse(response: unknown, fallbackName = 'Kumar'): 
   providedIn: 'root'
 })
 export class PfDataService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private totalBalanceService: TotalBalanceService) {}
 
   getPfData(resourceId: PfResourceId = '2'): Observable<PfApiDocument> {
     return this.http.get<unknown>(`${PF_DATA_API_URL}/${resourceId}`).pipe(
@@ -62,7 +63,8 @@ export class PfDataService {
 
   updatePfData(document: PfApiDocument, resourceId: PfResourceId = '2'): Observable<PfApiDocument> {
     return this.http.put<unknown>(`${PF_DATA_API_URL}/${resourceId}`, document).pipe(
-      map((response) => parsePfDataResponse(response, PF_RESOURCE_NAMES[resourceId]))
+      map((response) => parsePfDataResponse(response, PF_RESOURCE_NAMES[resourceId])),
+      tap(() => this.totalBalanceService.syncTotals())
     );
   }
 }

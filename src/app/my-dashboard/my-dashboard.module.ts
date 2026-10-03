@@ -1,3 +1,4 @@
+import { TotalBalanceComponent } from '../total-balance/total-balance.component';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
@@ -19,6 +20,7 @@ import { ResponsiveTableComponent } from '../responsive-table/responsive-table.c
     KumarPfDataComponent,
     VasukiPfDataComponent,
     SumOfValueComponent,
+    TotalBalanceComponent,
     KumarGratuityComponent,
     VasukiGratuityComponent,
     VasukiSuperComponent,

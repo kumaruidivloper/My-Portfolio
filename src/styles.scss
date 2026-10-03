@@ -301,7 +301,8 @@ body.night .ngx-charts-tooltip-content,
 body.night .ngx-charts-tooltip-content.type-tooltip,
 body.night .ngx-charts-tooltip-content.type-popover {
     background: #fff !important;
-    border: 1px solid rgb(0 0 0 / 15%);
+    border: 0 !important;
+    box-shadow: none !important;
     color: #000 !important;
 }
 

@@ -1,3 +1,4 @@
+import { TotalBalanceService } from './total-balance.service';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { GratuityDataService, parseGratuityDataResponse } from './gratuity-data.service';
@@ -24,7 +25,10 @@ describe('GratuityDataService', () => {
   };
 
   beforeEach(() => {
-    TestBed.configureTestingModule({ imports: [HttpClientTestingModule] });
+    TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
+      providers: [{ provide: TotalBalanceService, useValue: { syncTotals: () => undefined } }]
+    });
     service = TestBed.inject(GratuityDataService);
     http = TestBed.inject(HttpTestingController);
   });

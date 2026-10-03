@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { map, Observable } from 'rxjs';
+import { map, Observable, tap } from 'rxjs';
 import { GratuityApiDocument, GratuityRecord } from '../model/gratuity-record';
+import { TotalBalanceService } from './total-balance.service';
 
 const GRATUITY_DATA_API_URL = 'https://64b76091df0839c97e168d79.mockapi.io/taskList';
 
@@ -81,7 +82,7 @@ export function parseGratuityDataResponse(
   providedIn: 'root'
 })
 export class GratuityDataService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private totalBalanceService: TotalBalanceService) {}
 
   getGratuityData(resourceId: GratuityResourceId = '4'): Observable<GratuityApiDocument> {
     return this.http.get<unknown>(`${GRATUITY_DATA_API_URL}/${resourceId}`).pipe(
@@ -108,7 +109,8 @@ export class GratuityDataService {
       }
       : document;
     return this.http.put<unknown>(`${GRATUITY_DATA_API_URL}/${resourceId}`, requestDocument).pipe(
-      map((response) => parseGratuityDataResponse(response, GRATUITY_RESOURCE_NAMES[resourceId], resourceId))
+      map((response) => parseGratuityDataResponse(response, GRATUITY_RESOURCE_NAMES[resourceId], resourceId)),
+      tap(() => this.totalBalanceService.syncTotals())
     );
   }
 }

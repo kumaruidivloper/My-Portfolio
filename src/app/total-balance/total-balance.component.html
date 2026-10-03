@@ -1,0 +1,114 @@
+<section class="pf-data-accordion sum-of-value-accordion" aria-labelledby="total-balance-title">
+  <header class="records-heading pf-accordion-header">
+    <div class="records-toggle-copy pf-accordion-copy">
+      <h2 class="records-title" id="total-balance-title">Overall current balance</h2>
+      <p class="records-description">PF + Gratuity + Super · Kumar and Vasuki (view only)</p>
+    </div>
+    <div class="records-actions">
+      <button
+        type="button"
+        class="control-button accordion-toggle"
+        [attr.aria-expanded]="isExpanded"
+        aria-controls="total-balance-panel"
+        [attr.aria-label]="isExpanded ? 'Collapse overall balance charts' : 'Expand overall balance charts'"
+        [title]="isExpanded ? 'Collapse overall balance charts' : 'Expand overall balance charts'"
+        (click)="toggleExpanded()">
+        <svg aria-hidden="true" viewBox="0 0 24 24">
+          <path d="M5 12h14"></path>
+          @if (!isExpanded) {
+            <path d="M12 5v14"></path>
+          }
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  @if (isExpanded) {
+    <div id="total-balance-panel">
+      @if (isLoading) {
+        <p class="sum-of-value-status" role="status">Loading overall balance…</p>
+      }
+      @if (errorMessage) {
+        <p class="sum-of-value-status sum-of-value-error" role="alert">{{ errorMessage }}</p>
+      }
+      @if (!isLoading && !errorMessage && records.length === 0) {
+        <p class="sum-of-value-status" role="status">No overall balance records are available.</p>
+      }
+      @if (!isLoading && !errorMessage && records.length > 0) {
+        <div class="sum-of-value-summary-grid" aria-label="Overall balance totals">
+          <article class="sum-of-value-summary-card">
+            <h3>{{ formatRupees(totalInterest) }}</h3>
+            <p>Total interest across monthly records</p>
+          </article>
+          <article class="sum-of-value-summary-card">
+            <h3>{{ formatRupees(currentBalance ?? 0) }}</h3>
+            <p>Current balance · {{ currentBalanceMonth }}</p>
+          </article>
+        </div>
+        <div class="sum-of-value-charts">
+          <article class="sum-of-value-chart-card">
+            <header class="pf-section-heading">
+              <div>
+                <h3>Interest per month</h3>
+                <p>Sum of all monthly difference values</p>
+              </div>
+            </header>
+            <div class="chart-container pf-chart-container">
+              <ngx-charts-bar-vertical
+                [results]="interestChartData"
+                [scheme]="colorScheme"
+                [xAxis]="true"
+                [yAxis]="true"
+                [showGridLines]="false"
+                [showXAxisLabel]="true"
+                [showYAxisLabel]="true"
+                xAxisLabel="Month"
+                yAxisLabel="Monthly interest (INR)">
+                <ng-template #tooltipTemplate let-model="model">
+                  <div class="chart-value-tooltip">
+                    <strong>{{ model.name }}</strong>
+                    <span>{{ formatRupees(model.value) }}</span>
+                  </div>
+                </ng-template>
+              </ngx-charts-bar-vertical>
+            </div>
+          </article>
+
+          <article class="sum-of-value-chart-card">
+            <header class="pf-section-heading">
+              <div>
+                <h3>Overall balance</h3>
+                <p>Sum of PF, gratuity and super balances by month</p>
+              </div>
+            </header>
+            <div class="chart-container pf-chart-container">
+              <ngx-charts-bar-vertical
+                [results]="totalChartData"
+                [scheme]="colorScheme"
+                [xAxis]="true"
+                [yAxis]="true"
+                [showGridLines]="false"
+                [showXAxisLabel]="true"
+                [showYAxisLabel]="true"
+                xAxisLabel="Month"
+                yAxisLabel="Overall balance (INR)">
+                <ng-template #tooltipTemplate let-model="model">
+                  <div class="chart-value-tooltip">
+                    <strong>{{ model.name }}</strong>
+                    <span>{{ formatRupees(model.value) }}</span>
+                  </div>
+                </ng-template>
+              </ngx-charts-bar-vertical>
+            </div>
+          </article>
+        </div>
+        <app-responsive-table
+          class="responsive-record-table"
+          ariaLabel="Overall balance records"
+          [columns]="gridColumns"
+          [rows]="gridRows">
+        </app-responsive-table>
+      }
+    </div>
+  }
+</section>
