@@ -1,0 +1,71 @@
+.theme-select {
+  position: relative;
+}
+
+.theme-select-trigger {
+  align-items: center;
+  background: var(--bg-color);
+  border-radius: 1rem;
+  box-shadow: var(--box-shadow-inset);
+  color: var(--black);
+  cursor: pointer;
+  display: flex;
+  font-size: 1.5rem;
+  justify-content: space-between;
+  padding: 1.2rem 1.6rem;
+  text-align: left;
+  text-transform: none;
+  width: 100%;
+}
+
+.theme-select-trigger:focus-visible {
+  outline: 0.2rem solid var(--green);
+}
+
+.theme-select-arrow {
+  border-bottom: 0.2rem solid var(--green);
+  border-right: 0.2rem solid var(--green);
+  height: 0.8rem;
+  margin-left: 1rem;
+  transform: translateY(-20%) rotate(45deg);
+  transition: transform 0.2s;
+  width: 0.8rem;
+}
+
+.open .theme-select-arrow {
+  transform: translateY(20%) rotate(-135deg);
+}
+
+.theme-select-list {
+  background: var(--bg-color);
+  border-radius: 1rem;
+  box-shadow: var(--box-shadow);
+  left: 0;
+  list-style: none;
+  margin-top: 0.6rem;
+  max-height: 26rem;
+  overflow-y: auto;
+  padding: 0.6rem;
+  position: absolute;
+  right: 0;
+  z-index: 20;
+}
+
+.theme-select-option {
+  border-radius: 0.8rem;
+  color: var(--black);
+  cursor: pointer;
+  font-size: 1.5rem;
+  padding: 1rem 1.2rem;
+  text-transform: none;
+}
+
+.theme-select-option.active {
+  background: var(--light-color);
+  color: var(--bg-color);
+}
+
+.theme-select-option.selected {
+  background: var(--green);
+  color: #fff;
+}

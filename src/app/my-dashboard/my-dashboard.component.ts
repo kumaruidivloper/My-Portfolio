@@ -130,6 +130,14 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     { label: 'Doughnut', value: 'doughnut' }
   ];
 
+  get chartTypeOptions(): { label: string; value: string }[] {
+    return this.chartTypes;
+  }
+
+  get metricOptions(): { label: string; value: string }[] {
+    return this.metrics.map((metric) => ({ label: metric.label, value: metric.key }));
+  }
+
   readonly metrics: MetricOption[] = [
     {
       label: 'Amount sent (AUD)',
@@ -607,6 +615,9 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
   }
 
   private formatCurrency(value: number, currency: 'AUD' | 'INR'): string {
+    if (currency === 'INR') {
+      return `₹ ${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(value)}`;
+    }
     return new Intl.NumberFormat('en-AU', {
       style: 'currency',
       currency,

@@ -78,32 +78,25 @@
           </div>
         </div>
 
-        <div class="control-group" aria-label="Transfer metric">
-          <span class="control-label">Metric</span>
-          @for (metric of metrics; track metric.key) {
-            <button
-              type="button"
-              class="control-button"
-              [class.selected]="selectedMetric === metric.key"
-              [attr.aria-pressed]="selectedMetric === metric.key"
-              (click)="selectMetric(metric.key)">
-              {{ metric.label }}
-            </button>
-          }
-        </div>
-
-        <div class="control-group" aria-label="Chart types">
-          <span class="control-label">Chart type</span>
-          @for (chart of chartTypes; track chart.value) {
-            <button
-              type="button"
-              class="control-button"
-              [class.selected]="selectedChartType === chart.value"
-              [attr.aria-pressed]="selectedChartType === chart.value"
-              (click)="selectChartType(chart.value)">
-              {{ chart.label }}
-            </button>
-          }
+        <div class="chart-select-row">
+          <div class="chart-select">
+            <span class="control-label" id="metric-select-label">Metric</span>
+            <app-theme-select
+              ariaLabel="Transfer metric"
+              [options]="metricOptions"
+              [value]="selectedMetric"
+              (valueChange)="selectMetric($any($event))">
+            </app-theme-select>
+          </div>
+          <div class="chart-select">
+            <span class="control-label" id="chart-type-select-label">Chart type</span>
+            <app-theme-select
+              ariaLabel="Chart type"
+              [options]="chartTypeOptions"
+              [value]="selectedChartType"
+              (valueChange)="selectChartType($any($event))">
+            </app-theme-select>
+          </div>
         </div>
 
         <div class="chart-container">

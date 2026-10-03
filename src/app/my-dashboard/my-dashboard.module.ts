@@ -1,3 +1,4 @@
+import { ThemeSelectComponent } from '../theme-select/theme-select.component';
 import { TotalBalanceComponent } from '../total-balance/total-balance.component';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -21,6 +22,7 @@ import { ResponsiveTableComponent } from '../responsive-table/responsive-table.c
     VasukiPfDataComponent,
     SumOfValueComponent,
     TotalBalanceComponent,
+    ThemeSelectComponent,
     KumarGratuityComponent,
     VasukiGratuityComponent,
     VasukiSuperComponent,

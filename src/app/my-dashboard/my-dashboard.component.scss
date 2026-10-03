@@ -100,6 +100,20 @@
   margin-top: 2rem;
 }
 
+.chart-select-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.6rem;
+  margin-top: 2rem;
+}
+
+.chart-select {
+  display: flex;
+  flex: 1 1 22rem;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
 .control-label {
   color: var(--black);
   font-size: 1.4rem;
