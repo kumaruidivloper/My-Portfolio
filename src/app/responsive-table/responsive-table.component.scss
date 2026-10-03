@@ -15,14 +15,14 @@ app-responsive-table {
   gap: 1rem 2rem;
   justify-content: space-between;
   color: var(--black);
-  padding: 1rem 1.2rem;
+  padding: 2rem 1.2rem 1.2rem 1.2rem;
 }
 
 .responsive-grid-page-size,
 .responsive-grid-page-controls {
   align-items: center;
   display: flex;
-  gap: 0.6rem;
+  gap: 1.4rem;
 }
 
 .responsive-grid-page-size input {
