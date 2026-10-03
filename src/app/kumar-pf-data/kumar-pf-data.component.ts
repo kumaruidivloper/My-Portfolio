@@ -37,7 +37,7 @@ export class KumarPfDataComponent implements OnDestroy {
     }),
     difference: new FormControl(0, {
       nonNullable: true,
-      validators: [Validators.required, Validators.min(0)]
+      validators: [Validators.required]
     })
   });
   readonly deleteConfirmationCode = new FormControl('', {
@@ -63,6 +63,7 @@ export class KumarPfDataComponent implements OnDestroy {
   private deleteCodeValidationAttempt = 0;
   private verifiedDeleteCode = '';
   private toastTimeout?: Subscription;
+  private readonly formSubscription: Subscription;
   selectedMetric: PfMetric = 'pfAmount';
   readonly gridColumns: readonly ResponsiveGridColumn[] = [
     { key: 'month', label: 'Month', sortable: true },
@@ -81,9 +82,12 @@ export class KumarPfDataComponent implements OnDestroy {
     private pfDataService: PfDataService,
     private changeDetectorRef: ChangeDetectorRef,
     private confirmationCodeService: ConfirmationCodeService
-  ) {}
+  ) {
+    this.formSubscription = this.editForm.valueChanges.subscribe(() => this.syncDifference());
+  }
 
   ngOnDestroy(): void {
+    this.formSubscription.unsubscribe();
     this.toastTimeout?.unsubscribe();
   }
 
@@ -264,7 +268,7 @@ export class KumarPfDataComponent implements OnDestroy {
     const record: PfRecord = {
       date,
       pfAmount: formValue.pfAmount,
-      difference: formValue.difference
+      difference: this.calculateDifference(formValue.date, formValue.pfAmount)
     };
     const addingRecord = this.isAddingRecord;
     const records = [...this.records];
@@ -389,6 +393,32 @@ export class KumarPfDataComponent implements OnDestroy {
     }
     const year = match[2].length === 2 ? `20${match[2]}` : match[2];
     return `${month} ${year}`;
+  }
+
+  // Difference = this month's balance minus the immediately previous month's balance.
+  private calculateDifference(month: string, pfAmount: number): number {
+    const match = /^(\d{4})-(\d{2})$/.exec(month);
+    if (!match) {
+      return 0;
+    }
+    const previous = new Date(Number(match[1]), Number(match[2]) - 2, 1);
+    const previousKey = `${previous.getFullYear()}-${String(previous.getMonth() + 1).padStart(2, '0')}`;
+    const previousRecord = this.records.find((record, index) =>
+      index !== this.editingRecordIndex && this.toMonthInputValue(record.date) === previousKey
+    );
+    if (previousRecord) {
+      return pfAmount - previousRecord.pfAmount;
+    }
+    // No previous month on record (e.g. the oldest month): keep the stored difference.
+    return this.editingRecordIndex !== null ? this.records[this.editingRecordIndex]?.difference ?? 0 : 0;
+  }
+
+  private syncDifference(): void {
+    const { date, pfAmount } = this.editForm.getRawValue();
+    const difference = this.calculateDifference(date, pfAmount);
+    if (this.editForm.controls.difference.value !== difference) {
+      this.editForm.controls.difference.setValue(difference, { emitEvent: false });
+    }
   }
 
   private toMonthInputValue(value: string): string {

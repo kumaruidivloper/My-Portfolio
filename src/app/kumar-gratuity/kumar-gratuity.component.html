@@ -267,6 +267,7 @@
                 min="0"
                 step="1"
                 formControlName="previousMonthValue"
+                [readonly]="previousMonthFound"
                 (input)="calculateDifference()">
               @if (editForm.controls.previousMonthValue.touched && editForm.controls.previousMonthValue.invalid) {
                 <small class="gratuity-field-error">Enter a valid non-negative amount.</small>

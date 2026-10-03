@@ -110,7 +110,7 @@ describe('KumarPfDataComponent', () => {
     expect(pfDataService.updatePfData).toHaveBeenCalledWith({
       ...initialData,
       pfRecords: [
-        { date: "Oct'26", pfAmount: 2080000, difference: 24000 },
+        { date: "Oct'26", pfAmount: 2080000, difference: 13551 },
         ...initialData.pfRecords
       ]
     }, '2');
@@ -134,7 +134,7 @@ describe('KumarPfDataComponent', () => {
     expect(pfDataService.updatePfData).toHaveBeenCalledWith({
       ...initialData,
       pfRecords: [
-        { date: "Sep'26", pfAmount: 2070000, difference: 23709 },
+        { date: "Sep'26", pfAmount: 2070000, difference: 27260 },
         initialData.pfRecords[1]
       ]
     }, '2');

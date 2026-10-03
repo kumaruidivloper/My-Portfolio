@@ -122,6 +122,21 @@ describe('KumarGratuityComponent', () => {
     expect(component.toastMessage).toBe('Gratuity record added successfully.');
   });
 
+  it('auto-fills the previous month value from the immediately previous record', () => {
+    component.toggleExpanded();
+    component.addRecord();
+
+    component.editForm.controls.gratuity.setValue(270000);
+    component.editForm.controls.date.setValue('2026-10');
+
+    expect(component.previousMonthFound).toBeTrue();
+    expect(component.editForm.controls.previousMonthValue.value).toBe(262985);
+    expect(component.editForm.controls.difference.value).toBe(7015);
+
+    component.editForm.controls.date.setValue('2027-05');
+    expect(component.previousMonthFound).toBeFalse();
+  });
+
   it('requires a verified confirmation code before deleting a record', async () => {
     component.toggleExpanded();
     component.requestDeleteRecord(0);

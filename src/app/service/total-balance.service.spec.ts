@@ -26,6 +26,14 @@ describe('calculateTotals', () => {
     ]);
   });
 
+  it('ignores months before July 2026', () => {
+    const result = calculateTotals([
+      [entry("Jul'26", 100, 10), entry("Jun'26", 90, 9)],
+      [entry("Jul'26", 200, 20), entry("Jun'26", 180, 18)]
+    ]);
+    expect(result.map((record) => record.date)).toEqual(["Jul'26"]);
+  });
+
   it('updates the same month row as more entries are added', () => {
     const result = calculateTotals([
       [entry("Oct'26", 110, 10), entry("Sep'26", 100, 10)],

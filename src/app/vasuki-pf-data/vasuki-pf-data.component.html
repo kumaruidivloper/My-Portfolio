@@ -291,8 +291,8 @@
             }
           </label>
           <label class="pf-form-field">
-            <span>Monthly difference (INR)</span>
-            <input type="number" min="0" step="1" formControlName="difference">
+            <span>Monthly difference (INR) · auto-calculated</span>
+            <input type="number" step="1" formControlName="difference" readonly>
             @if (editForm.controls.difference.touched && editForm.controls.difference.invalid) {
               <small class="pf-field-error">Enter a valid non-negative amount.</small>
             }

@@ -21,6 +21,9 @@ const SOURCES: ReadonlyArray<{ id: string; listKey: string; amountKey: string }>
   { id: '6', listKey: 'superRecords', amountKey: 'super' }
 ];
 
+// Earlier months are not part of the overall balance.
+const FIRST_MONTH_KEY = '2026-07';
+
 const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
 
 function monthKey(value: string): string {
@@ -65,7 +68,7 @@ export function calculateTotals(sources: SourceEntry[][]): TotalRecord[] {
       }
     }
   }
-  const keys = [...labels.keys()].sort().reverse();
+  const keys = [...labels.keys()].filter((key) => key >= FIRST_MONTH_KEY).sort().reverse();
   const latestComplete = keys.find((key) => maps.every((source) => source.has(key)));
   return keys
     .filter((key) => latestComplete === undefined ? false : key >= latestComplete || maps.every((source) => source.has(key)))

@@ -64,6 +64,8 @@ export class KumarGratuityComponent implements OnDestroy {
     validators: [Validators.required, Validators.pattern(/^\d{8}$/)]
   });
   gratuityData: GratuityApiDocument | null = null;
+  previousMonthFound = false;
+  private readonly dateSubscription: Subscription;
   isExpanded = false;
   areRecordsExpanded = false;
   isLoading = false;
@@ -93,9 +95,14 @@ export class KumarGratuityComponent implements OnDestroy {
     private gratuityDataService: GratuityDataService,
     private confirmationCodeService: ConfirmationCodeService,
     private changeDetectorRef: ChangeDetectorRef
-  ) {}
+  ) {
+    this.dateSubscription = this.editForm.controls.date.valueChanges.subscribe((month) =>
+      this.populatePreviousMonthValue(month)
+    );
+  }
 
   ngOnDestroy(): void {
+    this.dateSubscription.unsubscribe();
     this.toastTimeout?.unsubscribe();
   }
 
@@ -200,6 +207,22 @@ export class KumarGratuityComponent implements OnDestroy {
       return;
     }
     this.openAddRecordForm();
+  }
+
+  private populatePreviousMonthValue(month: string): void {
+    this.previousMonthFound = false;
+    const match = /^(\d{4})-(\d{2})$/.exec(month);
+    if (!this.isAddingRecord || !match) {
+      return;
+    }
+    const previous = new Date(Number(match[1]), Number(match[2]) - 2, 1);
+    const previousKey = `${previous.getFullYear()}-${String(previous.getMonth() + 1).padStart(2, '0')}`;
+    const previousRecord = this.records.find((record) => this.toMonthInputValue(record.date) === previousKey);
+    if (previousRecord) {
+      this.previousMonthFound = true;
+      this.editForm.controls.previousMonthValue.setValue(previousRecord.gratuity, { emitEvent: false });
+      this.calculateDifference();
+    }
   }
 
   calculateDifference(): void {
