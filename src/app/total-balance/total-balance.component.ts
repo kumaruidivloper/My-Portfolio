@@ -37,14 +37,22 @@ export class TotalBalanceComponent implements OnDestroy {
     domain: ['#046a38']
   };
   private loadSubscription?: Subscription;
+  private readonly updateSubscription: Subscription;
 
   constructor(
     private totalBalanceService: TotalBalanceService,
     private changeDetectorRef: ChangeDetectorRef
-  ) {}
+  ) {
+    this.updateSubscription = this.totalBalanceService.totalsUpdated$.subscribe(() => {
+      if (this.isExpanded) {
+        this.load();
+      }
+    });
+  }
 
   ngOnDestroy(): void {
     this.loadSubscription?.unsubscribe();
+    this.updateSubscription.unsubscribe();
   }
 
   toggleExpanded(): void {

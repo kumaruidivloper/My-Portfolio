@@ -30,7 +30,7 @@ function monthKey(value: string): string {
   }
   const month = MONTHS.indexOf(match[1].slice(0, 3).toLowerCase());
   const year = match[2].length === 2 ? `20${match[2]}` : match[2];
-  return `${year}-${month}`;
+  return `${year}-${String(month + 1).padStart(2, '0')}`;
 }
 
 function toEntries(response: unknown, listKey: string, amountKey: string): SourceEntry[] {
@@ -49,21 +49,41 @@ function toEntries(response: unknown, listKey: string, amountKey: string): Sourc
   });
 }
 
-// Only months present in every source are totalled, so a deleted month drops out of the total.
+// One row per month. Months present in every source are always totalled; months newer than the
+// latest complete month carry forward each missing source's latest balance until its entry arrives.
 export function calculateTotals(sources: SourceEntry[][]): TotalRecord[] {
   if (sources.length === 0) {
     return [];
   }
   const maps = sources.map((entries) => new Map(entries.map((entry) => [monthKey(entry.date), entry])));
-  return sources[0]
-    .filter((entry) => maps.every((source) => source.has(monthKey(entry.date))))
-    .map((entry) => {
+  const labels = new Map<string, string>();
+  for (const entries of sources) {
+    for (const entry of entries) {
       const key = monthKey(entry.date);
-      return {
-        date: entry.date,
-        total: maps.reduce((sum, source) => sum + source.get(key)!.amount, 0),
-        difference: maps.reduce((sum, source) => sum + source.get(key)!.difference, 0)
-      };
+      if (!labels.has(key)) {
+        labels.set(key, entry.date);
+      }
+    }
+  }
+  const keys = [...labels.keys()].sort().reverse();
+  const latestComplete = keys.find((key) => maps.every((source) => source.has(key)));
+  return keys
+    .filter((key) => latestComplete === undefined ? false : key >= latestComplete || maps.every((source) => source.has(key)))
+    .map((key) => {
+      let total = 0;
+      let difference = 0;
+      for (const source of maps) {
+        const entry = source.get(key);
+        if (entry) {
+          total += entry.amount;
+          difference += entry.difference;
+        } else {
+          // Missing entry: carry that source's latest earlier balance, with no interest added.
+          const earlier = [...source.keys()].filter((candidate) => candidate < key).sort().pop();
+          total += earlier ? source.get(earlier)!.amount : 0;
+        }
+      }
+      return { date: labels.get(key)!, total, difference };
     });
 }
 
@@ -72,11 +92,13 @@ export function calculateTotals(sources: SourceEntry[][]): TotalRecord[] {
 })
 export class TotalBalanceService {
   private readonly syncRequests = new Subject<void>();
+  private readonly updated = new Subject<void>();
+  readonly totalsUpdated$ = this.updated.asObservable();
 
   constructor(private http: HttpClient) {
     this.syncRequests.pipe(
       switchMap(() => this.recalculate().pipe(catchError(() => EMPTY)))
-    ).subscribe();
+    ).subscribe(() => this.updated.next());
   }
 
   getTotals(): Observable<TotalApiDocument> {
