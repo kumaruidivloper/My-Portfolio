@@ -1,3 +1,4 @@
+import { announceAccordionOpened, collapseWhenAnotherOpens } from '../service/accordion-group';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Color, ScaleType } from '@swimlane/ngx-charts';
@@ -187,6 +188,11 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     domain: ['#ff671f', '#046a38', '#3875d7', '#d6a514', '#8e44ad', '#16a085', '#e74c3c']
   };
 
+  private readonly accordionSubscription = collapseWhenAnotherOpens(
+    () => 'transfer',
+    () => this.collapseTransferSection()
+  );
+
   constructor(
     private transferService: TransferService,
     private changeDetectorRef: ChangeDetectorRef,
@@ -218,6 +224,7 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.toastTimeout?.unsubscribe();
     this.amountCalculation?.unsubscribe();
+    this.accordionSubscription.unsubscribe();
   }
 
   dismissToast(): void {
@@ -385,6 +392,16 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
 
   toggleTransferSection(): void {
     this.isTransferSectionExpanded = !this.isTransferSectionExpanded;
+    if (this.isTransferSectionExpanded) {
+      announceAccordionOpened('transfer');
+    }
+  }
+
+  private collapseTransferSection(): void {
+    if (this.isTransferSectionExpanded) {
+      this.isTransferSectionExpanded = false;
+      this.changeDetectorRef.detectChanges();
+    }
   }
 
   requestDeleteTransfer(index: number): void {

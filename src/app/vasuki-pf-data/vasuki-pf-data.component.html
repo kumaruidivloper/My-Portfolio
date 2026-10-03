@@ -17,13 +17,6 @@
     <div class="records-actions">
       <button
         type="button"
-        class="control-button add-button"
-        [disabled]="isSaving"
-        (click)="addRecord()">
-        {{ isLoading && !pfData ? 'Loading…' : 'Add new PF record' }}
-      </button>
-      <button
-        type="button"
         class="control-button accordion-toggle"
         [attr.aria-expanded]="isExpanded"
         [attr.aria-controls]="'pf-data-panel-' + resourceId"
@@ -99,7 +92,7 @@
               [scheme]="colorScheme"
               [xAxis]="true"
               [yAxis]="true"
-              [showGridLines]="false"
+              [showGridLines]="true"
               [showXAxisLabel]="true"
               [showYAxisLabel]="true"
               xAxisLabel="Month"
@@ -121,6 +114,13 @@
               <p>{{ records.length }} records · {{ areRecordsExpanded ? 'Record actions available.' : 'Expand to view or edit records.' }}</p>
             </div>
             <div class="records-actions">
+              <button
+                type="button"
+                class="control-button add-button"
+                [disabled]="isSaving"
+                (click)="addRecord()">
+                {{ isLoading && !pfData ? 'Loading…' : 'Add new PF record' }}
+              </button>
               <button
                 type="button"
                 class="control-button accordion-toggle"

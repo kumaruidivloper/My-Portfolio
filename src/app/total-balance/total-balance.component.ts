@@ -1,3 +1,4 @@
+import { announceAccordionOpened, collapseWhenAnotherOpens } from '../service/accordion-group';
 import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { Color, ScaleType } from '@swimlane/ngx-charts';
 import { Subscription } from 'rxjs';
@@ -37,6 +38,10 @@ export class TotalBalanceComponent implements OnDestroy {
     domain: ['#046a38']
   };
   private loadSubscription?: Subscription;
+  private readonly accordionSubscription = collapseWhenAnotherOpens(
+    () => 'total-balance',
+    () => this.collapse()
+  );
   private readonly updateSubscription: Subscription;
 
   constructor(
@@ -51,13 +56,22 @@ export class TotalBalanceComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.accordionSubscription.unsubscribe();
     this.loadSubscription?.unsubscribe();
     this.updateSubscription.unsubscribe();
+  }
+
+  private collapse(): void {
+    if (this.isExpanded) {
+      this.isExpanded = false;
+      this.changeDetectorRef.detectChanges();
+    }
   }
 
   toggleExpanded(): void {
     this.isExpanded = !this.isExpanded;
     if (this.isExpanded) {
+      announceAccordionOpened('total-balance');
       this.load();
     }
   }

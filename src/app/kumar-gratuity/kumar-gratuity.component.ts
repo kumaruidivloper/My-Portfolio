@@ -1,3 +1,4 @@
+import { announceAccordionOpened, collapseWhenAnotherOpens } from '../service/accordion-group';
 import { ChangeDetectorRef, Component, Input, OnDestroy } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Color, ScaleType } from '@swimlane/ngx-charts';
@@ -66,6 +67,7 @@ export class KumarGratuityComponent implements OnDestroy {
   gratuityData: GratuityApiDocument | null = null;
   previousMonthFound = false;
   private readonly dateSubscription: Subscription;
+  private readonly accordionSubscription: Subscription;
   isExpanded = false;
   areRecordsExpanded = false;
   isLoading = false;
@@ -96,6 +98,10 @@ export class KumarGratuityComponent implements OnDestroy {
     private confirmationCodeService: ConfirmationCodeService,
     private changeDetectorRef: ChangeDetectorRef
   ) {
+    this.accordionSubscription = collapseWhenAnotherOpens(
+      () => `gratuity-${this.resourceId}`,
+      () => this.collapse()
+    );
     this.dateSubscription = this.editForm.controls.date.valueChanges.subscribe((month) =>
       this.populatePreviousMonthValue(month)
     );
@@ -103,6 +109,7 @@ export class KumarGratuityComponent implements OnDestroy {
 
   ngOnDestroy(): void {
     this.dateSubscription.unsubscribe();
+    this.accordionSubscription.unsubscribe();
     this.toastTimeout?.unsubscribe();
   }
 
@@ -163,8 +170,18 @@ export class KumarGratuityComponent implements OnDestroy {
 
   toggleExpanded(): void {
     this.isExpanded = !this.isExpanded;
+    if (this.isExpanded) {
+      announceAccordionOpened(`gratuity-${this.resourceId}`);
+    }
     if (this.isExpanded && !this.hasLoaded && !this.isLoading) {
       this.loadData();
+    }
+  }
+
+  private collapse(): void {
+    if (this.isExpanded) {
+      this.isExpanded = false;
+      this.changeDetectorRef.detectChanges();
     }
   }
 

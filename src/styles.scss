@@ -1161,3 +1161,19 @@ body.active .ngx-charts-tooltip-content .tooltip-caret.position-right,
 body.night .ngx-charts-tooltip-content .tooltip-caret.position-right {
     border-right-color: #fff !important;
 }
+
+/* The dashboard page is a fixed stacking context below the toggler, so push the toggler behind it while any modal is open. */
+body:has(.modal-backdrop, .pf-modal-backdrop, .gratuity-modal-backdrop, .dashboard-code-backdrop) #theme-toggler {
+    pointer-events: none;
+    z-index: 0;
+}
+
+.dashboard-page .ngx-charts .gridline-path {
+    stroke: rgb(0 0 0 / 18%);
+    stroke-dasharray: 4 4;
+}
+
+body.active .dashboard-page .ngx-charts .gridline-path,
+body.night .dashboard-page .ngx-charts .gridline-path {
+    stroke: rgb(255 255 255 / 28%);
+}

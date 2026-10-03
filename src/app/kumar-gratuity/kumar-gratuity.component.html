@@ -12,9 +12,6 @@
       <p>{{ recordTypeLabel }} history · {{ gratuityData ? records.length + ' monthly records' : 'Expand to view records.' }}</p>
     </div>
     <div class="gratuity-heading-actions">
-      <button type="button" class="control-button add-button" [disabled]="isSaving" (click)="addRecord()">
-        {{ isLoading && !gratuityData ? 'Loading…' : 'Add new ' + recordTypeLabel }}
-      </button>
       <button
         type="button"
         class="control-button accordion-toggle"
@@ -67,7 +64,7 @@
               [scheme]="colorScheme"
               [xAxis]="true"
               [yAxis]="true"
-              [showGridLines]="false"
+              [showGridLines]="true"
               [showXAxisLabel]="true"
               [showYAxisLabel]="true"
               xAxisLabel="Month"
@@ -88,21 +85,26 @@
               <h3>Monthly {{ recordTypeLabel.toLowerCase() }} records</h3>
               <p>{{ records.length }} records · {{ areRecordsExpanded ? 'Record actions available.' : 'Expand to view or edit records.' }}</p>
             </div>
-            <button
-              type="button"
-              class="control-button accordion-toggle"
-              [attr.aria-expanded]="areRecordsExpanded"
-              [attr.aria-controls]="'gratuity-records-panel-' + resourceId"
-              [attr.aria-label]="areRecordsExpanded ? 'Collapse monthly ' + recordTypeLabel.toLowerCase() + ' records' : 'Expand monthly ' + recordTypeLabel.toLowerCase() + ' records'"
-              [title]="areRecordsExpanded ? 'Collapse monthly ' + recordTypeLabel.toLowerCase() + ' records' : 'Expand monthly ' + recordTypeLabel.toLowerCase() + ' records'"
-              (click)="toggleRecords()">
-              <svg aria-hidden="true" viewBox="0 0 24 24">
-                <path d="M5 12h14"></path>
-                @if (!areRecordsExpanded) {
-                  <path d="M12 5v14"></path>
-                }
-              </svg>
-            </button>
+            <div class="gratuity-heading-actions">
+              <button type="button" class="control-button add-button" [disabled]="isSaving" (click)="addRecord()">
+                {{ isLoading && !gratuityData ? 'Loading…' : 'Add new ' + recordTypeLabel }}
+              </button>
+              <button
+                type="button"
+                class="control-button accordion-toggle"
+                [attr.aria-expanded]="areRecordsExpanded"
+                [attr.aria-controls]="'gratuity-records-panel-' + resourceId"
+                [attr.aria-label]="areRecordsExpanded ? 'Collapse monthly ' + recordTypeLabel.toLowerCase() + ' records' : 'Expand monthly ' + recordTypeLabel.toLowerCase() + ' records'"
+                [title]="areRecordsExpanded ? 'Collapse monthly ' + recordTypeLabel.toLowerCase() + ' records' : 'Expand monthly ' + recordTypeLabel.toLowerCase() + ' records'"
+                (click)="toggleRecords()">
+                <svg aria-hidden="true" viewBox="0 0 24 24">
+                  <path d="M5 12h14"></path>
+                  @if (!areRecordsExpanded) {
+                    <path d="M12 5v14"></path>
+                  }
+                </svg>
+              </button>
+            </div>
           </header>
           @if (areRecordsExpanded) {
             <app-responsive-table

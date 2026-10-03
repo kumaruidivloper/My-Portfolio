@@ -1,3 +1,4 @@
+import { announceAccordionOpened, collapseWhenAnotherOpens } from '../service/accordion-group';
 import { ChangeDetectorRef, Component, Input, OnDestroy } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Color, ScaleType } from '@swimlane/ngx-charts';
@@ -64,6 +65,7 @@ export class KumarPfDataComponent implements OnDestroy {
   private verifiedDeleteCode = '';
   private toastTimeout?: Subscription;
   private readonly formSubscription: Subscription;
+  private readonly accordionSubscription: Subscription;
   selectedMetric: PfMetric = 'pfAmount';
   readonly gridColumns: readonly ResponsiveGridColumn[] = [
     { key: 'month', label: 'Month', sortable: true },
@@ -83,18 +85,33 @@ export class KumarPfDataComponent implements OnDestroy {
     private changeDetectorRef: ChangeDetectorRef,
     private confirmationCodeService: ConfirmationCodeService
   ) {
+    this.accordionSubscription = collapseWhenAnotherOpens(
+      () => `pf-${this.resourceId}`,
+      () => this.collapse()
+    );
     this.formSubscription = this.editForm.valueChanges.subscribe(() => this.syncDifference());
   }
 
   ngOnDestroy(): void {
     this.formSubscription.unsubscribe();
+    this.accordionSubscription.unsubscribe();
     this.toastTimeout?.unsubscribe();
   }
 
   toggleExpanded(): void {
     this.isExpanded = !this.isExpanded;
+    if (this.isExpanded) {
+      announceAccordionOpened(`pf-${this.resourceId}`);
+    }
     if (this.isExpanded && !this.hasLoaded && !this.isLoading) {
       this.loadPfData();
+    }
+  }
+
+  private collapse(): void {
+    if (this.isExpanded) {
+      this.isExpanded = false;
+      this.changeDetectorRef.detectChanges();
     }
   }
 

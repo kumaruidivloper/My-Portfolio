@@ -17,9 +17,6 @@
           </p>
         </div>
         <div class="records-actions">
-          <button type="button" class="control-button add-button" [disabled]="isSaving" (click)="addTransfer()">
-            Add new transfer
-          </button>
           <button
             type="button"
             class="control-button accordion-toggle"
@@ -116,7 +113,7 @@
               [scheme]="colorScheme"
               [xAxis]="true"
               [yAxis]="true"
-              [showGridLines]="false"
+              [showGridLines]="true"
               [showXAxisLabel]="true"
               [showYAxisLabel]="true"
               xAxisLabel="Transfer date"
@@ -135,7 +132,7 @@
               [scheme]="colorScheme"
               [xAxis]="true"
               [yAxis]="true"
-              [showGridLines]="false"
+              [showGridLines]="true"
               [showXAxisLabel]="true"
               [showYAxisLabel]="true"
               xAxisLabel="Transfer date"
@@ -186,6 +183,9 @@
             </span>
           </div>
           <div class="records-actions">
+            <button type="button" class="control-button add-button" [disabled]="isSaving" (click)="addTransfer()">
+              Add new transfer
+            </button>
             <button
               type="button"
               class="control-button accordion-toggle"

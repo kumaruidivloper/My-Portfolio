@@ -1,3 +1,4 @@
+import { announceAccordionOpened, collapseWhenAnotherOpens } from '../service/accordion-group';
 import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { Color, ScaleType } from '@swimlane/ngx-charts';
 import { forkJoin, Subscription } from 'rxjs';
@@ -58,6 +59,10 @@ export class SumOfValueComponent implements OnDestroy {
     domain: ['#046a38']
   };
   private loadSubscription?: Subscription;
+  private readonly accordionSubscription = collapseWhenAnotherOpens(
+    () => 'sum-of-value',
+    () => this.collapse()
+  );
 
   constructor(
     private pfDataService: PfDataService,
@@ -65,12 +70,21 @@ export class SumOfValueComponent implements OnDestroy {
   ) {}
 
   ngOnDestroy(): void {
+    this.accordionSubscription.unsubscribe();
     this.loadSubscription?.unsubscribe();
+  }
+
+  private collapse(): void {
+    if (this.isExpanded) {
+      this.isExpanded = false;
+      this.changeDetectorRef.detectChanges();
+    }
   }
 
   toggleExpanded(): void {
     this.isExpanded = !this.isExpanded;
     if (this.isExpanded) {
+      announceAccordionOpened('sum-of-value');
       this.loadMonthlyTotals();
     }
   }
