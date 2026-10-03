@@ -6,10 +6,10 @@ import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { of } from 'rxjs';
 import { ConfirmationCodeService } from '../service/confirmation-code.service';
 import { PfDataService } from '../service/pf-data.service';
-import { VasukiPfDataComponent } from './vasuki-pf-data.component';
+import { PfDataComponent } from './pf-data.component';
 import { PfApiDocument } from '../model/pf-record';
 
-describe('VasukiPfDataComponent', () => {
+describe('PfDataComponent (Vasuki)', () => {
   it('renders the Vasuki accordion while collapsed before loading data', async () => {
     const pfDataService = jasmine.createSpyObj<PfDataService>('PfDataService', ['getPfData', 'updatePfData']);
     pfDataService.getPfData.and.returnValue(of({
@@ -25,17 +25,19 @@ describe('VasukiPfDataComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [CommonModule, NgxChartsModule, ReactiveFormsModule],
-      declarations: [VasukiPfDataComponent],
+      declarations: [PfDataComponent],
       providers: [
         { provide: PfDataService, useValue: pfDataService },
         { provide: ConfirmationCodeService, useValue: confirmationCodeService }
       ]
     }).compileComponents();
 
-    const fixture = TestBed.createComponent(VasukiPfDataComponent);
+    const fixture = TestBed.createComponent(PfDataComponent);
+    fixture.componentInstance.resourceId = '3';
+    fixture.componentInstance.ownerName = 'Vasuki';
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelector('#pf-data-title-3')?.textContent).toContain('Vasuki · PF DATA');
+    expect(fixture.nativeElement.querySelector('#pf-data-title-3')?.textContent).toContain('Vasuki - PF DATA');
     expect(fixture.nativeElement.querySelector('#pf-data-panel-3')).toBeNull();
     expect(pfDataService.getPfData).not.toHaveBeenCalled();
   });
@@ -53,7 +55,9 @@ describe('VasukiPfDataComponent', () => {
       'ConfirmationCodeService',
       ['verify']
     );
-    const component = new VasukiPfDataComponent(pfDataService, changeDetector, confirmationCodeService);
+    const component = new PfDataComponent(pfDataService, changeDetector, confirmationCodeService);
+    component.resourceId = '3';
+    component.ownerName = 'Vasuki';
 
     component.toggleExpanded();
 
@@ -69,7 +73,9 @@ describe('VasukiPfDataComponent', () => {
       'ConfirmationCodeService',
       ['verify']
     );
-    const component = new VasukiPfDataComponent(pfDataService, changeDetector, confirmationCodeService);
+    const component = new PfDataComponent(pfDataService, changeDetector, confirmationCodeService);
+    component.resourceId = '3';
+    component.ownerName = 'Vasuki';
 
     expect(component.areRecordsExpanded).toBeFalse();
 
@@ -98,7 +104,9 @@ describe('VasukiPfDataComponent', () => {
       ['verify']
     );
     confirmationCodeService.verify.and.resolveTo(true);
-    const component = new VasukiPfDataComponent(pfDataService, changeDetector, confirmationCodeService);
+    const component = new PfDataComponent(pfDataService, changeDetector, confirmationCodeService);
+    component.resourceId = '3';
+    component.ownerName = 'Vasuki';
     component.toggleExpanded();
     component.editRecord(0);
     component.editForm.controls.pfAmount.setValue(2600000);

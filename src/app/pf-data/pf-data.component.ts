@@ -1,5 +1,5 @@
 import { announceAccordionOpened, collapseWhenAnotherOpens } from '../service/accordion-group';
-import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnDestroy } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Color, ScaleType } from '@swimlane/ngx-charts';
 import { Subscription, timer } from 'rxjs';
@@ -18,14 +18,14 @@ interface PfChartDatum {
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 @Component({
-  selector: 'app-vasuki-pf-data',
-  templateUrl: './vasuki-pf-data.component.html',
-  styleUrls: ['./vasuki-pf-data.component.scss'],
+  selector: 'app-pf-data',
+  templateUrl: './pf-data.component.html',
+  styleUrls: ['./pf-data.component.scss'],
   standalone: false
 })
-export class VasukiPfDataComponent implements OnDestroy {
-  readonly resourceId: PfResourceId = '3';
-  readonly ownerName = 'Vasuki';
+export class PfDataComponent implements OnDestroy {
+  @Input() resourceId: PfResourceId = '2';
+  @Input() ownerName = 'Kumar';
 
   readonly editForm = new FormGroup({
     date: new FormControl('', {
@@ -74,7 +74,7 @@ export class VasukiPfDataComponent implements OnDestroy {
     { key: 'actions', label: 'Actions', actions: true }
   ];
   readonly colorScheme: Color = {
-    name: 'vasuki-pf-balance',
+    name: 'pf-balance',
     selectable: true,
     group: ScaleType.Ordinal,
     domain: ['#046a38', '#3875d7']

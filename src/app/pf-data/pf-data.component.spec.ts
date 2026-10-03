@@ -2,10 +2,10 @@ import { ChangeDetectorRef } from '@angular/core';
 import { of, throwError } from 'rxjs';
 import { PfDataService } from '../service/pf-data.service';
 import { ConfirmationCodeService } from '../service/confirmation-code.service';
-import { KumarPfDataComponent } from './kumar-pf-data.component';
+import { PfDataComponent } from './pf-data.component';
 
-describe('KumarPfDataComponent', () => {
-  let component: KumarPfDataComponent;
+describe('PfDataComponent', () => {
+  let component: PfDataComponent;
   let pfDataService: jasmine.SpyObj<PfDataService>;
   let confirmationCodeService: jasmine.SpyObj<ConfirmationCodeService>;
   let changeDetector: jasmine.SpyObj<ChangeDetectorRef>;
@@ -29,7 +29,7 @@ describe('KumarPfDataComponent', () => {
     );
     confirmationCodeService.verify.and.resolveTo(true);
     changeDetector = jasmine.createSpyObj<ChangeDetectorRef>('ChangeDetectorRef', ['detectChanges']);
-    component = new KumarPfDataComponent(pfDataService, changeDetector, confirmationCodeService);
+    component = new PfDataComponent(pfDataService, changeDetector, confirmationCodeService);
     component.toggleExpanded();
   });
 
@@ -41,7 +41,7 @@ describe('KumarPfDataComponent', () => {
 
   it('loads PF records only when the accordion is expanded', () => {
     pfDataService.getPfData.calls.reset();
-    const collapsedComponent = new KumarPfDataComponent(pfDataService, changeDetector, confirmationCodeService);
+    const collapsedComponent = new PfDataComponent(pfDataService, changeDetector, confirmationCodeService);
 
     expect(pfDataService.getPfData).not.toHaveBeenCalled();
 
@@ -63,7 +63,7 @@ describe('KumarPfDataComponent', () => {
   });
 
   it('loads PF data and opens the add form without expanding when add is clicked while collapsed', () => {
-    const collapsedComponent = new KumarPfDataComponent(pfDataService, changeDetector, confirmationCodeService);
+    const collapsedComponent = new PfDataComponent(pfDataService, changeDetector, confirmationCodeService);
 
     collapsedComponent.addRecord();
 
@@ -74,7 +74,7 @@ describe('KumarPfDataComponent', () => {
   });
 
   it('routes a PF component instance to the configured resource', () => {
-    const vasukiComponent = new KumarPfDataComponent(pfDataService, changeDetector, confirmationCodeService);
+    const vasukiComponent = new PfDataComponent(pfDataService, changeDetector, confirmationCodeService);
     vasukiComponent.resourceId = '3';
     vasukiComponent.ownerName = 'Vasuki';
 
@@ -215,7 +215,7 @@ describe('KumarPfDataComponent', () => {
 
   it('shows API errors instead of sample data', () => {
     pfDataService.getPfData.and.returnValue(throwError(() => new Error('API unavailable')));
-    const failed = new KumarPfDataComponent(pfDataService, changeDetector, confirmationCodeService);
+    const failed = new PfDataComponent(pfDataService, changeDetector, confirmationCodeService);
 
     failed.toggleExpanded();
 

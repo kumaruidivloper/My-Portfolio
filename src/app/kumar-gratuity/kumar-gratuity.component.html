@@ -8,7 +8,7 @@
 <section class="gratuity-accordion" [attr.aria-labelledby]="'gratuity-title-' + resourceId">
   <header class="gratuity-heading">
     <div class="gratuity-heading-copy">
-      <h2 [id]="'gratuity-title-' + resourceId">{{ ownerName }} · {{ recordTypeLabel }}</h2>
+      <h2 [id]="'gratuity-title-' + resourceId">{{ ownerName }} - {{ recordTypeLabel }}</h2>
       <p>{{ recordTypeLabel }} history · {{ gratuityData ? records.length + ' monthly records' : 'Expand to view records.' }}</p>
     </div>
     <div class="gratuity-heading-actions">
