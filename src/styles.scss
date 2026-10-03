@@ -294,6 +294,25 @@ html body .dashboard-page .modal-actions button.control-button.primary-action:no
 
 }
 
+body.active .ngx-charts-tooltip-content,
+body.active .ngx-charts-tooltip-content.type-tooltip,
+body.active .ngx-charts-tooltip-content.type-popover,
+body.night .ngx-charts-tooltip-content,
+body.night .ngx-charts-tooltip-content.type-tooltip,
+body.night .ngx-charts-tooltip-content.type-popover {
+    background: #fff !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    color: #000 !important;
+}
+
+body.active .ngx-charts-tooltip-content .chart-value-tooltip strong,
+body.active .ngx-charts-tooltip-content .chart-value-tooltip span,
+body.night .ngx-charts-tooltip-content .chart-value-tooltip strong,
+body.night .ngx-charts-tooltip-content .chart-value-tooltip span {
+    color: #000 !important;
+}
+
 .ngx-charts-tooltip-content .chart-value-tooltip {
     display: flex;
     flex-direction: column;
@@ -1123,3 +1142,22 @@ html body app-responsive-table .responsive-grid-page-controls button svg {
     --box-shadow-inset: .4rem .4rem 1rem #ccc inset, -.4rem -.4rem 1rem #fff inset;
   }
   
+body.active .ngx-charts-tooltip-content .tooltip-caret.position-top,
+body.night .ngx-charts-tooltip-content .tooltip-caret.position-top {
+    border-top-color: #fff !important;
+}
+
+body.active .ngx-charts-tooltip-content .tooltip-caret.position-bottom,
+body.night .ngx-charts-tooltip-content .tooltip-caret.position-bottom {
+    border-bottom-color: #fff !important;
+}
+
+body.active .ngx-charts-tooltip-content .tooltip-caret.position-left,
+body.night .ngx-charts-tooltip-content .tooltip-caret.position-left {
+    border-left-color: #fff !important;
+}
+
+body.active .ngx-charts-tooltip-content .tooltip-caret.position-right,
+body.night .ngx-charts-tooltip-content .tooltip-caret.position-right {
+    border-right-color: #fff !important;
+}
