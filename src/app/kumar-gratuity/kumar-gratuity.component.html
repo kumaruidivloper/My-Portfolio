@@ -253,7 +253,7 @@
             <div class="gratuity-form-grid">
           <label class="gratuity-field">
             <span>Month</span>
-            <input type="month" formControlName="date">
+            <app-theme-date-picker mode="month" formControlName="date"></app-theme-date-picker>
             @if (editForm.controls.date.touched && editForm.controls.date.invalid) {
               <small class="gratuity-field-error">Select a valid month.</small>
             }

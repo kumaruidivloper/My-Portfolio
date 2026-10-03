@@ -296,7 +296,7 @@
               <div class="form-grid">
               <label class="form-field">
                 <span>Transfer date</span>
-                <input type="date" formControlName="dateOfTransfer">
+                <app-theme-date-picker mode="date" formControlName="dateOfTransfer"></app-theme-date-picker>
                 @if (editForm.controls.dateOfTransfer.touched && editForm.controls.dateOfTransfer.invalid) {
                   <small class="field-error">Select a valid transfer date.</small>
                 }
@@ -322,7 +322,7 @@
               </label>
               <label class="form-field">
                 <span>Received date</span>
-                <input type="date" formControlName="receivedDate">
+                <app-theme-date-picker mode="date" formControlName="receivedDate"></app-theme-date-picker>
                 @if (editForm.controls.receivedDate.touched && editForm.controls.receivedDate.invalid) {
                   <small class="field-error">Select a valid received date.</small>
                 }

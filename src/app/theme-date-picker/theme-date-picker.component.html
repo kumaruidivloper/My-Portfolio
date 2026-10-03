@@ -1,0 +1,64 @@
+<div class="date-picker" [class.open]="isOpen">
+  <button
+    type="button"
+    class="date-picker-trigger"
+    aria-haspopup="dialog"
+    [attr.aria-expanded]="isOpen"
+    [attr.aria-label]="ariaLabel"
+    [disabled]="isDisabled"
+    (click)="toggle()">
+    <span [class.placeholder]="!displayValue">{{ displayValue || (mode === 'month' ? 'Select month' : 'Select date') }}</span>
+    <svg aria-hidden="true" viewBox="0 0 24 24">
+      <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+      <path d="M16 2v4M8 2v4M3 10h18"></path>
+    </svg>
+  </button>
+
+  @if (isOpen) {
+    <div class="date-picker-popup" role="dialog" [attr.aria-label]="ariaLabel" (click)="$event.preventDefault()">
+      <div class="date-picker-header">
+        <button type="button" class="date-picker-nav" aria-label="Previous" (click)="shift(-1)">‹</button>
+        <strong>{{ title }}</strong>
+        <button type="button" class="date-picker-nav" aria-label="Next" (click)="shift(1)">›</button>
+      </div>
+
+      @if (mode === 'month') {
+        <div class="date-picker-months">
+          @for (name of months; track name; let i = $index) {
+            <button
+              type="button"
+              class="date-picker-cell"
+              [class.selected]="isSelectedMonth(i)"
+              (click)="selectMonth(i)">
+              {{ name }}
+            </button>
+          }
+        </div>
+      } @else {
+        <div class="date-picker-weekdays">
+          @for (weekday of weekdays; track weekday) {
+            <span>{{ weekday }}</span>
+          }
+        </div>
+        <div class="date-picker-days">
+          @for (day of days; track day.value) {
+            <button
+              type="button"
+              class="date-picker-cell"
+              [class.outside]="!day.inMonth"
+              [class.today]="day.isToday"
+              [class.selected]="isSelectedDay(day)"
+              (click)="selectDay(day)">
+              {{ day.day }}
+            </button>
+          }
+        </div>
+      }
+
+      <div class="date-picker-footer">
+        <button type="button" class="date-picker-link" (click)="clear()">Clear</button>
+        <button type="button" class="date-picker-link" (click)="selectToday()">{{ mode === 'month' ? 'This month' : 'Today' }}</button>
+      </div>
+    </div>
+  }
+</div>
