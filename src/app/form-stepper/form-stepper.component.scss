@@ -175,6 +175,11 @@
     min-width: 0;
   }
 
+  .stepper-actions .primary-action {
+    flex: 1 0 auto;
+    white-space: nowrap;
+  }
+
   .stepper-label {
     font-size: 1.1rem;
   }
