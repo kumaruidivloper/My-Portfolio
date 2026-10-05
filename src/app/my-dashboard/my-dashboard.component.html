@@ -468,11 +468,11 @@
 
             <div [hidden]="stepper.step !== 2">
               <dl class="review-summary">
-                <div><dt>Transfer date</dt><dd>{{ formatDate(editForm.controls.dateOfTransfer.value ?? '') }}</dd></div>
-                <div><dt>Amount sent</dt><dd>{{ formatCurrency(editForm.controls.amountTransferredAUD.value ?? 0, 'AUD') }}</dd></div>
+                <div><dt>Transfer date</dt><dd>{{ formatDate(editForm.controls.dateOfTransfer.value) }}</dd></div>
+                <div><dt>Amount sent</dt><dd>{{ formatCurrency(editForm.controls.amountTransferredAUD.value, 'AUD') }}</dd></div>
                 <div><dt>Exchange rate</dt><dd>{{ editForm.controls.conversionRate.value }}</dd></div>
-                <div><dt>Received date</dt><dd>{{ formatDate(editForm.controls.receivedDate.value ?? '') }}</dd></div>
-                <div><dt>Amount received</dt><dd>{{ formatCurrency(editForm.controls.amountReceivedINR.value ?? 0, 'INR') }}</dd></div>
+                <div><dt>Received date</dt><dd>{{ formatDate(editForm.controls.receivedDate.value) }}</dd></div>
+                <div><dt>Amount received</dt><dd>{{ formatCurrency(editForm.controls.amountReceivedINR.value, 'INR') }}</dd></div>
               </dl>
           @if (!isAddingTransfer) {
             <label class="form-field confirmation-code-field">
