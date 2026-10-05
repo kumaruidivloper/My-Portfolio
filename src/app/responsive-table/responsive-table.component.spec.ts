@@ -19,13 +19,15 @@ import { ResponsiveGridColumn, ResponsiveGridRow, ResponsiveTableComponent } fro
 class ResponsiveTableHostComponent {
   columns: readonly ResponsiveGridColumn[] = [
     { key: 'month', label: 'Month', sortable: true, sortKey: 'monthDate' },
+    { key: 'balance', label: 'Balance', numeric: true },
     { key: 'actions', label: 'Actions', actions: true }
   ];
   rows: readonly ResponsiveGridRow[] = [
-    { month: 'Sep 2026', actionIndex: 1 },
-    { month: 'Jan 2026', actionIndex: 0 },
+    { month: 'Sep 2026', balance: 100, actionIndex: 1 },
+    { month: 'Jan 2026', balance: 100, actionIndex: 0 },
     ...Array.from({ length: 10 }, (_, index) => ({
       month: 'Apr 2026',
+      balance: 100,
       actionIndex: index + 2
     }))
   ];
@@ -47,8 +49,15 @@ describe('ResponsiveTableComponent', () => {
     const host = fixture.nativeElement as HTMLElement;
     expect(host.querySelector('thead th')?.textContent).toContain('Month');
     expect(host.querySelector('tbody tr td')?.textContent?.trim()).toBe('Sep 2026');
+    expect(host.querySelector('tbody tr td')?.classList.contains('numeric-column')).toBeFalse();
     expect(host.querySelector('tbody tr td:last-child button')?.textContent?.trim())
       .toBe('Action 1 Sep 2026');
+  });
+
+  it('marks numeric headers and cells for consistent alignment', () => {
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector('thead th:nth-child(2)')?.classList.contains('numeric-column')).toBeTrue();
+    expect(host.querySelector('tbody tr td:nth-child(2)')?.classList.contains('numeric-column')).toBeTrue();
   });
 
   it('sorts rows and emits the configured sort key when a sortable header is clicked', () => {
@@ -74,8 +83,11 @@ describe('ResponsiveTableComponent', () => {
     const host = fixture.nativeElement as HTMLElement;
     expect(host.querySelectorAll('tbody tr').length).toBe(5);
     expect(host.querySelector('.responsive-grid-page-summary')?.textContent?.trim()).toBe('Showing 1–5 of 12');
+    expect(host.querySelector('[aria-label="First page"]')).not.toBeNull();
     expect(host.querySelector('[aria-label="Previous page"] svg')).not.toBeNull();
     expect(host.querySelector('[aria-label="Next page"] svg')).not.toBeNull();
+    expect((host.querySelector('[aria-label="First page"]') as HTMLButtonElement).disabled).toBeTrue();
+    expect((host.querySelector('[aria-label="Last page"]') as HTMLButtonElement).disabled).toBeFalse();
 
     (host.querySelector('[aria-label="Next page"]') as HTMLButtonElement).click();
     fixture.detectChanges();
@@ -90,6 +102,15 @@ describe('ResponsiveTableComponent', () => {
 
     expect(host.querySelectorAll('tbody tr').length).toBe(2);
     expect(host.querySelector('.responsive-grid-page-summary')?.textContent?.trim()).toBe('Showing 11–12 of 12');
+
+    (host.querySelector('[aria-label="First page"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(host.querySelector('.responsive-grid-page-summary')?.textContent?.trim()).toBe('Showing 1–5 of 12');
+
+    (host.querySelector('[aria-label="Last page"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(host.querySelector('.responsive-grid-page-summary')?.textContent?.trim()).toBe('Showing 11–12 of 12');
+    expect((host.querySelector('[aria-label="Last page"]') as HTMLButtonElement).disabled).toBeTrue();
   });
 
   it('allows a custom page size while enforcing a minimum of 5 rows', () => {

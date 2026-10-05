@@ -52,25 +52,71 @@
                 <h3>Interest per month sum</h3>
                 <p>Sum of both monthly difference values</p>
               </div>
+              <div class="chart-type-select">
+                <span>Chart type</span>
+                <app-theme-select
+                  ariaLabel="Interest chart type"
+                  [options]="chartTypeOptions"
+                  [value]="selectedInterestChartType"
+                  (valueChange)="selectInterestChartType($event)">
+                </app-theme-select>
+              </div>
             </header>
             <div class="chart-container pf-chart-container">
-              <ngx-charts-bar-vertical
-                [results]="interestChartData"
-                [scheme]="colorScheme"
-                [xAxis]="true"
-                [yAxis]="true"
-                [showGridLines]="true"
-                [showXAxisLabel]="true"
-                [showYAxisLabel]="true"
-                xAxisLabel="Month"
-                yAxisLabel="Monthly interest (INR)">
-                <ng-template #tooltipTemplate let-model="model">
-                  <div class="chart-value-tooltip">
-                    <strong>{{ model.name }}</strong>
-                    <span>{{ formatRupees(model.value) }}</span>
-                  </div>
-                </ng-template>
-              </ngx-charts-bar-vertical>
+              @if (selectedInterestChartType === 'bar') {
+                <ngx-charts-bar-vertical
+                  [results]="interestChartData"
+                  [scheme]="interestColorScheme"
+                  [xAxis]="true"
+                  [yAxis]="true"
+                  [showGridLines]="true"
+                  [showXAxisLabel]="true"
+                  [showYAxisLabel]="true"
+                  xAxisLabel="Month"
+                  yAxisLabel="Monthly interest (INR)">
+                  <ng-template #tooltipTemplate let-model="model">
+                    <div class="chart-value-tooltip">
+                      <strong>{{ model.name }}</strong>
+                      <span>{{ formatRupees(model.value) }}</span>
+                    </div>
+                  </ng-template>
+                </ngx-charts-bar-vertical>
+              }
+              @if (selectedInterestChartType === 'line') {
+                <ngx-charts-line-chart
+                  [results]="interestLineChartData"
+                  [scheme]="interestColorScheme"
+                  [xAxis]="true"
+                  [yAxis]="true"
+                  [showGridLines]="true"
+                  [showXAxisLabel]="true"
+                  [showYAxisLabel]="true"
+                  xAxisLabel="Month"
+                  yAxisLabel="Monthly interest (INR)">
+                  <ng-template #tooltipTemplate let-model="model">
+                    <div class="chart-value-tooltip">
+                      <strong>{{ model.name }}</strong>
+                      <span>{{ formatRupees(model.value) }}</span>
+                    </div>
+                  </ng-template>
+                </ngx-charts-line-chart>
+              }
+              @if (selectedInterestChartType === 'pie' || selectedInterestChartType === 'doughnut') {
+                <ngx-charts-pie-chart
+                  [results]="interestChartData"
+                  [scheme]="interestColorScheme"
+                  [legend]="true"
+                  [labels]="true"
+                  [doughnut]="selectedInterestChartType === 'doughnut'"
+                  [arcWidth]="0.25">
+                  <ng-template #tooltipTemplate let-model="model">
+                    <div class="chart-value-tooltip">
+                      <strong>{{ model.name }}</strong>
+                      <span>{{ formatRupees(model.value) }}</span>
+                    </div>
+                  </ng-template>
+                </ngx-charts-pie-chart>
+              }
             </div>
           </article>
 
@@ -80,25 +126,71 @@
                 <h3>Total PF Amount</h3>
                 <p>Sum of Kumar and Vasuki PF balances by month</p>
               </div>
+              <div class="chart-type-select">
+                <span>Chart type</span>
+                <app-theme-select
+                  ariaLabel="Total PF chart type"
+                  [options]="chartTypeOptions"
+                  [value]="selectedTotalChartType"
+                  (valueChange)="selectTotalChartType($event)">
+                </app-theme-select>
+              </div>
             </header>
             <div class="chart-container pf-chart-container">
-              <ngx-charts-bar-vertical
-                [results]="totalPfChartData"
-                [scheme]="colorScheme"
-                [xAxis]="true"
-                [yAxis]="true"
-                [showGridLines]="true"
-                [showXAxisLabel]="true"
-                [showYAxisLabel]="true"
-                xAxisLabel="Month"
-                yAxisLabel="Total PF amount (INR)">
-                <ng-template #tooltipTemplate let-model="model">
-                  <div class="chart-value-tooltip">
-                    <strong>{{ model.name }}</strong>
-                    <span>{{ formatRupees(model.value) }}</span>
-                  </div>
-                </ng-template>
-              </ngx-charts-bar-vertical>
+              @if (selectedTotalChartType === 'bar') {
+                <ngx-charts-bar-vertical
+                  [results]="totalPfChartData"
+                  [scheme]="totalPfColorScheme"
+                  [xAxis]="true"
+                  [yAxis]="true"
+                  [showGridLines]="true"
+                  [showXAxisLabel]="true"
+                  [showYAxisLabel]="true"
+                  xAxisLabel="Month"
+                  yAxisLabel="Total PF amount (INR)">
+                  <ng-template #tooltipTemplate let-model="model">
+                    <div class="chart-value-tooltip">
+                      <strong>{{ model.name }}</strong>
+                      <span>{{ formatRupees(model.value) }}</span>
+                    </div>
+                  </ng-template>
+                </ngx-charts-bar-vertical>
+              }
+              @if (selectedTotalChartType === 'line') {
+                <ngx-charts-line-chart
+                  [results]="totalPfLineChartData"
+                  [scheme]="totalPfColorScheme"
+                  [xAxis]="true"
+                  [yAxis]="true"
+                  [showGridLines]="true"
+                  [showXAxisLabel]="true"
+                  [showYAxisLabel]="true"
+                  xAxisLabel="Month"
+                  yAxisLabel="Total PF amount (INR)">
+                  <ng-template #tooltipTemplate let-model="model">
+                    <div class="chart-value-tooltip">
+                      <strong>{{ model.name }}</strong>
+                      <span>{{ formatRupees(model.value) }}</span>
+                    </div>
+                  </ng-template>
+                </ngx-charts-line-chart>
+              }
+              @if (selectedTotalChartType === 'pie' || selectedTotalChartType === 'doughnut') {
+                <ngx-charts-pie-chart
+                  [results]="totalPfChartData"
+                  [scheme]="totalPfColorScheme"
+                  [legend]="true"
+                  [labels]="true"
+                  [doughnut]="selectedTotalChartType === 'doughnut'"
+                  [arcWidth]="0.25">
+                  <ng-template #tooltipTemplate let-model="model">
+                    <div class="chart-value-tooltip">
+                      <strong>{{ model.name }}</strong>
+                      <span>{{ formatRupees(model.value) }}</span>
+                    </div>
+                  </ng-template>
+                </ngx-charts-pie-chart>
+              }
             </div>
           </article>
         </div>

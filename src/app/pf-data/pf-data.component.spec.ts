@@ -96,6 +96,17 @@ describe('PfDataComponent', () => {
     expect(component.axisLabel).toBe('Monthly difference (INR)');
   });
 
+  it('changes chart type and creates a line series for the selected metric', () => {
+    component.selectMetric('difference');
+    component.selectChartType('line');
+
+    expect(component.selectedChartType).toBe('line');
+    expect(component.lineChartData).toEqual([{
+      name: 'Monthly difference',
+      series: component.chartData
+    }]);
+  });
+
   it('formats PF amounts as Indian rupees', () => {
     expect(component.formatRupees(2066449)).toBe('₹20,66,449');
     expect(component.formatRupeesWithSpace(2066449)).toBe('₹ 20,66,449');

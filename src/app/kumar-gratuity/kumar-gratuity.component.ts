@@ -1,17 +1,14 @@
 import { announceAccordionOpened, collapseWhenAnotherOpens } from '../service/accordion-group';
 import { ChangeDetectorRef, Component, Input, OnDestroy } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { Color, ScaleType } from '@swimlane/ngx-charts';
 import { Subscription, timer } from 'rxjs';
+import {
+  chartColorScheme, CHART_TYPE_OPTIONS, ChartDatum, ChartType, isChartType, toLineChartSeries
+} from '../model/chart-type';
 import { GratuityApiDocument, GratuityRecord } from '../model/gratuity-record';
 import { ConfirmationCodeService } from '../service/confirmation-code.service';
 import { GratuityDataService, GratuityResourceId } from '../service/gratuity-data.service';
 import { ResponsiveGridColumn, ResponsiveGridRow } from '../responsive-table/responsive-table.component';
-
-interface ChartDatum {
-  name: string;
-  value: number;
-}
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -81,18 +78,13 @@ export class KumarGratuityComponent implements OnDestroy {
   isCodeVerifying = false;
   isCodeVerified = false;
   isCodeIncorrect = false;
+  selectedChartType: ChartType = 'bar';
+  readonly chartTypeOptions = CHART_TYPE_OPTIONS;
   private hasLoaded = false;
   private openAddAfterLoad = false;
   private codeValidationAttempt = 0;
   private verifiedCode = '';
   private toastTimeout?: Subscription;
-  readonly colorScheme: Color = {
-    name: 'kumar-gratuity',
-    selectable: true,
-    group: ScaleType.Ordinal,
-    domain: ['#046a38']
-  };
-
   constructor(
     private gratuityDataService: GratuityDataService,
     private confirmationCodeService: ConfirmationCodeService,
@@ -144,6 +136,20 @@ export class KumarGratuityComponent implements OnDestroy {
       name: this.formatMonth(record.date),
       value: record.gratuity
     }));
+  }
+
+  get colorScheme() {
+    return chartColorScheme(this.chartData, 'kumar-gratuity');
+  }
+
+  get lineChartData() {
+    return toLineChartSeries(this.chartData, this.recordTypeLabel);
+  }
+
+  selectChartType(type: string): void {
+    if (isChartType(type)) {
+      this.selectedChartType = type;
+    }
   }
 
   get latestGratuity(): number | null {

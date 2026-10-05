@@ -1,14 +1,14 @@
 import { announceAccordionOpened, collapseWhenAnotherOpens } from '../service/accordion-group';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { Color, ScaleType } from '@swimlane/ngx-charts';
 import { merge, Subscription, timer } from 'rxjs';
+import { chartColorScheme, CHART_TYPE_OPTIONS, ChartType, isChartType } from '../model/chart-type';
 import { TransferRecord } from '../model/transfer';
 import { TransferService } from '../service/transfer.service';
 import { ConfirmationCodeService } from '../service/confirmation-code.service';
 import { ResponsiveGridColumn, ResponsiveGridRow } from '../responsive-table/responsive-table.component';
 
-type DashboardChartType = 'bar' | 'line' | 'pie' | 'doughnut';
+type DashboardChartType = ChartType;
 type TransferMetric = 'amountTransferredAUD' | 'amountReceivedINR' | 'conversionRate';
 type TransferSortKey = keyof TransferRecord;
 type SortDirection = 'asc' | 'desc';
@@ -123,16 +123,7 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     validators: [Validators.required, Validators.pattern(/^\d{8}$/)]
   });
 
-  readonly chartTypes: { label: string; value: DashboardChartType }[] = [
-    { label: 'Bar', value: 'bar' },
-    { label: 'Line', value: 'line' },
-    { label: 'Pie', value: 'pie' },
-    { label: 'Doughnut', value: 'doughnut' }
-  ];
-
-  get chartTypeOptions(): { label: string; value: string }[] {
-    return this.chartTypes;
-  }
+  readonly chartTypeOptions = CHART_TYPE_OPTIONS;
 
   get metricOptions(): { label: string; value: string }[] {
     return this.metrics.map((metric) => ({ label: metric.label, value: metric.key }));
@@ -189,13 +180,6 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
   private amountCalculation?: Subscription;
   private deleteCodeValidationAttempt = 0;
   private verifiedDeleteCode = '';
-  readonly colorScheme: Color = {
-    name: 'transfers',
-    selectable: true,
-    group: ScaleType.Ordinal,
-    domain: ['#ff671f', '#046a38', '#3875d7', '#d6a514', '#8e44ad', '#16a085', '#e74c3c']
-  };
-
   private readonly accordionSubscription = collapseWhenAnotherOpens(
     () => 'transfer',
     () => this.collapseTransferSection()
@@ -242,6 +226,10 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
 
   get selectedMetricOption(): MetricOption {
     return this.metrics.find((metric) => metric.key === this.selectedMetric) ?? this.metrics[0];
+  }
+
+  get colorScheme() {
+    return chartColorScheme(this.chartData, 'transfers');
   }
 
   get chartData(): ChartDatum[] {
@@ -351,8 +339,10 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     this.sortDirection = 'asc';
   }
 
-  selectChartType(type: DashboardChartType): void {
-    this.selectedChartType = type;
+  selectChartType(type: string): void {
+    if (isChartType(type)) {
+      this.selectedChartType = type;
+    }
   }
 
   selectMetric(metric: TransferMetric): void {

@@ -79,7 +79,7 @@
         </div>
 
         <div class="chart-select-row">
-          <div class="chart-select">
+          <div class="chart-select chart-metric-select">
             <span class="control-label" id="metric-select-label">Metric</span>
             <app-theme-select
               ariaLabel="Transfer metric"
@@ -88,13 +88,13 @@
               (valueChange)="selectMetric($any($event))">
             </app-theme-select>
           </div>
-          <div class="chart-select">
+          <div class="chart-select chart-type-select">
             <span class="control-label" id="chart-type-select-label">Chart type</span>
             <app-theme-select
               ariaLabel="Chart type"
               [options]="chartTypeOptions"
               [value]="selectedChartType"
-              (valueChange)="selectChartType($any($event))">
+              (valueChange)="selectChartType($event)">
             </app-theme-select>
           </div>
         </div>

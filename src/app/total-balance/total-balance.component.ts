@@ -1,15 +1,12 @@
 import { announceAccordionOpened, collapseWhenAnotherOpens } from '../service/accordion-group';
 import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
-import { Color, ScaleType } from '@swimlane/ngx-charts';
 import { Subscription } from 'rxjs';
+import {
+  chartColorScheme, CHART_TYPE_OPTIONS, ChartDatum, ChartType, isChartType, toLineChartSeries
+} from '../model/chart-type';
 import { ResponsiveGridColumn, ResponsiveGridRow } from '../responsive-table/responsive-table.component';
 import { TotalRecord } from '../model/total-record';
 import { TotalBalanceService } from '../service/total-balance.service';
-
-interface ChartDatum {
-  name: string;
-  value: number;
-}
 
 @Component({
   selector: 'app-total-balance',
@@ -25,18 +22,15 @@ export class TotalBalanceComponent implements OnDestroy {
   records: TotalRecord[] = [];
   interestChartData: ChartDatum[] = [];
   totalChartData: ChartDatum[] = [];
+  selectedInterestChartType: ChartType = 'bar';
+  selectedTotalChartType: ChartType = 'bar';
+  readonly chartTypeOptions = CHART_TYPE_OPTIONS;
   readonly gridColumns: readonly ResponsiveGridColumn[] = [
     { key: 'month', label: 'Month', sortable: true },
     { key: 'total', label: 'Overall balance', sortable: true, numeric: true },
     { key: 'difference', label: 'Difference', sortable: true, numeric: true }
   ];
   gridRows: ResponsiveGridRow[] = [];
-  readonly colorScheme: Color = {
-    name: 'overall-balance',
-    selectable: true,
-    group: ScaleType.Ordinal,
-    domain: ['#046a38']
-  };
   private loadSubscription?: Subscription;
   private readonly accordionSubscription = collapseWhenAnotherOpens(
     () => 'total-balance',
@@ -86,6 +80,34 @@ export class TotalBalanceComponent implements OnDestroy {
 
   get currentBalanceMonth(): string | null {
     return this.records[this.records.length - 1]?.date ?? null;
+  }
+
+  get interestColorScheme() {
+    return chartColorScheme(this.interestChartData, 'overall-interest');
+  }
+
+  get totalColorScheme() {
+    return chartColorScheme(this.totalChartData, 'overall-balance');
+  }
+
+  get interestLineChartData() {
+    return toLineChartSeries(this.interestChartData, 'Monthly interest');
+  }
+
+  get totalLineChartData() {
+    return toLineChartSeries(this.totalChartData, 'Overall balance');
+  }
+
+  selectInterestChartType(type: string): void {
+    if (isChartType(type)) {
+      this.selectedInterestChartType = type;
+    }
+  }
+
+  selectTotalChartType(type: string): void {
+    if (isChartType(type)) {
+      this.selectedTotalChartType = type;
+    }
   }
 
   formatRupees(value: number): string {

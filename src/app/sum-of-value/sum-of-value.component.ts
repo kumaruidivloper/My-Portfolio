@@ -1,7 +1,9 @@
 import { announceAccordionOpened, collapseWhenAnotherOpens } from '../service/accordion-group';
 import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
-import { Color, ScaleType } from '@swimlane/ngx-charts';
 import { forkJoin, Subscription } from 'rxjs';
+import {
+  chartColorScheme, CHART_TYPE_OPTIONS, ChartDatum, ChartType, isChartType, toLineChartSeries
+} from '../model/chart-type';
 import { PfApiDocument, PfRecord } from '../model/pf-record';
 import { PfDataService } from '../service/pf-data.service';
 
@@ -10,11 +12,6 @@ interface MonthlyTotal {
   name: string;
   difference: number;
   pfAmount: number;
-}
-
-interface ChartDatum {
-  name: string;
-  value: number;
 }
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -51,13 +48,10 @@ export class SumOfValueComponent implements OnDestroy {
   isExpanded = false;
   isLoading = false;
   errorMessage = '';
+  selectedInterestChartType: ChartType = 'bar';
+  selectedTotalChartType: ChartType = 'bar';
+  readonly chartTypeOptions = CHART_TYPE_OPTIONS;
   monthlyTotals: MonthlyTotal[] = [];
-  readonly colorScheme: Color = {
-    name: 'combined-pf-totals',
-    selectable: true,
-    group: ScaleType.Ordinal,
-    domain: ['#046a38']
-  };
   private loadSubscription?: Subscription;
   private readonly accordionSubscription = collapseWhenAnotherOpens(
     () => 'sum-of-value',
@@ -95,6 +89,34 @@ export class SumOfValueComponent implements OnDestroy {
 
   get totalPfChartData(): ChartDatum[] {
     return this.monthlyTotals.map(({ name, pfAmount }) => ({ name, value: pfAmount }));
+  }
+
+  get interestColorScheme() {
+    return chartColorScheme(this.interestChartData, 'combined-pf-interest');
+  }
+
+  get totalPfColorScheme() {
+    return chartColorScheme(this.totalPfChartData, 'combined-pf-totals');
+  }
+
+  get interestLineChartData() {
+    return toLineChartSeries(this.interestChartData, 'Monthly interest');
+  }
+
+  get totalPfLineChartData() {
+    return toLineChartSeries(this.totalPfChartData, 'Total PF amount');
+  }
+
+  selectInterestChartType(type: string): void {
+    if (isChartType(type)) {
+      this.selectedInterestChartType = type;
+    }
+  }
+
+  selectTotalChartType(type: string): void {
+    if (isChartType(type)) {
+      this.selectedTotalChartType = type;
+    }
   }
 
   get totalInterest(): number {

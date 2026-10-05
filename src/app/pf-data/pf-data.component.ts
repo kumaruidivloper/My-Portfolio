@@ -1,19 +1,16 @@
 import { announceAccordionOpened, collapseWhenAnotherOpens } from '../service/accordion-group';
 import { ChangeDetectorRef, Component, Input, OnDestroy } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { Color, ScaleType } from '@swimlane/ngx-charts';
 import { Subscription, timer } from 'rxjs';
+import {
+  chartColorScheme, CHART_TYPE_OPTIONS, ChartDatum, ChartType, isChartType, toLineChartSeries
+} from '../model/chart-type';
 import { PfDataService, PfResourceId } from '../service/pf-data.service';
 import { PfApiDocument, PfRecord } from '../model/pf-record';
 import { ConfirmationCodeService } from '../service/confirmation-code.service';
 import { ResponsiveGridColumn, ResponsiveGridRow } from '../responsive-table/responsive-table.component';
 
 type PfMetric = 'pfAmount' | 'difference';
-
-interface PfChartDatum {
-  name: string;
-  value: number;
-}
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -67,19 +64,14 @@ export class PfDataComponent implements OnDestroy {
   private readonly formSubscription: Subscription;
   private readonly accordionSubscription: Subscription;
   selectedMetric: PfMetric = 'pfAmount';
+  selectedChartType: ChartType = 'bar';
+  readonly chartTypeOptions = CHART_TYPE_OPTIONS;
   readonly gridColumns: readonly ResponsiveGridColumn[] = [
     { key: 'month', label: 'Month', sortable: true },
     { key: 'balance', label: 'PF balance', sortable: true, numeric: true },
     { key: 'difference', label: 'Monthly difference', sortable: true, numeric: true },
     { key: 'actions', label: 'Actions', actions: true }
   ];
-  readonly colorScheme: Color = {
-    name: 'pf-balance',
-    selectable: true,
-    group: ScaleType.Ordinal,
-    domain: ['#046a38', '#3875d7']
-  };
-
   constructor(
     private pfDataService: PfDataService,
     private changeDetectorRef: ChangeDetectorRef,
@@ -154,11 +146,19 @@ export class PfDataComponent implements OnDestroy {
     }));
   }
 
-  get chartData(): PfChartDatum[] {
+  get chartData(): ChartDatum[] {
     return [...this.records].reverse().map((record) => ({
       name: this.formatMonth(record.date),
       value: record[this.selectedMetric]
     }));
+  }
+
+  get colorScheme() {
+    return chartColorScheme(this.chartData, 'pf-balance');
+  }
+
+  get lineChartData() {
+    return toLineChartSeries(this.chartData, this.metricLabel);
   }
 
   get latestBalance(): number | null {
@@ -200,6 +200,12 @@ export class PfDataComponent implements OnDestroy {
 
   selectMetric(metric: PfMetric): void {
     this.selectedMetric = metric;
+  }
+
+  selectChartType(type: string): void {
+    if (isChartType(type)) {
+      this.selectedChartType = type;
+    }
   }
 
   addRecord(): void {

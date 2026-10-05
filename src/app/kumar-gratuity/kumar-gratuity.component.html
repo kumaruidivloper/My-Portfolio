@@ -55,27 +55,75 @@
 
         <article class="gratuity-chart-card">
           <header>
-            <h3>{{ recordTypeLabel }} by month</h3>
-            <p>{{ records.length }} monthly records</p>
+            <div>
+              <h3>{{ recordTypeLabel }} by month</h3>
+              <p>{{ records.length }} monthly records</p>
+            </div>
+            <div class="chart-type-select">
+              <span>Chart type</span>
+              <app-theme-select
+                ariaLabel="Chart type"
+                [options]="chartTypeOptions"
+                [value]="selectedChartType"
+                (valueChange)="selectChartType($event)">
+              </app-theme-select>
+            </div>
           </header>
           <div class="chart-container gratuity-chart-container">
-            <ngx-charts-bar-vertical
-              [results]="chartData"
-              [scheme]="colorScheme"
-              [xAxis]="true"
-              [yAxis]="true"
-              [showGridLines]="true"
-              [showXAxisLabel]="true"
-              [showYAxisLabel]="true"
-              xAxisLabel="Month"
-              [yAxisLabel]="recordTypeLabel + ' (INR)'">
-              <ng-template #tooltipTemplate let-model="model">
-                <div class="chart-value-tooltip">
-                  <strong>{{ model.name }}</strong>
-                  <span>{{ formatRupees(model.value) }}</span>
-                </div>
-              </ng-template>
-            </ngx-charts-bar-vertical>
+            @if (selectedChartType === 'bar') {
+              <ngx-charts-bar-vertical
+                [results]="chartData"
+                [scheme]="colorScheme"
+                [xAxis]="true"
+                [yAxis]="true"
+                [showGridLines]="true"
+                [showXAxisLabel]="true"
+                [showYAxisLabel]="true"
+                xAxisLabel="Month"
+                [yAxisLabel]="recordTypeLabel + ' (INR)'">
+                <ng-template #tooltipTemplate let-model="model">
+                  <div class="chart-value-tooltip">
+                    <strong>{{ model.name }}</strong>
+                    <span>{{ formatRupees(model.value) }}</span>
+                  </div>
+                </ng-template>
+              </ngx-charts-bar-vertical>
+            }
+            @if (selectedChartType === 'line') {
+              <ngx-charts-line-chart
+                [results]="lineChartData"
+                [scheme]="colorScheme"
+                [xAxis]="true"
+                [yAxis]="true"
+                [showGridLines]="true"
+                [showXAxisLabel]="true"
+                [showYAxisLabel]="true"
+                xAxisLabel="Month"
+                [yAxisLabel]="recordTypeLabel + ' (INR)'">
+                <ng-template #tooltipTemplate let-model="model">
+                  <div class="chart-value-tooltip">
+                    <strong>{{ model.name }}</strong>
+                    <span>{{ formatRupees(model.value) }}</span>
+                  </div>
+                </ng-template>
+              </ngx-charts-line-chart>
+            }
+            @if (selectedChartType === 'pie' || selectedChartType === 'doughnut') {
+              <ngx-charts-pie-chart
+                [results]="chartData"
+                [scheme]="colorScheme"
+                [legend]="true"
+                [labels]="true"
+                [doughnut]="selectedChartType === 'doughnut'"
+                [arcWidth]="0.25">
+                <ng-template #tooltipTemplate let-model="model">
+                  <div class="chart-value-tooltip">
+                    <strong>{{ model.name }}</strong>
+                    <span>{{ formatRupees(model.value) }}</span>
+                  </div>
+                </ng-template>
+              </ngx-charts-pie-chart>
+            }
           </div>
         </article>
 

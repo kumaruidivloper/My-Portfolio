@@ -24,7 +24,10 @@
       @for (row of pageRows; track row.actionIndex ?? (activePageIndex * pageSize + $index); let rowIndex = $index) {
         <tr>
           @for (column of columns; track column.key) {
-            <td [attr.data-label]="column.label" [class.actions-cell]="column.actions">
+            <td
+              [attr.data-label]="column.label"
+              [class.numeric-column]="column.numeric"
+              [class.actions-cell]="column.actions">
               @if (column.actions && actionsTemplate) {
                 <ng-container
                   [ngTemplateOutlet]="actionsTemplate"
@@ -55,6 +58,11 @@
       Showing {{ firstDisplayedRow }}–{{ lastDisplayedRow }} of {{ rows.length }}
     </span>
     <div class="responsive-grid-page-controls">
+      <button type="button" (click)="firstPage()" [disabled]="activePageIndex === 0" aria-label="First page">
+        <svg aria-hidden="true" viewBox="0 0 24 24">
+          <path d="m11 18-6-6 6-6M19 18l-6-6 6-6"></path>
+        </svg>
+      </button>
       <button type="button" (click)="previousPage()" [disabled]="activePageIndex === 0" aria-label="Previous page">
         <svg aria-hidden="true" viewBox="0 0 24 24">
           <path d="m15 18-6-6 6-6"></path>
@@ -64,6 +72,11 @@
       <button type="button" (click)="nextPage()" [disabled]="activePageIndex >= pageCount - 1" aria-label="Next page">
         <svg aria-hidden="true" viewBox="0 0 24 24">
           <path d="m9 18 6-6-6-6"></path>
+        </svg>
+      </button>
+      <button type="button" (click)="lastPage()" [disabled]="activePageIndex >= pageCount - 1" aria-label="Last page">
+        <svg aria-hidden="true" viewBox="0 0 24 24">
+          <path d="m13 18 6-6-6-6M5 18l6-6-6-6"></path>
         </svg>
       </button>
     </div>

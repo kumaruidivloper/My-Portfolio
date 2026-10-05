@@ -27,12 +27,15 @@ app-responsive-table {
 
 .responsive-grid-page-size input {
   background: var(--bg-color);
-  border: var(--border);
-  border-radius: 0.5rem;
+  border: 0;
+  border-radius: 1rem;
+  box-shadow: var(--box-shadow-inset);
   color: var(--black);
   font: inherit;
-  padding: 0.5rem;
-  width: 6rem;
+  min-height: 3.6rem;
+  padding: 0.6rem 0.8rem;
+  text-align: left;
+  width: 5rem;
 }
 
 .responsive-grid-page-controls button {
@@ -56,6 +59,7 @@ app-responsive-table {
 
 .responsive-grid-table {
   border-collapse: collapse;
+  table-layout: fixed;
   min-width: 55rem;
   width: 100%;
 }
@@ -83,8 +87,7 @@ app-responsive-table {
   font-weight: 600;
 }
 
-.responsive-grid-table .numeric-column,
-.responsive-grid-table td:not(:first-child):not(.actions-cell) {
+.responsive-grid-table .numeric-column {
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
@@ -92,6 +95,7 @@ app-responsive-table {
 .responsive-grid-table .actions-heading,
 .responsive-grid-table .actions-cell {
   text-align: center;
+  width: 12rem;
 }
 
 .responsive-grid-sort {
@@ -112,6 +116,12 @@ app-responsive-table {
 
 .responsive-grid-table th.numeric-column .responsive-grid-sort {
   justify-content: flex-end;
+  position: relative;
+}
+
+.responsive-grid-table th.numeric-column .responsive-grid-sort span {
+  position: absolute;
+  right: -0.8rem;
 }
 
 .responsive-grid-sort:focus-visible {
@@ -271,11 +281,13 @@ html body .dashboard-page app-responsive-table .responsive-grid-action-buttons b
     align-items: center;
     min-width: 0;
     justify-content: space-between;
+    width: auto;
   }
 
   .responsive-grid-action-buttons {
     flex: 0 0 auto;
-    gap: 0.6rem;
-    justify-content: flex-start;
+    gap: 0.8rem;
+    justify-content: flex-end;
+    margin-left: auto;
   }
 }

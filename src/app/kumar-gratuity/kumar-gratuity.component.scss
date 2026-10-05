@@ -148,9 +148,30 @@
 }
 
 .gratuity-chart-card header {
+  align-items: center;
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.chart-type-select {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  gap: 1rem;
+
+  > span {
+    color: var(--black);
+    font-size: 1.35rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  app-theme-select {
+    display: block;
+    width: 16rem;
+  }
 }
 
 .gratuity-chart-card h3,
@@ -273,6 +294,15 @@
 
   .gratuity-heading-actions {
     justify-content: flex-end;
+  }
+
+  .gratuity-chart-card header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .chart-type-select {
+    max-width: 100%;
   }
 
 }

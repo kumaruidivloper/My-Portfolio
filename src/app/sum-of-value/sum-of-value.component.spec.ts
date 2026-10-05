@@ -50,6 +50,21 @@ describe('SumOfValueComponent', () => {
     expect(component.errorMessage).toBe('');
   });
 
+  it('changes chart types independently for the two combined PF charts', () => {
+    const component = new SumOfValueComponent(pfDataService, changeDetector);
+    component.toggleExpanded();
+
+    component.selectInterestChartType('line');
+    component.selectTotalChartType('doughnut');
+
+    expect(component.selectedInterestChartType).toBe('line');
+    expect(component.interestLineChartData).toEqual([{
+      name: 'Monthly interest',
+      series: component.interestChartData
+    }]);
+    expect(component.selectedTotalChartType).toBe('doughnut');
+  });
+
   it('reports API errors instead of showing an empty or successful summary', () => {
     pfDataService.getPfData.and.returnValue(throwError(() => new Error('API unavailable')));
     const component = new SumOfValueComponent(pfDataService, changeDetector);

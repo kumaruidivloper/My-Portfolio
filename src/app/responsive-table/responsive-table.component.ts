@@ -128,8 +128,16 @@ export class ResponsiveTableComponent {
     this.currentPageIndex = Math.max(0, this.activePageIndex - 1);
   }
 
+  firstPage(): void {
+    this.currentPageIndex = 0;
+  }
+
   nextPage(): void {
     this.currentPageIndex = Math.min(this.pageCount - 1, this.activePageIndex + 1);
+  }
+
+  lastPage(): void {
+    this.currentPageIndex = this.pageCount - 1;
   }
 
   private parsePageSize(value: string): number | null {

@@ -61,6 +61,17 @@ describe('KumarGratuityComponent', () => {
     expect(component.latestGratuity).toBe(262985);
   });
 
+  it('changes chart type and provides the chart data in line-series format', () => {
+    component.toggleExpanded();
+    component.selectChartType('line');
+
+    expect(component.selectedChartType).toBe('line');
+    expect(component.lineChartData).toEqual([{
+      name: 'Gratuity',
+      series: component.chartData
+    }]);
+  });
+
   it('toggles monthly gratuity records independently', () => {
     expect(component.areRecordsExpanded).toBeFalse();
 

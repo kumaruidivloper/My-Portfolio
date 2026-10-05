@@ -190,6 +190,25 @@
   gap: 0.8rem;
 }
 
+.chart-type-select {
+  align-items: center;
+  display: flex;
+  flex: 0 0 auto;
+  gap: 1rem;
+
+  > span {
+    color: var(--black);
+    font-size: 1.35rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  app-theme-select {
+    display: block;
+    width: 16rem;
+  }
+}
+
 .pf-chart-container {
   height: min(52vh, 42rem);
   margin-top: 1.5rem;
@@ -327,6 +346,11 @@
   .pf-section-heading {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .chart-type-select {
+    align-self: flex-start;
+    max-width: 100%;
   }
 
   .pf-accordion-header {

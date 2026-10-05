@@ -85,25 +85,71 @@
                 Monthly difference
               </button>
             </div>
+            <div class="chart-type-select">
+              <span>Chart type</span>
+              <app-theme-select
+                ariaLabel="Chart type"
+                [options]="chartTypeOptions"
+                [value]="selectedChartType"
+                (valueChange)="selectChartType($event)">
+              </app-theme-select>
+            </div>
           </div>
           <div class="chart-container pf-chart-container">
-            <ngx-charts-bar-vertical
-              [results]="chartData"
-              [scheme]="colorScheme"
-              [xAxis]="true"
-              [yAxis]="true"
-              [showGridLines]="true"
-              [showXAxisLabel]="true"
-              [showYAxisLabel]="true"
-              xAxisLabel="Month"
-              [yAxisLabel]="axisLabel">
-              <ng-template #tooltipTemplate let-model="model">
-                <div class="chart-value-tooltip">
-                  <strong>{{ model.name }}</strong>
-                  <span>{{ formatRupeesWithSpace(model.value) }}</span>
-                </div>
-              </ng-template>
-            </ngx-charts-bar-vertical>
+            @if (selectedChartType === 'bar') {
+              <ngx-charts-bar-vertical
+                [results]="chartData"
+                [scheme]="colorScheme"
+                [xAxis]="true"
+                [yAxis]="true"
+                [showGridLines]="true"
+                [showXAxisLabel]="true"
+                [showYAxisLabel]="true"
+                xAxisLabel="Month"
+                [yAxisLabel]="axisLabel">
+                <ng-template #tooltipTemplate let-model="model">
+                  <div class="chart-value-tooltip">
+                    <strong>{{ model.name }}</strong>
+                    <span>{{ formatRupeesWithSpace(model.value) }}</span>
+                  </div>
+                </ng-template>
+              </ngx-charts-bar-vertical>
+            }
+            @if (selectedChartType === 'line') {
+              <ngx-charts-line-chart
+                [results]="lineChartData"
+                [scheme]="colorScheme"
+                [xAxis]="true"
+                [yAxis]="true"
+                [showGridLines]="true"
+                [showXAxisLabel]="true"
+                [showYAxisLabel]="true"
+                xAxisLabel="Month"
+                [yAxisLabel]="axisLabel">
+                <ng-template #tooltipTemplate let-model="model">
+                  <div class="chart-value-tooltip">
+                    <strong>{{ model.name }}</strong>
+                    <span>{{ formatRupeesWithSpace(model.value) }}</span>
+                  </div>
+                </ng-template>
+              </ngx-charts-line-chart>
+            }
+            @if (selectedChartType === 'pie' || selectedChartType === 'doughnut') {
+              <ngx-charts-pie-chart
+                [results]="chartData"
+                [scheme]="colorScheme"
+                [legend]="true"
+                [labels]="true"
+                [doughnut]="selectedChartType === 'doughnut'"
+                [arcWidth]="0.25">
+                <ng-template #tooltipTemplate let-model="model">
+                  <div class="chart-value-tooltip">
+                    <strong>{{ model.name }}</strong>
+                    <span>{{ formatRupeesWithSpace(model.value) }}</span>
+                  </div>
+                </ng-template>
+              </ngx-charts-pie-chart>
+            }
           </div>
         </div>
 
