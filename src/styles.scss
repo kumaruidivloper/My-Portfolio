@@ -130,11 +130,32 @@ body.night .dashboard-page .ngx-charts .legend-title-text {
     fill: #fff !important;
 }
 
-body.active .dashboard-page .ngx-charts-legend-entry:hover .legend-label-text,
-body.active .dashboard-page .ngx-charts-legend-entry .legend-entry.active .legend-label-text,
-body.night .dashboard-page .ngx-charts-legend-entry:hover .legend-label-text,
-body.night .dashboard-page .ngx-charts-legend-entry .legend-entry.active .legend-label-text {
+body:not(.active):not(.night) .dashboard-page .chart-legend .legend-label,
+body:not(.active):not(.night) .dashboard-page .chart-legend .legend-label .legend-label-text {
+    color: var(--light-color) !important;
+}
+
+body:not(.active):not(.night) .dashboard-page .chart-legend .legend-label:hover,
+body:not(.active):not(.night) .dashboard-page .chart-legend .legend-label:hover .legend-label-text,
+body:not(.active):not(.night) .dashboard-page .chart-legend .legend-entry.active .legend-label-text {
+    color: #000 !important;
+    font-weight: 700 !important;
+}
+
+body.active .dashboard-page .chart-legend .legend-label:hover,
+body.active .dashboard-page .chart-legend .legend-label:hover .legend-label-text,
+body.active .dashboard-page .chart-legend .legend-label .legend-entry.active .legend-label-text,
+body.night .dashboard-page .chart-legend .legend-label:hover,
+body.night .dashboard-page .chart-legend .legend-label:hover .legend-label-text,
+body.night .dashboard-page .chart-legend .legend-label .legend-entry.active .legend-label-text {
     color: #fff !important;
+    fill: #fff !important;
+    -webkit-text-fill-color: #fff !important;
+}
+
+body.active .dashboard-page .chart-legend .legend-entry.active .legend-label-text,
+body.night .dashboard-page .chart-legend .legend-entry.active .legend-label-text {
+    font-weight: 700 !important;
 }
 
 html body .dashboard-page a.back-button {
