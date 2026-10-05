@@ -43,7 +43,7 @@
   left: 0;
   list-style: none;
   margin-top: 0.6rem;
-  max-height: 26rem;
+  max-height: var(--theme-select-list-max-height, 26rem);
   overflow-y: auto;
   padding: 0.6rem;
   position: absolute;

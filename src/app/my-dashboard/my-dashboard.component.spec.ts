@@ -3,12 +3,18 @@ import { MyDashboardComponent } from './my-dashboard.component';
 import { TransferRecord } from '../model/transfer';
 import { TransferService } from '../service/transfer.service';
 import { ConfirmationCodeService } from '../service/confirmation-code.service';
+import { PfDataService } from '../service/pf-data.service';
+import { GratuityDataService } from '../service/gratuity-data.service';
+import { TotalBalanceService } from '../service/total-balance.service';
 import { of, throwError } from 'rxjs';
 
 describe('MyDashboardComponent', () => {
   let component: MyDashboardComponent;
   let transferService: jasmine.SpyObj<TransferService>;
   let confirmationCodeService: jasmine.SpyObj<ConfirmationCodeService>;
+  let pfDataService: jasmine.SpyObj<PfDataService>;
+  let gratuityDataService: jasmine.SpyObj<GratuityDataService>;
+  let totalBalanceService: jasmine.SpyObj<TotalBalanceService>;
   let changeDetector: jasmine.SpyObj<ChangeDetectorRef>;
   const transfers: TransferRecord[] = [
     {
@@ -35,8 +41,42 @@ describe('MyDashboardComponent', () => {
     transferService.getTransfers.and.returnValue(of(transfers));
     confirmationCodeService = jasmine.createSpyObj<ConfirmationCodeService>('ConfirmationCodeService', ['verify']);
     confirmationCodeService.verify.and.resolveTo(true);
+    pfDataService = jasmine.createSpyObj<PfDataService>('PfDataService', ['getPfData']);
+    pfDataService.getPfData.and.callFake((resourceId) => of({
+      id: resourceId ?? '2',
+      name: resourceId === '3' ? 'Vasuki' : 'Kumar',
+      description: 'PF history',
+      pfRecords: [{ date: "Sep'26", pfAmount: resourceId === '3' ? 300 : 100, difference: 10 }]
+    }));
+    gratuityDataService = jasmine.createSpyObj<GratuityDataService>('GratuityDataService', ['getGratuityData']);
+    gratuityDataService.getGratuityData.and.callFake((resourceId) => of({
+      id: resourceId ?? '4',
+      name: 'Owner',
+      title: 'Records',
+      description: 'History',
+      type: resourceId === '6' ? 'Super' : 'Gratuity',
+      gratuityRecords: [{ date: "Sep'26", gratuity: 200, difference: 20 }]
+    }));
+    totalBalanceService = jasmine.createSpyObj<TotalBalanceService>(
+      'TotalBalanceService',
+      ['getTotals', 'syncTotals'],
+      { totalsUpdated$: of() }
+    );
+    totalBalanceService.getTotals.and.returnValue(of({
+      id: '7',
+      name: 'All',
+      type: 'Total',
+      totalRecords: [{ date: "Sep'26", total: 1000, difference: 30 }]
+    }));
     changeDetector = createChangeDetector();
-    component = new MyDashboardComponent(transferService, changeDetector, confirmationCodeService);
+    component = new MyDashboardComponent(
+      transferService,
+      changeDetector,
+      confirmationCodeService,
+      pfDataService,
+      gratuityDataService,
+      totalBalanceService
+    );
     component.ngOnInit();
   });
 
@@ -59,6 +99,41 @@ describe('MyDashboardComponent', () => {
 
     expect(component.chartData.map((datum) => datum.name)).toEqual(['29 Sep 2023', '31 Oct 2023']);
     expect(component.chartData.map((datum) => datum.value)).toEqual([5350, 10800]);
+  });
+
+  it('offers metrics from every dashboard section and loads selected chart data', () => {
+    expect(component.allDashboardMetricOptions.length).toBe(14);
+    expect(component.allDashboardMetricOptions.map(({ value }) => value)).toContain('vasukiSuper');
+    expect(component.allDashboardMetricOptions.map(({ value }) => value)).toContain('overallBalance');
+    expect(component.allDashboardMetricOptions.map(({ label }) => label)).toContain('Kumar gratuity');
+    expect(component.allDashboardMetricOptions.map(({ label }) => label)).toContain('Vasuki gratuity');
+    expect(component.allDashboardMetricOptions.map(({ label }) => label)).toContain('Vasuki super');
+
+    component.openAllDetailsModal();
+    expect(component.isAllDetailsModalOpen).toBeTrue();
+    expect(component.allDashboardChartsError).toBe('');
+
+    component.selectAllDashboardMetric('kumarPfAmount');
+    expect(component.allDashboardChartData).toEqual([{ name: 'Sep 2026', value: 100 }]);
+    component.selectAllDashboardMetric('combinedPfAmount');
+    expect(component.allDashboardChartData).toEqual([{ name: 'Sep 2026', value: 400 }]);
+    component.selectAllDashboardMetric('vasukiSuper');
+    expect(component.allDashboardChartData).toEqual([{ name: 'Sep 2026', value: 200 }]);
+    component.selectAllDashboardMetric('overallBalance');
+    expect(component.allDashboardChartData).toEqual([{ name: 'Sep 2026', value: 1000 }]);
+
+    component.selectAllDashboardMetric('amountReceivedINR');
+    expect(component.chartData.map(({ value }) => value)).toEqual([5350, 10800]);
+    component.selectChartType('line');
+    expect(component.selectedChartType).toBe('line');
+
+    component.closeAllDetails();
+    expect(component.isAllDetailsModalOpen).toBeFalse();
+  });
+
+  it('uses the selected transfer metric for its normal chart', () => {
+    component.selectMetric('amountReceivedINR');
+    expect(component.chartData.map(({ value }) => value)).toEqual([5350, 10800]);
   });
 
   it('formats chart tooltip values with the selected metric currency', () => {
@@ -340,7 +415,10 @@ describe('MyDashboardComponent', () => {
     const failedComponent = new MyDashboardComponent(
       failedService,
       createChangeDetector(),
-      confirmationCodeService
+      confirmationCodeService,
+      pfDataService,
+      gratuityDataService,
+      totalBalanceService
     );
 
     failedComponent.ngOnInit();

@@ -112,11 +112,13 @@ html body .dashboard-page button.control-button:hover {
     box-shadow: var(--box-shadow);
 }
 
-body.active .dashboard-page .chart-container svg text {
+body.active .dashboard-page .chart-container svg text,
+body.active .dashboard-page .transfer-chart-visual svg text {
     fill: #fff !important;
 }
 
-body.night .dashboard-page .chart-container svg text {
+body.night .dashboard-page .chart-container svg text,
+body.night .dashboard-page .transfer-chart-visual svg text {
     fill: #fff !important;
 }
 
@@ -124,7 +126,15 @@ body.active .dashboard-page .ngx-charts .legend-label,
 body.active .dashboard-page .ngx-charts .legend-title-text,
 body.night .dashboard-page .ngx-charts .legend-label,
 body.night .dashboard-page .ngx-charts .legend-title-text {
-    color: var(--black);
+    color: #fff !important;
+    fill: #fff !important;
+}
+
+body.active .dashboard-page .ngx-charts-legend-entry:hover .legend-label-text,
+body.active .dashboard-page .ngx-charts-legend-entry .legend-entry.active .legend-label-text,
+body.night .dashboard-page .ngx-charts-legend-entry:hover .legend-label-text,
+body.night .dashboard-page .ngx-charts-legend-entry .legend-entry.active .legend-label-text {
+    color: #fff !important;
 }
 
 html body .dashboard-page a.back-button {

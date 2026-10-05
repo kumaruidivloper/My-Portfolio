@@ -1,15 +1,26 @@
 import { announceAccordionOpened, collapseWhenAnotherOpens } from '../service/accordion-group';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { merge, Subscription, timer } from 'rxjs';
+import { forkJoin, merge, Subscription, timer } from 'rxjs';
 import { chartColorScheme, CHART_TYPE_OPTIONS, ChartType, isChartType } from '../model/chart-type';
 import { TransferRecord } from '../model/transfer';
 import { TransferService } from '../service/transfer.service';
 import { ConfirmationCodeService } from '../service/confirmation-code.service';
 import { ResponsiveGridColumn, ResponsiveGridRow } from '../responsive-table/responsive-table.component';
+import { PfDataService } from '../service/pf-data.service';
+import { GratuityDataService } from '../service/gratuity-data.service';
+import { TotalBalanceService } from '../service/total-balance.service';
+import { PfApiDocument } from '../model/pf-record';
+import { GratuityApiDocument } from '../model/gratuity-record';
 
 type DashboardChartType = ChartType;
 type TransferMetric = 'amountTransferredAUD' | 'amountReceivedINR' | 'conversionRate';
+type DashboardMetric =
+  | TransferMetric
+  | 'kumarPfAmount' | 'kumarPfDifference' | 'vasukiPfAmount' | 'vasukiPfDifference'
+  | 'combinedPfInterest' | 'combinedPfAmount'
+  | 'kumarGratuity' | 'vasukiGratuity' | 'vasukiSuper'
+  | 'overallInterest' | 'overallBalance';
 type TransferSortKey = keyof TransferRecord;
 type SortDirection = 'asc' | 'desc';
 
@@ -28,6 +39,19 @@ interface MetricOption {
   key: TransferMetric;
   axisLabel: string;
   format: (value: number) => string;
+}
+
+interface DashboardMetricOption {
+  label: string;
+  key: DashboardMetric;
+  axisLabel: string;
+}
+
+interface MonthTotal {
+  key: string;
+  name: string;
+  pfAmount: number;
+  difference: number;
 }
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -98,6 +122,43 @@ function isTransferSortKey(key: string): key is TransferSortKey {
   return ['dateOfTransfer', 'amountTransferredAUD', 'conversionRate', 'receivedDate', 'amountReceivedINR'].includes(key);
 }
 
+function isTransferMetric(metric: DashboardMetric): metric is TransferMetric {
+  return metric === 'amountTransferredAUD' || metric === 'amountReceivedINR' || metric === 'conversionRate';
+}
+
+function isDashboardMetric(metric: string): metric is DashboardMetric {
+  return [
+    'amountTransferredAUD', 'amountReceivedINR', 'conversionRate',
+    'kumarPfAmount', 'kumarPfDifference', 'vasukiPfAmount', 'vasukiPfDifference',
+    'combinedPfInterest', 'combinedPfAmount', 'kumarGratuity', 'vasukiGratuity',
+    'vasukiSuper', 'overallInterest', 'overallBalance'
+  ].includes(metric);
+}
+
+function monthDetails(value: string): { key: string; label: string } | null {
+  const monthYear = /^([A-Za-z]+)'(\d{2}|\d{4})$/.exec(value.trim());
+  if (monthYear) {
+    const monthIndex = MONTHS.findIndex((month) =>
+      month.toLowerCase() === monthYear[1].slice(0, 3).toLowerCase()
+    );
+    if (monthIndex < 0) {
+      return null;
+    }
+    const year = monthYear[2].length === 2 ? `20${monthYear[2]}` : monthYear[2];
+    return {
+      key: `${year}-${String(monthIndex + 1).padStart(2, '0')}`,
+      label: `${MONTHS[monthIndex]} ${year}`
+    };
+  }
+
+  const isoMonth = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(value.trim());
+  if (isoMonth) {
+    const monthIndex = Number(isoMonth[2]) - 1;
+    return { key: value.trim(), label: `${MONTHS[monthIndex]} ${isoMonth[1]}` };
+  }
+  return null;
+}
+
 @Component({
   selector: 'app-my-dashboard',
   templateUrl: './my-dashboard.component.html',
@@ -129,6 +190,10 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     return this.metrics.map((metric) => ({ label: metric.label, value: metric.key }));
   }
 
+  get allDashboardMetricOptions(): { label: string; value: string }[] {
+    return this.allDashboardMetrics.map(({ label, key }) => ({ label, value: key }));
+  }
+
   readonly metrics: MetricOption[] = [
     {
       label: 'Amount sent (AUD)',
@@ -149,6 +214,20 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
       format: (value) => `${value.toFixed(2)} INR/AUD`
     }
   ];
+  readonly allDashboardMetrics: readonly DashboardMetricOption[] = [
+    ...this.metrics,
+    { label: 'Kumar PF balance', key: 'kumarPfAmount', axisLabel: 'PF balance (INR)' },
+    { label: 'Kumar PF monthly difference', key: 'kumarPfDifference', axisLabel: 'Monthly difference (INR)' },
+    { label: 'Vasuki PF balance', key: 'vasukiPfAmount', axisLabel: 'PF balance (INR)' },
+    { label: 'Vasuki PF monthly difference', key: 'vasukiPfDifference', axisLabel: 'Monthly difference (INR)' },
+    { label: 'Combined PF monthly interest', key: 'combinedPfInterest', axisLabel: 'Monthly interest (INR)' },
+    { label: 'Combined PF amount', key: 'combinedPfAmount', axisLabel: 'Total PF amount (INR)' },
+    { label: 'Kumar gratuity', key: 'kumarGratuity', axisLabel: 'Gratuity (INR)' },
+    { label: 'Vasuki gratuity', key: 'vasukiGratuity', axisLabel: 'Gratuity (INR)' },
+    { label: 'Vasuki super', key: 'vasukiSuper', axisLabel: 'Super (INR)' },
+    { label: 'Overall monthly interest', key: 'overallInterest', axisLabel: 'Monthly interest (INR)' },
+    { label: 'Overall balance', key: 'overallBalance', axisLabel: 'Overall balance (INR)' }
+  ];
   readonly gridColumns: readonly ResponsiveGridColumn[] = [
     { key: 'transferDate', label: 'Transfer date', sortable: true, sortKey: 'dateOfTransfer' },
     { key: 'sent', label: 'Sent (AUD)', sortable: true, sortKey: 'amountTransferredAUD', numeric: true },
@@ -157,9 +236,12 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     { key: 'received', label: 'Received (INR)', sortable: true, sortKey: 'amountReceivedINR', numeric: true },
     { key: 'actions', label: 'Actions', actions: true }
   ];
-
   selectedChartType: DashboardChartType = 'bar';
   selectedMetric: TransferMetric = 'amountTransferredAUD';
+  selectedAllDashboardMetric: DashboardMetric = 'amountTransferredAUD';
+  isAllDetailsModalOpen = false;
+  isAllDashboardChartsLoading = false;
+  allDashboardChartsError = '';
   transfers: TransferRecord[] = [];
   isLoading = true;
   errorMessage = '';
@@ -178,6 +260,8 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
   sortDirection: SortDirection = 'asc';
   private toastTimeout?: Subscription;
   private amountCalculation?: Subscription;
+  private allDashboardChartsSubscription?: Subscription;
+  private allDashboardChartDataByMetric: Partial<Record<DashboardMetric, ChartDatum[]>> = {};
   private deleteCodeValidationAttempt = 0;
   private verifiedDeleteCode = '';
   private readonly accordionSubscription = collapseWhenAnotherOpens(
@@ -188,7 +272,10 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
   constructor(
     private transferService: TransferService,
     private changeDetectorRef: ChangeDetectorRef,
-    private confirmationCodeService: ConfirmationCodeService
+    private confirmationCodeService: ConfirmationCodeService,
+    private pfDataService: PfDataService,
+    private gratuityDataService: GratuityDataService,
+    private totalBalanceService: TotalBalanceService
   ) {}
 
   ngOnInit(): void {
@@ -216,6 +303,7 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.toastTimeout?.unsubscribe();
     this.amountCalculation?.unsubscribe();
+    this.allDashboardChartsSubscription?.unsubscribe();
     this.accordionSubscription.unsubscribe();
   }
 
@@ -226,6 +314,29 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
 
   get selectedMetricOption(): MetricOption {
     return this.metrics.find((metric) => metric.key === this.selectedMetric) ?? this.metrics[0];
+  }
+
+  get selectedAllDashboardMetricOption(): DashboardMetricOption {
+    return this.allDashboardMetrics.find((metric) => metric.key === this.selectedAllDashboardMetric) ??
+      this.allDashboardMetrics[0];
+  }
+
+  get allDashboardChartData(): ChartDatum[] {
+    if (isTransferMetric(this.selectedAllDashboardMetric)) {
+      return this.chartData;
+    }
+    return this.allDashboardChartDataByMetric[this.selectedAllDashboardMetric] ?? [];
+  }
+
+  get allDashboardChartColorScheme() {
+    return chartColorScheme(this.allDashboardChartData, this.selectedAllDashboardMetric);
+  }
+
+  get allDashboardLineChartData(): { name: string; series: ChartDatum[] }[] {
+    return [{
+      name: this.selectedAllDashboardMetricOption.label,
+      series: this.allDashboardChartData
+    }];
   }
 
   get colorScheme() {
@@ -249,8 +360,8 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     return `${day} ${MONTHS[Number(month) - 1]} ${year}`;
   }
 
-  formatChartValue(value: number): string {
-    const locale = this.selectedMetric === 'amountReceivedINR' || this.selectedMetric === 'conversionRate'
+  formatChartValue(value: number, metric: TransferMetric = this.selectedMetric): string {
+    const locale = metric === 'amountReceivedINR' || metric === 'conversionRate'
       ? 'en-IN'
       : 'en-AU';
     const formattedValue = new Intl.NumberFormat(locale, {
@@ -258,13 +369,23 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
       maximumFractionDigits: 2
     }).format(value);
 
-    if (this.selectedMetric === 'amountTransferredAUD') {
+    if (metric === 'amountTransferredAUD') {
       return `$ ${formattedValue}`;
     }
-    if (this.selectedMetric === 'amountReceivedINR') {
+    if (metric === 'amountReceivedINR') {
       return `₹ ${formattedValue}`;
     }
     return `₹ ${formattedValue} / AUD`;
+  }
+
+  formatAllDashboardChartValue(value: number): string {
+    if (isTransferMetric(this.selectedAllDashboardMetric)) {
+      return this.selectedMetricOption.format(value);
+    }
+    return `₹ ${new Intl.NumberFormat('en-IN', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(value)}`;
   }
 
   formatTransferCurrency(value: number, currency: 'AUD' | 'INR'): string {
@@ -347,6 +468,31 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
 
   selectMetric(metric: TransferMetric): void {
     this.selectedMetric = metric;
+    if (this.isAllDetailsModalOpen) {
+      this.selectedAllDashboardMetric = metric;
+    }
+  }
+
+  selectAllDashboardMetric(metric: string): void {
+    if (!isDashboardMetric(metric)) {
+      return;
+    }
+    this.selectedAllDashboardMetric = metric;
+    if (isTransferMetric(this.selectedAllDashboardMetric)) {
+      this.selectedMetric = this.selectedAllDashboardMetric;
+    }
+  }
+
+  openAllDetailsModal(): void {
+    this.isAllDetailsModalOpen = true;
+    this.selectedAllDashboardMetric = this.selectedMetric;
+    if (!Object.keys(this.allDashboardChartDataByMetric).length) {
+      this.loadAllDashboardCharts();
+    }
+  }
+
+  closeAllDetails(): void {
+    this.isAllDetailsModalOpen = false;
   }
 
   editTransfer(index: number): void {
@@ -400,6 +546,78 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
       this.isTransferSectionExpanded = false;
       this.changeDetectorRef.detectChanges();
     }
+  }
+
+  private loadAllDashboardCharts(): void {
+    this.allDashboardChartsSubscription?.unsubscribe();
+    this.isAllDashboardChartsLoading = true;
+    this.allDashboardChartsError = '';
+    this.allDashboardChartsSubscription = forkJoin({
+      kumarPf: this.pfDataService.getPfData('2'),
+      vasukiPf: this.pfDataService.getPfData('3'),
+      kumarGratuity: this.gratuityDataService.getGratuityData('4'),
+      vasukiGratuity: this.gratuityDataService.getGratuityData('5'),
+      vasukiSuper: this.gratuityDataService.getGratuityData('6'),
+      overallBalance: this.totalBalanceService.getTotals()
+    }).subscribe({
+      next: ({ kumarPf, vasukiPf, kumarGratuity, vasukiGratuity, vasukiSuper, overallBalance }) => {
+        try {
+          const combinedPf = this.combinePfRecords([kumarPf, vasukiPf]);
+          const byMonth = (date: string, value: number): ChartDatum => ({
+            name: monthDetails(date)?.label ?? date,
+            value
+          });
+          this.allDashboardChartDataByMetric = {
+            kumarPfAmount: [...kumarPf.pfRecords].reverse().map(({ date, pfAmount }) => byMonth(date, pfAmount)),
+            kumarPfDifference: [...kumarPf.pfRecords].reverse().map(({ date, difference }) => byMonth(date, difference)),
+            vasukiPfAmount: [...vasukiPf.pfRecords].reverse().map(({ date, pfAmount }) => byMonth(date, pfAmount)),
+            vasukiPfDifference: [...vasukiPf.pfRecords].reverse().map(({ date, difference }) => byMonth(date, difference)),
+            combinedPfInterest: combinedPf.map(({ name, difference }) => ({ name, value: difference })),
+            combinedPfAmount: combinedPf.map(({ name, pfAmount }) => ({ name, value: pfAmount })),
+            kumarGratuity: [...kumarGratuity.gratuityRecords].reverse().map(({ date, gratuity }) => byMonth(date, gratuity)),
+            vasukiGratuity: [...vasukiGratuity.gratuityRecords].reverse().map(({ date, gratuity }) => byMonth(date, gratuity)),
+            vasukiSuper: [...vasukiSuper.gratuityRecords].reverse().map(({ date, gratuity }) => byMonth(date, gratuity)),
+            overallInterest: overallBalance.totalRecords.map(({ date, difference }) => byMonth(date, difference)),
+            overallBalance: overallBalance.totalRecords.map(({ date, total }) => byMonth(date, total))
+          };
+        } catch (error: unknown) {
+          this.allDashboardChartsError = error instanceof Error
+            ? error.message
+            : 'Unable to prepare the dashboard charts.';
+        }
+        this.isAllDashboardChartsLoading = false;
+        this.changeDetectorRef.detectChanges();
+      },
+      error: (error: unknown) => {
+        this.isAllDashboardChartsLoading = false;
+        this.allDashboardChartsError = error instanceof Error
+          ? error.message
+          : 'Unable to load all dashboard chart data.';
+        this.changeDetectorRef.detectChanges();
+      }
+    });
+  }
+
+  private combinePfRecords(documents: PfApiDocument[]): MonthTotal[] {
+    const totals = new Map<string, MonthTotal>();
+    for (const document of documents) {
+      for (const record of document.pfRecords) {
+        const month = monthDetails(record.date);
+        if (!month) {
+          throw new Error(`Cannot combine PF records because "${record.date}" is not a supported month.`);
+        }
+        const total = totals.get(month.key) ?? {
+          key: month.key,
+          name: month.label,
+          pfAmount: 0,
+          difference: 0
+        };
+        total.pfAmount += record.pfAmount;
+        total.difference += record.difference;
+        totals.set(month.key, total);
+      }
+    }
+    return [...totals.values()].sort((left, right) => left.key.localeCompare(right.key));
   }
 
   requestDeleteTransfer(index: number): void {

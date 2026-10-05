@@ -19,6 +19,14 @@
         <div class="records-actions">
           <button
             type="button"
+            class="control-button"
+            aria-haspopup="dialog"
+            aria-controls="all-details-modal"
+            (click)="openAllDetailsModal()">
+            View all details
+          </button>
+          <button
+            type="button"
             class="control-button accordion-toggle"
             [attr.aria-expanded]="isTransferSectionExpanded"
             aria-controls="transfer-data-panel"
@@ -244,16 +252,137 @@
       }
     </section>
 
-    <div class="pf-data-sections">
-      <app-pf-data resourceId="2" ownerName="Kumar"></app-pf-data>
-      <app-pf-data resourceId="3" ownerName="Vasuki"></app-pf-data>
-      <app-sum-of-value></app-sum-of-value>
-      <app-kumar-gratuity></app-kumar-gratuity>
-      <app-vasuki-gratuity></app-vasuki-gratuity>
-      <app-vasuki-super></app-vasuki-super>
-      <app-total-balance></app-total-balance>
-    </div>
+    @if (!isAllDetailsModalOpen) {
+      <div class="pf-data-sections">
+        <app-pf-data resourceId="2" ownerName="Kumar"></app-pf-data>
+        <app-pf-data resourceId="3" ownerName="Vasuki"></app-pf-data>
+        <app-sum-of-value></app-sum-of-value>
+        <app-kumar-gratuity></app-kumar-gratuity>
+        <app-vasuki-gratuity></app-vasuki-gratuity>
+        <app-vasuki-super></app-vasuki-super>
+        <app-total-balance></app-total-balance>
+      </div>
+    }
   </div>
+
+  @if (isAllDetailsModalOpen) {
+    <div class="modal-backdrop all-details-backdrop" (click)="closeAllDetails()">
+      <section
+        class="all-details-modal"
+        id="all-details-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="all-details-modal-title"
+        (click)="$event.stopPropagation()">
+        <header class="modal-heading all-details-heading">
+          <div>
+            <p class="eyebrow">DASHBOARD CHARTS</p>
+            <h2 id="all-details-modal-title">{{ selectedAllDashboardMetricOption.label }}</h2>
+          </div>
+          <button type="button" class="modal-close" aria-label="Close all details" (click)="closeAllDetails()">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </header>
+        <div class="all-details-content">
+          <div class="chart-select-row all-details-controls">
+            <div class="chart-select">
+              <span class="control-label" id="all-details-metric-label">Metric</span>
+              <app-theme-select
+                class="all-dashboard-metric-select"
+                ariaLabel="Dashboard metric"
+                [options]="allDashboardMetricOptions"
+                [value]="selectedAllDashboardMetric"
+                (valueChange)="selectAllDashboardMetric($event)">
+              </app-theme-select>
+            </div>
+            <div class="chart-select">
+              <span class="control-label" id="all-details-chart-type-label">Chart type</span>
+              <app-theme-select
+                ariaLabel="Chart type"
+                [options]="chartTypeOptions"
+                [value]="selectedChartType"
+                (valueChange)="selectChartType($event)">
+              </app-theme-select>
+            </div>
+          </div>
+          @if (isAllDashboardChartsLoading) {
+            <p class="status-message" role="status">Loading chart data…</p>
+          }
+          @if (allDashboardChartsError) {
+            <p class="status-message error-message" role="alert">{{ allDashboardChartsError }}</p>
+          }
+          @if (!isAllDashboardChartsLoading && !allDashboardChartsError) {
+          <div class="chart-container all-details-chart">
+            @if (selectedChartType === 'bar') {
+              <ngx-charts-bar-vertical
+                [results]="allDashboardChartData"
+                [scheme]="allDashboardChartColorScheme"
+                [xAxis]="true"
+                [yAxis]="true"
+                [showGridLines]="true"
+                [showXAxisLabel]="true"
+                [showYAxisLabel]="true"
+                xAxisLabel="Month / date"
+                [yAxisLabel]="selectedAllDashboardMetricOption.axisLabel">
+                <ng-template #tooltipTemplate let-model="model">
+                  <div class="chart-value-tooltip">
+                    <strong>{{ model.name }}</strong>
+                    <span>{{ formatAllDashboardChartValue(model.value) }}</span>
+                  </div>
+                </ng-template>
+              </ngx-charts-bar-vertical>
+            }
+            @if (selectedChartType === 'line') {
+              <ngx-charts-line-chart
+                [results]="allDashboardLineChartData"
+                [scheme]="allDashboardChartColorScheme"
+                [xAxis]="true"
+                [yAxis]="true"
+                [showGridLines]="true"
+                [showXAxisLabel]="true"
+                [showYAxisLabel]="true"
+                xAxisLabel="Month / date"
+                [yAxisLabel]="selectedAllDashboardMetricOption.axisLabel">
+                <ng-template #tooltipTemplate let-model="model">
+                  <div class="chart-value-tooltip">
+                    <strong>{{ model.name }}</strong>
+                    <span>{{ formatAllDashboardChartValue(model.value) }}</span>
+                  </div>
+                </ng-template>
+                <ng-template #seriesTooltipTemplate let-model="model">
+                  <div class="chart-value-tooltip">
+                    @for (tooltipItem of model; track $index) {
+                      <div>
+                        <strong>{{ tooltipItem.name }}</strong>
+                        <span>{{ formatAllDashboardChartValue(tooltipItem.value) }}</span>
+                      </div>
+                    }
+                  </div>
+                </ng-template>
+              </ngx-charts-line-chart>
+            }
+            @if (selectedChartType === 'pie' || selectedChartType === 'doughnut') {
+              <ngx-charts-pie-chart
+                [results]="allDashboardChartData"
+                [scheme]="allDashboardChartColorScheme"
+                [legend]="true"
+                [labels]="true"
+                [doughnut]="selectedChartType === 'doughnut'"
+                [arcWidth]="0.25">
+                <ng-template #tooltipTemplate let-model="model">
+                  <div class="chart-value-tooltip">
+                    <strong>{{ model.name }}</strong>
+                    <span>{{ formatAllDashboardChartValue(model.value) }}</span>
+                  </div>
+                </ng-template>
+              </ngx-charts-pie-chart>
+            }
+          </div>
+          }
+        </div>
+      </section>
+    </div>
+  }
 
   @if (editingTransferIndex !== null || isAddingTransfer) {
     <div class="modal-backdrop" (click)="closeEditModal()">
