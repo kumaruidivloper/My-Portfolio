@@ -8,6 +8,8 @@ The Vasuki super Current super balance card shows the difference from the previo
 
 Click a bar, line point, or pie/doughnut slice in View all details to show the selected date/month's values in the cards. Counts remain unchanged; previous-period values refer to the record before the selection. Exchange-rate cards show selected and previous transfer rates while selected, including rates below 1. Reset selection restores the default summaries; changing metrics or reopening the modal also clears the selection.
 
+The dashboard owns page scrolling while open. Opening a dashboard dialog locks the dashboard behind it, keeping scrolling within the dialog; portfolio scrolling is unchanged.
+
 ## 1. Install dependencies
 
 ```bash

@@ -36,6 +36,19 @@ body{
     padding-left: 30rem;
 }
 
+html:has(.dashboard-page),
+body:has(.dashboard-page) {
+    overflow: hidden;
+}
+
+.dashboard-page {
+    overscroll-behavior: contain;
+}
+
+html body .dashboard-page:has(.modal-backdrop, .pf-modal-backdrop, .gratuity-modal-backdrop) {
+    overflow-y: hidden;
+}
+
 body.active{
     --green:#FF671F;
     --black:#fff;
