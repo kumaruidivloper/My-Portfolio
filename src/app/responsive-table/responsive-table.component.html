@@ -60,7 +60,7 @@
     <div class="responsive-grid-page-controls">
       <button type="button" (click)="firstPage()" [disabled]="activePageIndex === 0" aria-label="First page">
         <svg aria-hidden="true" viewBox="0 0 24 24">
-          <path d="m11 18-6-6 6-6M19 18l-6-6 6-6"></path>
+          <path d="M6 6v12m12 0-6-6 6-6"></path>
         </svg>
       </button>
       <button type="button" (click)="previousPage()" [disabled]="activePageIndex === 0" aria-label="Previous page">
@@ -76,7 +76,7 @@
       </button>
       <button type="button" (click)="lastPage()" [disabled]="activePageIndex >= pageCount - 1" aria-label="Last page">
         <svg aria-hidden="true" viewBox="0 0 24 24">
-          <path d="m13 18 6-6-6-6M5 18l6-6-6-6"></path>
+          <path d="M18 6v12M6 18l6-6-6-6"></path>
         </svg>
       </button>
     </div>

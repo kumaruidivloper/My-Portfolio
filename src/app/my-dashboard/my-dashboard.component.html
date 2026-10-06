@@ -276,35 +276,14 @@
         (click)="$event.stopPropagation()">
         <header class="modal-heading all-details-heading">
           <div>
-            <p class="eyebrow">DASHBOARD CHARTS</p>
-            <h2 id="all-details-modal-title">{{ selectedAllDashboardMetricOption.label }}</h2>
+            <p class="eyebrow">DASHBOARD OVERVIEW</p>
+            <h2 id="all-details-modal-title">View all details</h2>
           </div>
           <button type="button" class="modal-close" aria-label="Close all details" (click)="closeAllDetails()">
             <span aria-hidden="true">&times;</span>
           </button>
         </header>
         <div class="all-details-content">
-          <div class="chart-select-row all-details-controls">
-            <div class="chart-select">
-              <span class="control-label" id="all-details-metric-label">Metric</span>
-              <app-theme-select
-                class="all-dashboard-metric-select"
-                ariaLabel="Dashboard metric"
-                [options]="allDashboardMetricOptions"
-                [value]="selectedAllDashboardMetric"
-                (valueChange)="selectAllDashboardMetric($event)">
-              </app-theme-select>
-            </div>
-            <div class="chart-select">
-              <span class="control-label" id="all-details-chart-type-label">Chart type</span>
-              <app-theme-select
-                ariaLabel="Chart type"
-                [options]="chartTypeOptions"
-                [value]="selectedChartType"
-                (valueChange)="selectChartType($event)">
-              </app-theme-select>
-            </div>
-          </div>
           @if (isAllDashboardChartsLoading) {
             <p class="status-message" role="status">Loading chart data…</p>
           }
@@ -312,7 +291,44 @@
             <p class="status-message error-message" role="alert">{{ allDashboardChartsError }}</p>
           }
           @if (!isAllDashboardChartsLoading && !allDashboardChartsError) {
+          <section class="summary-grid all-details-summary" aria-label="Selected metric highlights">
+            @for (summary of allDashboardSummaryCards; track summary.label) {
+              <article class="summary-card">
+                <p>{{ summary.label }}</p>
+                <h2>{{ summary.value }}</h2>
+              </article>
+            }
+          </section>
+          <section class="all-details-chart-panel" aria-labelledby="all-details-chart-title">
+            <header class="all-details-chart-heading">
+              <div>
+                <h3 id="all-details-chart-title">{{ selectedAllDashboardMetricOption.label }}</h3>
+                <p>{{ allDashboardChartData.length }} chart records</p>
+              </div>
+            </header>
+            <div class="chart-select-row all-details-controls">
+              <div class="chart-select">
+                <span class="control-label" id="all-details-metric-label">Metric</span>
+                <app-theme-select
+                  class="all-dashboard-metric-select"
+                  ariaLabel="Dashboard metric"
+                  [options]="allDashboardMetricOptions"
+                  [value]="selectedAllDashboardMetric"
+                  (valueChange)="selectAllDashboardMetric($event)">
+                </app-theme-select>
+              </div>
+              <div class="chart-select">
+                <span class="control-label" id="all-details-chart-type-label">Chart type</span>
+                <app-theme-select
+                  ariaLabel="Chart type"
+                  [options]="chartTypeOptions"
+                  [value]="selectedChartType"
+                  (valueChange)="selectChartType($event)">
+                </app-theme-select>
+              </div>
+            </div>
           <div class="chart-container all-details-chart">
+            <div class="all-details-plot">
             @if (selectedChartType === 'bar') {
               <ngx-charts-bar-vertical
                 [results]="allDashboardChartData"
@@ -377,7 +393,9 @@
                 </ng-template>
               </ngx-charts-pie-chart>
             }
+            </div>
           </div>
+          </section>
           }
         </div>
       </section>

@@ -112,18 +112,45 @@ describe('MyDashboardComponent', () => {
     component.openAllDetailsModal();
     expect(component.isAllDetailsModalOpen).toBeTrue();
     expect(component.allDashboardChartsError).toBe('');
+    expect(component.allDashboardSummaryCards.map(({ label }) => label)).toEqual([
+      'Transfers',
+      'Total sent',
+      'Total received'
+    ]);
+    expect(component.allDashboardSummaryCards[0].value).toBe('2');
+    expect(component.allDashboardSummaryCards[1].value).toBe('$300.00');
+    expect(component.allDashboardSummaryCards[2].value).toBe('₹ 16,150');
 
     component.selectAllDashboardMetric('kumarPfAmount');
     expect(component.allDashboardChartData).toEqual([{ name: 'Sep 2026', value: 100 }]);
+    expect(component.allDashboardSummaryCards.map(({ label }) => label)).toEqual([
+      'Current PF balance',
+      'Latest monthly difference',
+      'Recorded periods'
+    ]);
+    expect(component.allDashboardSummaryCards[0].value).toBe('₹ 100.00');
     component.selectAllDashboardMetric('combinedPfAmount');
     expect(component.allDashboardChartData).toEqual([{ name: 'Sep 2026', value: 400 }]);
+    expect(component.allDashboardSummaryCards[0].value).toBe('₹ 400.00');
     component.selectAllDashboardMetric('vasukiSuper');
     expect(component.allDashboardChartData).toEqual([{ name: 'Sep 2026', value: 200 }]);
+    expect(component.allDashboardSummaryCards.map(({ label }) => label)).toEqual([
+      'Current super balance',
+      'Previous period',
+      'Recorded periods'
+    ]);
     component.selectAllDashboardMetric('overallBalance');
     expect(component.allDashboardChartData).toEqual([{ name: 'Sep 2026', value: 1000 }]);
+    expect(component.allDashboardSummaryCards.map(({ label }) => label)).toEqual([
+      'Current total balance',
+      'Latest monthly interest',
+      'Recorded periods'
+    ]);
 
     component.selectAllDashboardMetric('amountReceivedINR');
     expect(component.chartData.map(({ value }) => value)).toEqual([5350, 10800]);
+    expect(component.allDashboardSummaryCards[0].value).toBe('2');
+    expect(component.allDashboardSummaryCards[2].value).toBe('₹ 16,150');
     component.selectChartType('line');
     expect(component.selectedChartType).toBe('line');
 

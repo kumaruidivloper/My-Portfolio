@@ -34,6 +34,11 @@ interface ChartDatum {
   value: number;
 }
 
+interface DashboardSummaryCard {
+  label: string;
+  value: string;
+}
+
 interface MetricOption {
   label: string;
   key: TransferMetric;
@@ -328,6 +333,45 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     return this.allDashboardChartDataByMetric[this.selectedAllDashboardMetric] ?? [];
   }
 
+  get allDashboardSummaryCards(): DashboardSummaryCard[] {
+    const metric = this.selectedAllDashboardMetric;
+    const transactionCount = this.transfers.length;
+
+    if (isTransferMetric(metric)) {
+      const totalSent = this.transfers.reduce((sum, transfer) => sum + transfer.amountTransferredAUD, 0);
+      const totalReceived = this.transfers.reduce((sum, transfer) => sum + transfer.amountReceivedINR, 0);
+      return [
+        {
+          label: 'Transfers',
+          value: new Intl.NumberFormat('en-AU').format(transactionCount)
+        },
+        {
+          label: 'Total sent',
+          value: this.formatCurrency(totalSent, 'AUD')
+        },
+        {
+          label: 'Total received',
+          value: this.formatCurrency(totalReceived, 'INR')
+        }
+      ];
+    }
+
+    const primaryLabel = this.getSummaryLabel(metric);
+    const cards = [this.createMetricSummaryCard(metric, primaryLabel)];
+    const pairedMetric = this.getPairedSummaryMetric(metric);
+    if (pairedMetric) {
+      cards.push(this.createMetricSummaryCard(pairedMetric, this.getSummaryLabel(pairedMetric)));
+    } else {
+      cards.push(this.createPreviousPeriodSummaryCard(metric));
+    }
+    const recordCount = this.getDataForMetric(metric).length;
+    cards.push({
+      label: 'Recorded periods',
+      value: new Intl.NumberFormat('en-AU').format(recordCount)
+    });
+    return cards;
+  }
+
   get allDashboardChartColorScheme() {
     return chartColorScheme(this.allDashboardChartData, this.selectedAllDashboardMetric);
   }
@@ -585,6 +629,7 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
             ? error.message
             : 'Unable to prepare the dashboard charts.';
         }
+
         this.isAllDashboardChartsLoading = false;
         this.changeDetectorRef.detectChanges();
       },
@@ -596,6 +641,84 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
         this.changeDetectorRef.detectChanges();
       }
     });
+  }
+
+  private createMetricSummaryCard(metric: DashboardMetric, label: string): DashboardSummaryCard {
+    const data = this.getDataForMetric(metric);
+    const latest = data[data.length - 1];
+    return {
+      label,
+      value: latest ? this.formatDashboardMetricValue(metric, latest.value) : '—'
+    };
+  }
+
+  private createPreviousPeriodSummaryCard(metric: DashboardMetric): DashboardSummaryCard {
+    const data = this.getDataForMetric(metric);
+    const previous = data[data.length - 2];
+    return {
+      label: 'Previous period',
+      value: previous ? this.formatDashboardMetricValue(metric, previous.value) : '—'
+    };
+  }
+
+  private getDataForMetric(metric: DashboardMetric): ChartDatum[] {
+    if (isTransferMetric(metric)) {
+      return this.transfers.map((transfer) => ({
+        name: this.formatDate(transfer.dateOfTransfer),
+        value: transfer[metric]
+      }));
+    }
+    return this.allDashboardChartDataByMetric[metric] ?? [];
+  }
+
+  private formatDashboardMetricValue(metric: DashboardMetric, value: number): string {
+    if (isTransferMetric(metric)) {
+      return this.metrics.find((option) => option.key === metric)?.format(value) ?? String(value);
+    }
+    return `₹ ${new Intl.NumberFormat('en-IN', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(value)}`;
+  }
+
+  private getPairedSummaryMetric(metric: DashboardMetric): DashboardMetric | null {
+    switch (metric) {
+      case 'kumarPfAmount': return 'kumarPfDifference';
+      case 'kumarPfDifference': return 'kumarPfAmount';
+      case 'vasukiPfAmount': return 'vasukiPfDifference';
+      case 'vasukiPfDifference': return 'vasukiPfAmount';
+      case 'combinedPfAmount': return 'combinedPfInterest';
+      case 'combinedPfInterest': return 'combinedPfAmount';
+      case 'overallBalance': return 'overallInterest';
+      case 'overallInterest': return 'overallBalance';
+      default: return null;
+    }
+  }
+
+  private getSummaryLabel(metric: DashboardMetric): string {
+    switch (metric) {
+      case 'kumarPfAmount':
+      case 'vasukiPfAmount':
+        return 'Current PF balance';
+      case 'kumarPfDifference':
+      case 'vasukiPfDifference':
+        return 'Latest monthly difference';
+      case 'combinedPfAmount':
+        return 'Combined PF balance';
+      case 'combinedPfInterest':
+        return 'Latest PF interest';
+      case 'kumarGratuity':
+      case 'vasukiGratuity':
+        return 'Current gratuity';
+      case 'vasukiSuper':
+        return 'Current super balance';
+      case 'overallBalance':
+        return 'Current total balance';
+      case 'overallInterest':
+        return 'Latest monthly interest';
+      default:
+        return this.selectedAllDashboardMetricOption.label;
+    }
   }
 
   private combinePfRecords(documents: PfApiDocument[]): MonthTotal[] {
