@@ -248,6 +248,7 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
   selectedChartType: DashboardChartType = 'bar';
   selectedMetric: TransferMetric = 'amountTransferredAUD';
   selectedAllDashboardMetric: DashboardMetric = 'amountTransferredAUD';
+  selectedAllDashboardDatum: ChartDatum | null = null;
   isAllDetailsModalOpen = false;
   isAllDashboardChartsLoading = false;
   allDashboardChartsError = '';
@@ -340,6 +341,26 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
   get allDashboardSummaryCards(): DashboardSummaryCard[] {
     const metric = this.selectedAllDashboardMetric;
     const transactionCount = this.transfers.length;
+    const selectedIndex = this.selectedAllDashboardIndex;
+    if (isTransferMetric(metric) && selectedIndex >= 0) {
+      const transfer = this.transfers[selectedIndex];
+      const datum = this.allDashboardChartData[selectedIndex];
+      const countCard = { label: 'Transfers', value: new Intl.NumberFormat('en-AU').format(transactionCount) };
+      if (metric === 'conversionRate') {
+        return [
+          this.createExchangeRateSummaryCard('Selected exchange rate', transfer),
+          this.createExchangeRateSummaryCard('Previous exchange rate', this.transfers[selectedIndex - 1]),
+          countCard
+        ];
+      }
+      return [
+        countCard,
+        { label: 'Selected amount sent', value: this.formatCurrency(transfer.amountTransferredAUD, 'AUD'),
+          detail: datum.name, ...this.getSummaryColor(datum) },
+        { label: 'Selected amount received', value: this.formatCurrency(transfer.amountReceivedINR, 'INR'),
+          detail: datum.name, ...this.getSummaryColor(datum) }
+      ];
+    }
 
     if (metric === 'conversionRate') {
       const eligible = this.transfers.filter(({ conversionRate }) =>
@@ -383,12 +404,28 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     } else {
       cards.push(this.createPreviousPeriodSummaryCard(metric));
     }
-    const recordCount = this.getDataForMetric(metric).length;
+    const data = this.getDataForMetric(metric);
+    const recordCount = data.length;
     cards.push({
       label: 'Recorded periods',
       value: new Intl.NumberFormat('en-AU').format(recordCount)
     });
+    if (metric === 'vasukiSuper') {
+      const index = selectedIndex >= 0 ? selectedIndex : data.length - 1;
+      const latest = data[index];
+      const previous = data[index - 1];
+      cards[0].detail = latest && previous
+        ? `Difference: ${this.formatDashboardMetricValue(metric, latest.value - previous.value)} (${latest.name} minus ${previous.name})`
+        : selectedIndex >= 0 ? 'Difference: — (No previous recorded period)'
+          : 'Difference: — (Two recorded periods are needed)';
+    }
     return cards;
+  }
+
+  private get selectedAllDashboardIndex(): number {
+    const selected = this.selectedAllDashboardDatum;
+    return selected ? this.allDashboardChartData.findIndex(({ name, value }) =>
+      name === selected.name && value === selected.value) : -1;
   }
 
   get allDashboardChartColorScheme() {
@@ -530,6 +567,7 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
   }
 
   selectMetric(metric: TransferMetric): void {
+    this.clearAllDashboardSelection();
     this.selectedMetric = metric;
     if (this.isAllDetailsModalOpen) {
       this.selectedAllDashboardMetric = metric;
@@ -541,12 +579,14 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
       return;
     }
     this.selectedAllDashboardMetric = metric;
+    this.clearAllDashboardSelection();
     if (isTransferMetric(this.selectedAllDashboardMetric)) {
       this.selectedMetric = this.selectedAllDashboardMetric;
     }
   }
 
   openAllDetailsModal(): void {
+    this.clearAllDashboardSelection();
     this.isAllDetailsModalOpen = true;
     this.selectedAllDashboardMetric = this.selectedMetric;
     if (!Object.keys(this.allDashboardChartDataByMetric).length) {
@@ -556,6 +596,25 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
 
   closeAllDetails(): void {
     this.isAllDetailsModalOpen = false;
+    this.clearAllDashboardSelection();
+  }
+
+  selectAllDashboardChartItem(event: unknown): void {
+    if (typeof event !== 'object' || event === null || !('name' in event)) {
+      this.showToast('Unable to select this chart item.');
+      return;
+    }
+    const matches = this.allDashboardChartData.filter(({ name, value }) =>
+      name === event.name && (!('value' in event) || value === event.value));
+    if (matches.length !== 1) {
+      this.showToast('Select a specific chart item to view its period values.');
+      return;
+    }
+    this.selectedAllDashboardDatum = { ...matches[0] };
+  }
+
+  clearAllDashboardSelection(): void {
+    this.selectedAllDashboardDatum = null;
   }
 
   editTransfer(index: number): void {
@@ -664,10 +723,14 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
 
   private createMetricSummaryCard(metric: DashboardMetric, label: string): DashboardSummaryCard {
     const data = this.getDataForMetric(metric);
-    const latest = data[data.length - 1];
+    const selected = this.selectedAllDashboardDatum;
+    const latest = selected
+      ? data.find(({ name }) => name === selected.name)
+      : data[data.length - 1];
     return {
-      label,
+      label: selected ? (this.allDashboardMetrics.find(({ key }) => key === metric)?.label ?? label) : label,
       value: latest ? this.formatDashboardMetricValue(metric, latest.value) : '—',
+      ...(selected ? { detail: selected.name } : {}),
       ...this.getSummaryColor(latest)
     };
   }
@@ -677,17 +740,20 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     return {
       label,
       value: transfer ? this.formatChartValue(transfer.conversionRate, 'conversionRate') : '—',
-      detail: date ? `Transfer date: ${date}` : 'No exchange rates of 1 or above',
+      detail: date ? `Transfer date: ${date}` : label === 'Previous exchange rate'
+        ? 'No previous recorded transfer' : 'No exchange rates of 1 or above',
       ...this.getSummaryColor(transfer ? { name: date, value: transfer.conversionRate } : undefined)
     };
   }
 
   private createPreviousPeriodSummaryCard(metric: DashboardMetric): DashboardSummaryCard {
     const data = this.getDataForMetric(metric);
-    const previous = data[data.length - 2];
+    const index = this.selectedAllDashboardIndex;
+    const previous = data[(index >= 0 ? index : data.length - 1) - 1];
     return {
       label: 'Previous period',
       value: previous ? this.formatDashboardMetricValue(metric, previous.value) : '—',
+      ...(this.selectedAllDashboardDatum ? { detail: previous?.name ?? 'No previous recorded period' } : {}),
       ...this.getSummaryColor(previous)
     };
   }

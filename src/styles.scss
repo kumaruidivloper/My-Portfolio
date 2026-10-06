@@ -244,7 +244,8 @@ html body .dashboard-page .gratuity-field small.gratuity-field-error {
     color: #c0392b;
 }
 
-html body .dashboard-page button.control-button.transfer-action {
+html body .dashboard-page button.control-button.transfer-action,
+html body .dashboard-page button.control-button.icon-action {
     align-items: center;
     border-radius: 50%;
     display: inline-flex;
@@ -265,7 +266,8 @@ html body .dashboard-page button.control-button.transfer-action.delete-action {
     color: #c0392b;
 }
 
-html body .dashboard-page .transfer-action svg {
+html body .dashboard-page .transfer-action svg,
+html body .dashboard-page .icon-action svg {
     flex: 0 0 1.8rem;
     height: 1.8rem;
     width: 1.8rem;
