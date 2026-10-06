@@ -25,17 +25,19 @@ app-responsive-table {
   gap: 1.4rem;
 }
 
-.responsive-grid-page-size input {
-  background: var(--bg-color);
-  border: 0;
-  border-radius: 1rem;
-  box-shadow: var(--box-shadow-inset);
-  color: var(--black);
+.responsive-grid-page-size app-theme-select {
+  width: 8rem;
+}
+
+.responsive-grid-page-size .theme-select-trigger {
   font: inherit;
   min-height: 3.6rem;
-  padding: 0.6rem 0.8rem;
-  text-align: left;
-  width: 5rem;
+  padding: 0.6rem 1.2rem;
+}
+
+.responsive-grid-page-size .theme-select-list {
+  bottom: calc(100% + 0.6rem);
+  margin: 0;
 }
 
 .responsive-grid-page-controls button {
@@ -53,7 +55,7 @@ app-responsive-table {
 }
 
 .responsive-grid-page-controls button:focus-visible,
-.responsive-grid-page-size input:focus-visible {
+.responsive-grid-page-size .theme-select-trigger:focus-visible {
   outline: 0.2rem solid var(--green);
 }
 

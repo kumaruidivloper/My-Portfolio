@@ -42,18 +42,17 @@
       }
     </tbody>
   </table>
+</div>
   <nav class="responsive-grid-pagination" aria-label="Grid pagination">
-    <label class="responsive-grid-page-size">
-      Rows per page
-      <input
-        type="text"
-        inputmode="numeric"
-        pattern="[0-9]*"
-        [value]="pageSizeInput"
-        aria-label="Rows per page"
-        (input)="updatePageSize($event)"
-        (change)="setPageSize($event)">
-    </label>
+    <div class="responsive-grid-page-size">
+      <span>Rows per page</span>
+      <app-theme-select
+        [options]="pageSizeSelectOptions"
+        [value]="pageSize.toString()"
+        ariaLabel="Rows per page"
+        (valueChange)="setPageSize($event)">
+      </app-theme-select>
+    </div>
     <span class="responsive-grid-page-summary" aria-live="polite">
       Showing {{ firstDisplayedRow }}–{{ lastDisplayedRow }} of {{ rows.length }}
     </span>
@@ -81,4 +80,3 @@
       </button>
     </div>
   </nav>
-</div>

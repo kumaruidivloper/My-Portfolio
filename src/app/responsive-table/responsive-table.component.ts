@@ -30,7 +30,11 @@ export class ResponsiveTableComponent {
   @Output() sortChange = new EventEmitter<string>();
 
   pageSize = 5;
-  pageSizeInput = '5';
+  readonly pageSizeOptions = [5, 10, 25, 50, 100];
+  readonly pageSizeSelectOptions = this.pageSizeOptions.map((size) => ({
+    label: String(size),
+    value: String(size)
+  }));
   currentPageIndex = 0;
   private clientSortKey: string | null = null;
   private clientSortDirection: 'asc' | 'desc' = 'asc';
@@ -100,28 +104,13 @@ export class ResponsiveTableComponent {
     this.clientSortDirection = 'asc';
   }
 
-  setPageSize(event: Event): void {
-    if (!(event.target instanceof HTMLInputElement)) {
-      return;
+  setPageSize(value: string): void {
+    const requestedPageSize = Number(value);
+    if (!this.pageSizeOptions.includes(requestedPageSize)) {
+      throw new Error('Unsupported rows-per-page selection.');
     }
-
-    const requestedPageSize = this.parsePageSize(event.target.value);
-    this.pageSize = requestedPageSize === null ? 5 : Math.max(5, requestedPageSize);
-    this.pageSizeInput = String(this.pageSize);
+    this.pageSize = requestedPageSize;
     this.currentPageIndex = 0;
-  }
-
-  updatePageSize(event: Event): void {
-    if (!(event.target instanceof HTMLInputElement)) {
-      return;
-    }
-
-    this.pageSizeInput = event.target.value;
-    const requestedPageSize = this.parsePageSize(this.pageSizeInput);
-    if (requestedPageSize !== null && requestedPageSize >= 5) {
-      this.pageSize = requestedPageSize;
-      this.currentPageIndex = 0;
-    }
   }
 
   previousPage(): void {
@@ -138,15 +127,6 @@ export class ResponsiveTableComponent {
 
   lastPage(): void {
     this.currentPageIndex = this.pageCount - 1;
-  }
-
-  private parsePageSize(value: string): number | null {
-    if (!/^\d+$/.test(value)) {
-      return null;
-    }
-
-    const pageSize = Number(value);
-    return Number.isSafeInteger(pageSize) ? pageSize : null;
   }
 
   sortIndicator(key: string): string {

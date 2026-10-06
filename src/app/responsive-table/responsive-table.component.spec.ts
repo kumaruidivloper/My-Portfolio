@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ResponsiveGridColumn, ResponsiveGridRow, ResponsiveTableComponent } from './responsive-table.component';
+import { ThemeSelectComponent } from '../theme-select/theme-select.component';
 
 @Component({
   template: `
@@ -39,7 +40,7 @@ describe('ResponsiveTableComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [ResponsiveTableComponent, ResponsiveTableHostComponent]
+      declarations: [ResponsiveTableComponent, ResponsiveTableHostComponent, ThemeSelectComponent]
     });
     fixture = TestBed.createComponent(ResponsiveTableHostComponent);
     fixture.detectChanges();
@@ -113,32 +114,37 @@ describe('ResponsiveTableComponent', () => {
     expect((host.querySelector('[aria-label="Last page"]') as HTMLButtonElement).disabled).toBeTrue();
   });
 
-  it('allows a custom page size while enforcing a minimum of 5 rows', () => {
+  it('offers page sizes in a dropdown and resets to the first page on selection', () => {
     const host = fixture.nativeElement as HTMLElement;
-    const pageSizeInput = host.querySelector('[aria-label="Rows per page"]') as HTMLInputElement;
-    pageSizeInput.value = '1';
-    pageSizeInput.dispatchEvent(new Event('input'));
+    const trigger = host.querySelector('button[aria-label="Rows per page"]') as HTMLButtonElement;
+    const selectSize = (size: string): void => {
+      trigger.click();
+      fixture.detectChanges();
+      const option = Array.from(host.querySelectorAll<HTMLElement>('[role="option"]'))
+        .find((element) => element.textContent?.trim() === size);
+      expect(option).toBeDefined();
+      option?.click();
+      fixture.detectChanges();
+    };
+    expect(trigger.textContent?.trim()).toBe('5');
+    trigger.click();
     fixture.detectChanges();
-    expect(host.querySelectorAll('tbody tr').length).toBe(5);
+    expect(Array.from(host.querySelectorAll('[role="option"]'), (option) => option.textContent?.trim()))
+      .toEqual(['5', '10', '25', '50', '100']);
+    expect(host.querySelector('.responsive-grid-scroll app-theme-select')).toBeNull();
+    trigger.click();
+    fixture.detectChanges();
 
-    pageSizeInput.value = '12';
-    pageSizeInput.dispatchEvent(new Event('input'));
-    fixture.detectChanges();
+    (host.querySelector('[aria-label="Last page"]') as HTMLButtonElement).click();
+    selectSize('10');
+    expect(host.querySelectorAll('tbody tr').length).toBe(10);
+    expect(host.querySelector('.responsive-grid-page-summary')?.textContent?.trim()).toBe('Showing 1–10 of 12');
+
+    selectSize('25');
     expect(host.querySelectorAll('tbody tr').length).toBe(12);
+    expect((host.querySelector('[aria-label="Next page"]') as HTMLButtonElement).disabled).toBeTrue();
 
-    pageSizeInput.value = '5';
-    pageSizeInput.dispatchEvent(new Event('input'));
-    fixture.detectChanges();
-    expect(host.querySelectorAll('tbody tr').length).toBe(5);
-
-    pageSizeInput.value = '4';
-    pageSizeInput.dispatchEvent(new Event('input'));
-    fixture.detectChanges();
-    expect(host.querySelectorAll('tbody tr').length).toBe(5);
-
-    pageSizeInput.dispatchEvent(new Event('change'));
-    fixture.detectChanges();
-    expect(pageSizeInput.value).toBe('5');
+    selectSize('5');
     expect(host.querySelectorAll('tbody tr').length).toBe(5);
   });
 });
