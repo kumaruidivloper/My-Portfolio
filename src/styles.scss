@@ -277,6 +277,19 @@ html body .dashboard-page .modal-actions button.control-button {
     transition: transform .2s ease, filter .2s ease, color .2s ease;
 }
 
+html body .dashboard-page button.control-button.reset-action {
+    flex-basis: 3.2rem;
+    height: 3.2rem;
+    padding: .6rem;
+    width: 3.2rem;
+}
+
+html body .dashboard-page .reset-action svg {
+    flex-basis: 1.6rem;
+    height: 1.6rem;
+    width: 1.6rem;
+}
+
 html body .dashboard-page .modal-actions button.control-button:not(.primary-action):not(:disabled):hover {
     color: var(--green);
     transform: translateY(-2px);
