@@ -294,8 +294,14 @@
           <section class="summary-grid all-details-summary" aria-label="Selected metric highlights">
             @for (summary of allDashboardSummaryCards; track summary.label) {
               <article class="summary-card">
+                @if (summary.color) {
+                  <span class="summary-color" [style.background-color]="summary.color" [title]="summary.colorLabel" role="img" [attr.aria-label]="summary.colorLabel"></span>
+                }
                 <p>{{ summary.label }}</p>
                 <h2>{{ summary.value }}</h2>
+                @if (summary.detail) {
+                  <p>{{ summary.detail }}</p>
+                }
               </article>
             }
           </section>

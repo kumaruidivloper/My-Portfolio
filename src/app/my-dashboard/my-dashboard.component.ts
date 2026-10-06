@@ -2,6 +2,7 @@ import { announceAccordionOpened, collapseWhenAnotherOpens } from '../service/ac
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { forkJoin, merge, Subscription, timer } from 'rxjs';
+import { ColorHelper, ScaleType } from '@swimlane/ngx-charts';
 import { chartColorScheme, CHART_TYPE_OPTIONS, ChartType, isChartType } from '../model/chart-type';
 import { TransferRecord } from '../model/transfer';
 import { TransferService } from '../service/transfer.service';
@@ -37,6 +38,9 @@ interface ChartDatum {
 interface DashboardSummaryCard {
   label: string;
   value: string;
+  detail?: string;
+  color?: string;
+  colorLabel?: string;
 }
 
 interface MetricOption {
@@ -337,6 +341,21 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     const metric = this.selectedAllDashboardMetric;
     const transactionCount = this.transfers.length;
 
+    if (metric === 'conversionRate') {
+      const eligible = this.transfers.filter(({ conversionRate }) =>
+        Number.isFinite(conversionRate) && conversionRate >= 1
+      );
+      const lowest = eligible.reduce<TransferRecord | undefined>((result, transfer) =>
+        !result || transfer.conversionRate < result.conversionRate ? transfer : result, undefined);
+      const highest = eligible.reduce<TransferRecord | undefined>((result, transfer) =>
+        !result || transfer.conversionRate > result.conversionRate ? transfer : result, undefined);
+      return [
+        this.createExchangeRateSummaryCard('Lowest exchange rate', lowest),
+        this.createExchangeRateSummaryCard('Highest exchange rate', highest),
+        { label: 'Transfers', value: new Intl.NumberFormat('en-AU').format(transactionCount) }
+      ];
+    }
+
     if (isTransferMetric(metric)) {
       const totalSent = this.transfers.reduce((sum, transfer) => sum + transfer.amountTransferredAUD, 0);
       const totalReceived = this.transfers.reduce((sum, transfer) => sum + transfer.amountReceivedINR, 0);
@@ -621,8 +640,8 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
             kumarGratuity: [...kumarGratuity.gratuityRecords].reverse().map(({ date, gratuity }) => byMonth(date, gratuity)),
             vasukiGratuity: [...vasukiGratuity.gratuityRecords].reverse().map(({ date, gratuity }) => byMonth(date, gratuity)),
             vasukiSuper: [...vasukiSuper.gratuityRecords].reverse().map(({ date, gratuity }) => byMonth(date, gratuity)),
-            overallInterest: overallBalance.totalRecords.map(({ date, difference }) => byMonth(date, difference)),
-            overallBalance: overallBalance.totalRecords.map(({ date, total }) => byMonth(date, total))
+            overallInterest: [...overallBalance.totalRecords].reverse().map(({ date, difference }) => byMonth(date, difference)),
+            overallBalance: [...overallBalance.totalRecords].reverse().map(({ date, total }) => byMonth(date, total))
           };
         } catch (error: unknown) {
           this.allDashboardChartsError = error instanceof Error
@@ -648,7 +667,18 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     const latest = data[data.length - 1];
     return {
       label,
-      value: latest ? this.formatDashboardMetricValue(metric, latest.value) : '—'
+      value: latest ? this.formatDashboardMetricValue(metric, latest.value) : '—',
+      ...this.getSummaryColor(latest)
+    };
+  }
+
+  private createExchangeRateSummaryCard(label: string, transfer: TransferRecord | undefined): DashboardSummaryCard {
+    const date = transfer ? this.formatDate(transfer.dateOfTransfer) : '';
+    return {
+      label,
+      value: transfer ? this.formatChartValue(transfer.conversionRate, 'conversionRate') : '—',
+      detail: date ? `Transfer date: ${date}` : 'No exchange rates of 1 or above',
+      ...this.getSummaryColor(transfer ? { name: date, value: transfer.conversionRate } : undefined)
     };
   }
 
@@ -657,7 +687,26 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     const previous = data[data.length - 2];
     return {
       label: 'Previous period',
-      value: previous ? this.formatDashboardMetricValue(metric, previous.value) : '—'
+      value: previous ? this.formatDashboardMetricValue(metric, previous.value) : '—',
+      ...this.getSummaryColor(previous)
+    };
+  }
+
+  private getSummaryColor(datum: ChartDatum | undefined): Pick<DashboardSummaryCard, 'color' | 'colorLabel'> {
+    if (!datum) {
+      return {};
+    }
+    const data = this.allDashboardChartData;
+    if (!data.some(({ name }) => name === datum.name)) {
+      return {};
+    }
+    const isLine = this.selectedChartType === 'line';
+    const category = isLine ? this.selectedAllDashboardMetricOption.label : datum.name;
+    const domain = isLine ? [category] : data.map(({ name }) => name);
+    const colors = new ColorHelper(this.allDashboardChartColorScheme, ScaleType.Ordinal, domain);
+    return {
+      color: colors.getColor(category),
+      colorLabel: `Chart color for ${category}`
     };
   }
 

@@ -2,6 +2,8 @@
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 22.1.4.
 
+Dashboard highlight color dots follow the chart's category/legend mapping, including repeated transfer dates. In line view, the dots use the single metric series color.
+
 ## 1. Install dependencies
 
 ```bash

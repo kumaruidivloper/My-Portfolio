@@ -7,6 +7,7 @@ import { PfDataService } from '../service/pf-data.service';
 import { GratuityDataService } from '../service/gratuity-data.service';
 import { TotalBalanceService } from '../service/total-balance.service';
 import { of, throwError } from 'rxjs';
+import { ColorHelper, ScaleType } from '@swimlane/ngx-charts';
 
 describe('MyDashboardComponent', () => {
   let component: MyDashboardComponent;
@@ -158,9 +159,56 @@ describe('MyDashboardComponent', () => {
     expect(component.isAllDetailsModalOpen).toBeFalse();
   });
 
+  it('uses the newest overall month for highlights rather than the oldest record', () => {
+    const totalRecords = [
+      { date: "Sep'26", total: 1500, difference: 50 },
+      { date: "Aug'26", total: 1450, difference: 40 },
+      { date: "Jul'26", total: 1410, difference: 30 }
+    ];
+    totalBalanceService.getTotals.and.returnValue(of({
+      id: '7',
+      name: 'All',
+      type: 'Total',
+      totalRecords
+    }));
+
+    component.openAllDetailsModal();
+    component.selectAllDashboardMetric('overallBalance');
+
+    expect(component.allDashboardChartData).toEqual([
+      { name: 'Jul 2026', value: 1410 },
+      { name: 'Aug 2026', value: 1450 },
+      { name: 'Sep 2026', value: 1500 }
+    ]);
+    expect(component.allDashboardSummaryCards[0].value).toBe('₹ 1,500.00');
+    expect(component.allDashboardSummaryCards[1].value).toBe('₹ 50.00');
+
+    component.selectAllDashboardMetric('overallInterest');
+    expect(component.allDashboardSummaryCards[0].value).toBe('₹ 50.00');
+    expect(component.allDashboardSummaryCards[1].value).toBe('₹ 1,500.00');
+    expect(totalRecords.map(({ date }) => date)).toEqual(["Sep'26", "Aug'26", "Jul'26"]);
+  });
+
   it('uses the selected transfer metric for its normal chart', () => {
     component.selectMetric('amountReceivedINR');
     expect(component.chartData.map(({ value }) => value)).toEqual([5350, 10800]);
+  });
+
+  it('matches highlight dots to their chart periods and leaves aggregate cards neutral', () => {
+    gratuityDataService.getGratuityData.and.returnValue(of({
+      id: '4', name: 'Kumar', title: 'Gratuity', description: 'History', type: 'Gratuity',
+      gratuityRecords: [
+        { date: "Sep'26", gratuity: 200, difference: 20 },
+        { date: "Aug'26", gratuity: 180, difference: 10 }
+      ]
+    }));
+    component.openAllDetailsModal();
+    expect(component.allDashboardSummaryCards.every(({ color }) => color === undefined)).toBeTrue();
+    component.selectAllDashboardMetric('kumarGratuity');
+    expect(component.allDashboardSummaryCards[0].color).toBe(component.allDashboardChartColorScheme.domain[1]);
+    expect(component.allDashboardSummaryCards[1].color).toBe(component.allDashboardChartColorScheme.domain[0]);
+    expect(component.allDashboardSummaryCards[0].colorLabel).toBe('Chart color for Sep 2026');
+    expect(component.allDashboardSummaryCards[2].color).toBeUndefined();
   });
 
   it('formats chart tooltip values with the selected metric currency', () => {
@@ -171,6 +219,68 @@ describe('MyDashboardComponent', () => {
 
     component.selectMetric('conversionRate');
     expect(component.formatChartValue(53.5)).toBe('₹ 53.50 / AUD');
+  });
+
+  it('highlights lowest and highest eligible rates with transfer dates without changing chart records', () => {
+    component.transfers = [
+      { ...transfers[0], conversionRate: 0.5 },
+      { ...transfers[1], conversionRate: 54 },
+      { ...transfers[0], dateOfTransfer: '01-Aug-23', conversionRate: 1 }
+    ];
+    component.selectAllDashboardMetric('conversionRate');
+    const cards = component.allDashboardSummaryCards;
+    expect(cards.map(({ label }) => label)).toEqual(['Lowest exchange rate', 'Highest exchange rate', 'Transfers']);
+    expect(cards[0].value).toBe('₹ 1.00 / AUD');
+    expect(cards[0].detail).toBe('Transfer date: 01 Aug 2023');
+    expect(cards[0].color).toBe(component.allDashboardChartColorScheme.domain[2]);
+    expect(cards[1].value).toBe('₹ 54.00 / AUD');
+    expect(cards[1].detail).toBe('Transfer date: 31 Oct 2023');
+    expect(cards[2].value).toBe('3');
+    expect(component.allDashboardChartData.length).toBe(3);
+  });
+
+  it('shows an explicit empty rate summary when no rates qualify', () => {
+    component.transfers = [{ ...transfers[0], conversionRate: 0.9 }];
+    component.selectAllDashboardMetric('conversionRate');
+    expect(component.allDashboardSummaryCards[0].value).toBe('—');
+    expect(component.allDashboardSummaryCards[1].detail).toBe('No exchange rates of 1 or above');
+    expect(component.allDashboardSummaryCards[0].color).toBeUndefined();
+  });
+
+  it('matches rate highlight colors to the chart and legend when transfer dates repeat', () => {
+    component.transfers = [
+      { ...transfers[0], conversionRate: 50 },
+      { ...transfers[0], conversionRate: 55 },
+      { ...transfers[1], conversionRate: 60 }
+    ];
+    component.selectAllDashboardMetric('conversionRate');
+    const records = component.allDashboardChartData;
+    const colors = new ColorHelper(
+      component.allDashboardChartColorScheme, ScaleType.Ordinal, records.map(({ name }) => name)
+    );
+    for (const type of ['bar', 'pie', 'doughnut']) {
+      component.selectChartType(type);
+      expect(component.allDashboardSummaryCards[0].color).toBe(colors.getColor('29 Sep 2023'));
+      expect(component.allDashboardSummaryCards[1].color).toBe(colors.getColor('31 Oct 2023'));
+      expect(component.allDashboardSummaryCards[1].color).toBe(component.allDashboardChartColorScheme.domain[1]);
+      expect(component.allDashboardChartData).toEqual(records);
+    }
+  });
+
+  it('uses the single line series color for both exchange rate highlights', () => {
+    component.selectAllDashboardMetric('conversionRate');
+    component.selectChartType('line');
+    const colors = new ColorHelper(
+      component.allDashboardChartColorScheme, ScaleType.Ordinal,
+      component.allDashboardLineChartData.map(({ name }) => name)
+    );
+    const seriesName = component.allDashboardLineChartData[0].name;
+    for (const card of component.allDashboardSummaryCards.slice(0, 2)) {
+      expect(card.color).toBe(colors.getColor(seriesName));
+      expect(card.colorLabel).toBe(`Chart color for ${seriesName}`);
+    }
+    component.selectChartType('bar');
+    expect(component.allDashboardSummaryCards[1].color).toBe(component.allDashboardChartColorScheme.domain[1]);
   });
 
   it('formats transfer grid amounts with spaced currency symbols', () => {
