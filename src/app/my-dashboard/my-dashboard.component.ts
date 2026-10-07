@@ -266,8 +266,8 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
   isDeleteCodeIncorrect = false;
   saveError = '';
   toastMessage = '';
-  sortKey: TransferSortKey | null = null;
-  sortDirection: SortDirection = 'asc';
+  sortKey: TransferSortKey | null = 'dateOfTransfer';
+  sortDirection: SortDirection = 'desc';
   private toastTimeout?: Subscription;
   private amountCalculation?: Subscription;
   private allDashboardChartsSubscription?: Subscription;
@@ -345,7 +345,7 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     if (isTransferMetric(metric) && selectedIndex >= 0) {
       const transfer = this.transfers[selectedIndex];
       const datum = this.allDashboardChartData[selectedIndex];
-      const countCard = { label: 'Transfers', value: new Intl.NumberFormat('en-AU').format(transactionCount) };
+      const countCard = this.createRecordCountSummaryCard(metric, transactionCount);
       if (metric === 'conversionRate') {
         return [
           this.createExchangeRateSummaryCard('Selected exchange rate', transfer),
@@ -373,7 +373,7 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
       return [
         this.createExchangeRateSummaryCard('Lowest exchange rate', lowest),
         this.createExchangeRateSummaryCard('Highest exchange rate', highest),
-        { label: 'Transfers', value: new Intl.NumberFormat('en-AU').format(transactionCount) }
+        this.createRecordCountSummaryCard(metric, transactionCount)
       ];
     }
 
@@ -381,10 +381,7 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
       const totalSent = this.transfers.reduce((sum, transfer) => sum + transfer.amountTransferredAUD, 0);
       const totalReceived = this.transfers.reduce((sum, transfer) => sum + transfer.amountReceivedINR, 0);
       return [
-        {
-          label: 'Transfers',
-          value: new Intl.NumberFormat('en-AU').format(transactionCount)
-        },
+        this.createRecordCountSummaryCard(metric, transactionCount),
         {
           label: 'Total sent',
           value: this.formatCurrency(totalSent, 'AUD')
@@ -406,10 +403,7 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     }
     const data = this.getDataForMetric(metric);
     const recordCount = data.length;
-    cards.push({
-      label: 'Recorded periods',
-      value: new Intl.NumberFormat('en-AU').format(recordCount)
-    });
+    cards.push(this.createRecordCountSummaryCard(metric, recordCount));
     if (metric === 'vasukiSuper') {
       const index = selectedIndex >= 0 ? selectedIndex : data.length - 1;
       const latest = data[index];
@@ -426,6 +420,22 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     const selected = this.selectedAllDashboardDatum;
     return selected ? this.allDashboardChartData.findIndex(({ name, value }) =>
       name === selected.name && value === selected.value) : -1;
+  }
+
+  private createRecordCountSummaryCard(metric: DashboardMetric, count: number): DashboardSummaryCard {
+    const index = this.selectedAllDashboardIndex;
+    const format = (value: number) => new Intl.NumberFormat('en-AU').format(value);
+    if (index >= 0) {
+      return {
+        label: isTransferMetric(metric) ? 'Selected transaction' : 'Selected record',
+        value: `${format(index + 1)} of ${format(count)}`,
+        detail: this.allDashboardChartData[index].name
+      };
+    }
+    return {
+      label: isTransferMetric(metric) ? 'Transfers' : 'Recorded periods',
+      value: format(count)
+    };
   }
 
   get allDashboardChartColorScheme() {

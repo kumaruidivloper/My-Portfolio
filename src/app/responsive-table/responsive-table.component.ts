@@ -25,6 +25,8 @@ export class ResponsiveTableComponent {
   @Input() sortKey: string | null = null;
   @Input() sortDirection: 'asc' | 'desc' = 'asc';
   @Input() sortMode: 'client' | 'external' = 'client';
+  @Input() defaultSortKey: string | null = null;
+  @Input() defaultSortDirection: 'asc' | 'desc' = 'asc';
   @ContentChild('gridActions') actionsTemplate?: TemplateRef<{ $implicit: ResponsiveGridRow; index: number }>;
 
   @Output() sortChange = new EventEmitter<string>();
@@ -40,11 +42,11 @@ export class ResponsiveTableComponent {
   private clientSortDirection: 'asc' | 'desc' = 'asc';
 
   get displayedRows(): readonly ResponsiveGridRow[] {
-    if (this.sortMode === 'external' || this.clientSortKey === null) {
+    if (this.sortMode === 'external' || this.activeSortKey === null) {
       return this.rows;
     }
 
-    const column = this.columns.find((item) => (item.sortKey || item.key) === this.clientSortKey);
+    const column = this.columns.find((item) => (item.sortKey || item.key) === this.activeSortKey);
     if (!column) {
       return this.rows;
     }
@@ -53,7 +55,7 @@ export class ResponsiveTableComponent {
       .map((row, index) => ({ row, index }))
       .sort(({ row: left, index: leftIndex }, { row: right, index: rightIndex }) => {
         const comparison = this.compareValues(left[column.key], right[column.key], column.numeric ?? false);
-        const orderedComparison = this.clientSortDirection === 'asc' ? comparison : -comparison;
+        const orderedComparison = this.activeSortDirection === 'asc' ? comparison : -comparison;
         return orderedComparison || leftIndex - rightIndex;
       })
       .map(({ row }) => row);
@@ -81,11 +83,12 @@ export class ResponsiveTableComponent {
   }
 
   get activeSortKey(): string | null {
-    return this.sortMode === 'external' ? this.sortKey : this.clientSortKey;
+    return this.sortMode === 'external' ? this.sortKey : this.clientSortKey ?? this.defaultSortKey;
   }
 
   get activeSortDirection(): 'asc' | 'desc' {
-    return this.sortMode === 'external' ? this.sortDirection : this.clientSortDirection;
+    return this.sortMode === 'external' ? this.sortDirection
+      : this.clientSortKey === null ? this.defaultSortDirection : this.clientSortDirection;
   }
 
   requestSort(column: ResponsiveGridColumn): void {
@@ -95,8 +98,10 @@ export class ResponsiveTableComponent {
       return;
     }
 
-    if (this.clientSortKey === key) {
-      this.clientSortDirection = this.clientSortDirection === 'asc' ? 'desc' : 'asc';
+    if (this.activeSortKey === key) {
+      const direction = this.activeSortDirection;
+      this.clientSortKey = key;
+      this.clientSortDirection = direction === 'asc' ? 'desc' : 'asc';
       return;
     }
 
@@ -157,8 +162,8 @@ export class ResponsiveTableComponent {
     }
 
     if (typeof left === 'string' && typeof right === 'string') {
-      const leftDate = Date.parse(left);
-      const rightDate = Date.parse(right);
+      const leftDate = this.parseDate(left);
+      const rightDate = this.parseDate(right);
       if (Number.isFinite(leftDate) && Number.isFinite(rightDate)) {
         return leftDate - rightDate;
       }
@@ -179,5 +184,12 @@ export class ResponsiveTableComponent {
 
     const parsed = Number(normalized);
     return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  private parseDate(value: string): number {
+    const month = /^([A-Za-z]+)'(\d{2}|\d{4})$/.exec(value);
+    return Date.parse(month
+      ? `${month[1]} ${month[2].length === 2 ? `20${month[2]}` : month[2]}`
+      : value);
   }
 }

@@ -303,13 +303,17 @@ describe('MyDashboardComponent', () => {
       expect(cards[0].detail).toBe('Difference: ₹ 20.00 (Aug 2026 minus Jul 2026)');
       expect(cards[1].value).toBe('₹ 180.00');
       expect(cards[1].detail).toBe('Jul 2026');
-      expect(cards[2].value).toBe('3');
+      expect(cards[2]).toEqual({ label: 'Selected record', value: '2 of 3', detail: 'Aug 2026' });
     }
     component.selectAllDashboardChartItem({ name: 'Jul 2026', value: 180 });
+    expect(component.allDashboardSummaryCards[2].value).toBe('1 of 3');
     expect(component.allDashboardSummaryCards[1].value).toBe('—');
     expect(component.allDashboardSummaryCards[0].detail).toContain('No previous recorded period');
     component.clearAllDashboardSelection();
     expect(component.allDashboardSummaryCards[0].value).toBe('₹ 250.00');
+    expect(component.allDashboardSummaryCards[2]).toEqual({ label: 'Recorded periods', value: '3' });
+    component.selectAllDashboardChartItem({ name: 'Sep 2026', value: 250 });
+    expect(component.allDashboardSummaryCards[2].value).toBe('3 of 3');
   });
 
   it('matches paired metric cards by the selected month', () => {
@@ -327,21 +331,31 @@ describe('MyDashboardComponent', () => {
     expect(component.allDashboardSummaryCards[1].value).toBe('₹ 20.00');
     expect(component.allDashboardSummaryCards[1].detail).toBe('Aug 2026');
     expect(component.allDashboardSummaryCards[1].color).toBe(component.allDashboardChartColorScheme.domain[0]);
-    expect(component.allDashboardSummaryCards[2].value).toBe('2');
+    expect(component.allDashboardSummaryCards[2]).toEqual({
+      label: 'Selected record', value: '1 of 2', detail: 'Aug 2026'
+    });
     component.selectAllDashboardMetric('overallInterest');
     expect(component.selectedAllDashboardDatum).toBeNull();
     expect(component.allDashboardSummaryCards[0].value).toBe('₹ 30.00');
+    expect(component.allDashboardSummaryCards[2]).toEqual({ label: 'Recorded periods', value: '2' });
   });
 
-  it('shows selected transfer amounts and keeps the total count', () => {
+  it('shows selected transfer amounts and its transaction position', () => {
     component.openAllDetailsModal();
     component.selectAllDashboardChartItem({ name: '29 Sep 2023', value: 100 });
-    expect(component.allDashboardSummaryCards.map(({ value }) => value)).toEqual(['2', '$100.00', '₹ 5,350']);
+    expect(component.allDashboardSummaryCards.map(({ value }) => value)).toEqual(['1 of 2', '$100.00', '₹ 5,350']);
+    expect(component.allDashboardSummaryCards[0]).toEqual({
+      label: 'Selected transaction', value: '1 of 2', detail: '29 Sep 2023'
+    });
     expect(component.allDashboardSummaryCards[1].detail).toBe('29 Sep 2023');
     component.closeAllDetails();
     component.openAllDetailsModal();
     expect(component.selectedAllDashboardDatum).toBeNull();
     expect(component.allDashboardSummaryCards[1].value).toBe('$300.00');
+    expect(component.allDashboardSummaryCards[0]).toEqual({ label: 'Transfers', value: '2' });
+    component.selectAllDashboardMetric('amountReceivedINR');
+    component.selectAllDashboardChartItem({ name: '31 Oct 2023', value: 10800 });
+    expect(component.allDashboardSummaryCards[0].value).toBe('2 of 2');
   });
 
   it('selects the correct transfer with a repeated date and shows selected and previous rates', () => {
@@ -353,12 +367,17 @@ describe('MyDashboardComponent', () => {
     component.selectAllDashboardChartItem({ name: '29 Sep 2023', value: 55, series: 'Exchange rate' });
     expect(component.allDashboardSummaryCards[0].value).toBe('₹ 55.00 / AUD');
     expect(component.allDashboardSummaryCards[1].value).toBe('₹ 0.50 / AUD');
+    expect(component.allDashboardSummaryCards[2]).toEqual({
+      label: 'Selected transaction', value: '2 of 2', detail: '29 Sep 2023'
+    });
     component.selectAllDashboardChartItem({ name: '29 Sep 2023', value: 0.5 });
     expect(component.allDashboardSummaryCards[1].value).toBe('—');
     expect(component.allDashboardSummaryCards[1].detail).toBe('No previous recorded transfer');
+    expect(component.allDashboardSummaryCards[2].value).toBe('1 of 2');
     component.clearAllDashboardSelection();
     expect(component.allDashboardSummaryCards[0].label).toBe('Lowest exchange rate');
     expect(component.allDashboardSummaryCards[0].value).toBe('₹ 55.00 / AUD');
+    expect(component.allDashboardSummaryCards[2]).toEqual({ label: 'Transfers', value: '2' });
   });
 
   it('reports unmatched or ambiguous selections without changing the selected cards', () => {
@@ -486,15 +505,19 @@ describe('MyDashboardComponent', () => {
     expect(component.sortedTransfers.map((row) => row.index)).toEqual([1, 0]);
   });
 
-  it('sorts dates chronologically despite backend date format variations', () => {
+  it('defaults to descending transfer dates despite backend date format variations', () => {
     component.transfers = [
       { ...transfers[1], dateOfTransfer: '7-Aug-24' },
       { ...transfers[0], dateOfTransfer: '05-July-26' },
       { ...transfers[0], dateOfTransfer: '29-Sep-23' }
     ];
 
+    expect(component.sortKey).toBe('dateOfTransfer');
+    expect(component.sortDirection).toBe('desc');
+    expect(component.sortedTransfers.map((row) => row.transfer.dateOfTransfer))
+      .toEqual(['05-July-26', '7-Aug-24', '29-Sep-23']);
+    expect(component.sortedTransfers.map(({ index }) => index)).toEqual([1, 0, 2]);
     component.sortTransfers('dateOfTransfer');
-
     expect(component.sortedTransfers.map((row) => row.transfer.dateOfTransfer))
       .toEqual(['29-Sep-23', '7-Aug-24', '05-July-26']);
   });

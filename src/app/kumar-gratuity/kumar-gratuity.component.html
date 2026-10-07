@@ -160,6 +160,8 @@
               [id]="'gratuity-records-panel-' + resourceId"
               [ariaLabel]="ownerName + ' ' + recordTypeLabel + ' records'"
               [columns]="gridColumns"
+              defaultSortKey="month"
+              defaultSortDirection="desc"
               [rows]="gridRows">
               <ng-template #gridActions let-index="index">
                 <div class="responsive-grid-action-buttons">

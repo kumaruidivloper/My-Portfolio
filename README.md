@@ -6,9 +6,11 @@ Dashboard highlight color dots follow the chart's category/legend mapping, inclu
 
 The Vasuki super Current super balance card shows the difference from the previous recorded period as small supporting text. The difference is unavailable until two periods are recorded.
 
-Click a bar, line point, or pie/doughnut slice in View all details to show the selected date/month's values in the cards. Counts remain unchanged; previous-period values refer to the record before the selection. Exchange-rate cards show selected and previous transfer rates while selected, including rates below 1. Reset selection restores the default summaries; changing metrics or reopening the modal also clears the selection.
+Click a bar, line point, or pie/doughnut slice in View all details to show the selected date/month's values in the cards. The count card shows the selected transaction or record's position in chart order (for example, 3 of 20), together with its date/month; previous-period values refer to the record before the selection. Exchange-rate cards show selected and previous transfer rates while selected, including rates below 1. Reset selection restores the default summaries and total counts; changing metrics or reopening the modal also clears the selection.
 
 The dashboard owns page scrolling while open. Opening a dashboard dialog locks the dashboard behind it, keeping scrolling within the dialog; portfolio scrolling is unchanged.
+
+Dashboard grids default to descending date/month order (newest first). Click a column header to change sorting; edit/delete actions continue to target the original record.
 
 ## 1. Install dependencies
 

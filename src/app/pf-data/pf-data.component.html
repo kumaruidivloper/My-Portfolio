@@ -190,6 +190,8 @@
             [id]="'pf-records-panel-' + resourceId"
             [ariaLabel]="ownerName + ' PF records'"
             [columns]="gridColumns"
+            defaultSortKey="month"
+            defaultSortDirection="desc"
             [rows]="gridRows">
             <ng-template #gridActions let-index="index">
               <div class="responsive-grid-action-buttons">

@@ -9,6 +9,8 @@ import { ThemeSelectComponent } from '../theme-select/theme-select.component';
       [columns]="columns"
       [rows]="rows"
       [sortKey]="sortKey"
+      [defaultSortKey]="defaultSortKey"
+      [defaultSortDirection]="defaultSortDirection"
       (sortChange)="sortKey = $event">
       <ng-template #gridActions let-row let-index="index">
         <button type="button">Action {{ index }} {{ row['month'] }}</button>
@@ -33,6 +35,8 @@ class ResponsiveTableHostComponent {
     }))
   ];
   sortKey: string | null = null;
+  defaultSortKey: string | null = null;
+  defaultSortDirection: 'asc' | 'desc' = 'asc';
 }
 
 describe('ResponsiveTableComponent', () => {
@@ -59,6 +63,30 @@ describe('ResponsiveTableComponent', () => {
     const host = fixture.nativeElement as HTMLElement;
     expect(host.querySelector('thead th:nth-child(2)')?.classList.contains('numeric-column')).toBeTrue();
     expect(host.querySelector('tbody tr td:nth-child(2)')?.classList.contains('numeric-column')).toBeTrue();
+  });
+
+  it('defaults to descending dates across years without changing rows or action indexes', () => {
+    fixture.destroy();
+    fixture = TestBed.createComponent(ResponsiveTableHostComponent);
+    const rows = [
+      { month: "Jan'26", actionIndex: 0 },
+      { month: "Dec'25", actionIndex: 1 },
+      { month: "Nov'2025", actionIndex: 2 }
+    ];
+    fixture.componentInstance.rows = rows;
+    fixture.componentInstance.defaultSortKey = 'monthDate';
+    fixture.componentInstance.defaultSortDirection = 'desc';
+    fixture.detectChanges();
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector('thead th')?.getAttribute('aria-sort')).toBe('descending');
+    expect(Array.from(host.querySelectorAll('tbody tr td:first-child'), (cell) => cell.textContent?.trim()))
+      .toEqual(["Jan'26", "Dec'25", "Nov'2025"]);
+    expect(host.querySelector('tbody tr td:last-child button')?.textContent).toContain('Action 0');
+    expect(rows.map(({ month }) => month)).toEqual(["Jan'26", "Dec'25", "Nov'2025"]);
+    (host.querySelector('thead button') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(host.querySelector('thead th')?.getAttribute('aria-sort')).toBe('ascending');
+    expect(host.querySelector('tbody tr td')?.textContent?.trim()).toBe("Nov'2025");
   });
 
   it('sorts rows and emits the configured sort key when a sortable header is clicked', () => {
