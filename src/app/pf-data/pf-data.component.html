@@ -268,14 +268,14 @@
           type="password"
           inputmode="numeric"
           autocomplete="off"
-          maxlength="8"
+          maxlength="14"
           [formControl]="deleteConfirmationCode"
           [disabled]="isSaving"
           (input)="validateDeleteConfirmationCode()"
           [attr.aria-describedby]="'pf-delete-code-help-' + resourceId">
-        <small [id]="'pf-delete-code-help-' + resourceId">Enter the required 8-digit code to continue.</small>
+        <small [id]="'pf-delete-code-help-' + resourceId">Enter the required 14-digit code to continue.</small>
         @if (deleteConfirmationCode.touched && deleteConfirmationCode.invalid) {
-          <small class="field-error">Enter the correct 8-digit confirmation code.</small>
+          <small class="field-error">Enter the correct 14-digit confirmation code.</small>
         }
         @if (isDeleteCodeVerifying) {
           <small>Verifying code…</small>
@@ -376,13 +376,13 @@
               type="password"
               inputmode="numeric"
               autocomplete="off"
-              maxlength="8"
+              maxlength="14"
               [formControl]="deleteConfirmationCode"
               (input)="validateDeleteConfirmationCode()"
               [attr.aria-describedby]="'pf-edit-code-help-' + resourceId">
-            <small [id]="'pf-edit-code-help-' + resourceId">Enter the required 8-digit code to continue.</small>
+            <small [id]="'pf-edit-code-help-' + resourceId">Enter the required 14-digit code to continue.</small>
             @if (deleteConfirmationCode.touched && deleteConfirmationCode.invalid) {
-              <small class="pf-field-error">Enter the correct 8-digit confirmation code.</small>
+              <small class="pf-field-error">Enter the correct 14-digit confirmation code.</small>
             }
             @if (isDeleteCodeVerifying) {
               <small>Verifying code…</small>

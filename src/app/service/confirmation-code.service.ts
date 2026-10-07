@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-const CONFIRMATION_CODE_SHA256 = '373b9ea53bdd5a5bac3a41351d919bad6cde49a21d1c45021114f9ffa73b1855';
+const CONFIRMATION_CODE_SHA256 = '14570e86378155ff4e8c8fa1ff20a95e289bb0a05dd98a46c9c24f55c20071cd';
 
 @Injectable({
   providedIn: 'root'

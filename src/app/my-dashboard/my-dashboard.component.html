@@ -525,13 +525,13 @@
                 autocomplete="off"
                 autocapitalize="off"
                 spellcheck="false"
-                maxlength="8"
+                maxlength="14"
                 [formControl]="deleteConfirmationCode"
                 (input)="validateDeleteConfirmationCode()"
                 aria-describedby="edit-transfer-code-help">
-              <small id="edit-transfer-code-help">Enter the required 8-digit code to continue.</small>
+              <small id="edit-transfer-code-help">Enter the required 14-digit code to continue.</small>
               @if (deleteConfirmationCode.touched && deleteConfirmationCode.invalid) {
-                <small class="field-error">Enter the correct 8-digit confirmation code.</small>
+                <small class="field-error">Enter the correct 14-digit confirmation code.</small>
               }
               @if (isDeleteCodeVerifying) {
                 <small>Verifying code…</small>
@@ -601,13 +601,13 @@
             autocomplete="off"
             autocapitalize="off"
             spellcheck="false"
-            maxlength="8"
+            maxlength="14"
             [formControl]="deleteConfirmationCode"
             (input)="validateDeleteConfirmationCode()"
             aria-describedby="delete-code-help">
-          <small id="delete-code-help">Enter the required 8-digit code to continue.</small>
+          <small id="delete-code-help">Enter the required 14-digit code to continue.</small>
           @if (deleteConfirmationCode.touched && deleteConfirmationCode.invalid) {
-            <small class="field-error">Enter the correct 8-digit confirmation code.</small>
+            <small class="field-error">Enter the correct 14-digit confirmation code.</small>
           }
           @if (isDeleteCodeVerifying) {
             <small>Verifying code…</small>

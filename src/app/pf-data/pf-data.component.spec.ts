@@ -34,7 +34,7 @@ describe('PfDataComponent', () => {
   });
 
   async function verifyEditCode(): Promise<void> {
-    component.deleteConfirmationCode.setValue('12345678');
+    component.deleteConfirmationCode.setValue('12345678901234');
     component.validateDeleteConfirmationCode();
     await Promise.resolve();
   }
@@ -184,7 +184,7 @@ describe('PfDataComponent', () => {
     component.requestDeleteRecord(0);
     expect(component.canDeleteRecord).toBeFalse();
 
-    component.deleteConfirmationCode.setValue('12345678');
+    component.deleteConfirmationCode.setValue('12345678901234');
     component.validateDeleteConfirmationCode();
     expect(component.canDeleteRecord).toBeFalse();
     await Promise.resolve();
@@ -213,7 +213,7 @@ describe('PfDataComponent', () => {
   it('does not delete a PF record when the confirmation code is invalid', async () => {
     confirmationCodeService.verify.and.resolveTo(false);
     component.requestDeleteRecord(0);
-    component.deleteConfirmationCode.setValue('12345678');
+    component.deleteConfirmationCode.setValue('12345678901234');
     component.validateDeleteConfirmationCode();
     await Promise.resolve();
 

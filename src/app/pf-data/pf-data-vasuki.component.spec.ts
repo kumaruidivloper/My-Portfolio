@@ -114,7 +114,7 @@ describe('PfDataComponent (Vasuki)', () => {
     component.saveRecord();
     expect(pfDataService.updatePfData).not.toHaveBeenCalled();
 
-    component.deleteConfirmationCode.setValue('12345678');
+    component.deleteConfirmationCode.setValue('12345678901234');
     component.validateDeleteConfirmationCode();
     await Promise.resolve();
     component.saveRecord();

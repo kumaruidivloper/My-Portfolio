@@ -190,7 +190,7 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
   });
   readonly deleteConfirmationCode = new FormControl('', {
     nonNullable: true,
-    validators: [Validators.required, Validators.pattern(/^\d{8}$/)]
+    validators: [Validators.required, Validators.pattern(/^\d{14}$/)]
   });
 
   readonly chartTypeOptions = CHART_TYPE_OPTIONS;

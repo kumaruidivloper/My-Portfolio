@@ -82,7 +82,7 @@ describe('MyDashboardComponent', () => {
   });
 
   async function verifyEditCode(): Promise<void> {
-    component.deleteConfirmationCode.setValue('12345678');
+    component.deleteConfirmationCode.setValue('12345678901234');
     component.validateDeleteConfirmationCode();
     await Promise.resolve();
   }
@@ -647,7 +647,7 @@ describe('MyDashboardComponent', () => {
     component.requestDeleteTransfer(0);
     expect(transferService.updateTransfers).not.toHaveBeenCalled();
 
-    component.deleteConfirmationCode.setValue('12345678');
+    component.deleteConfirmationCode.setValue('12345678901234');
     component.validateDeleteConfirmationCode();
     await Promise.resolve();
     expect(component.isDeleteCodeVerified).toBeTrue();
@@ -665,7 +665,7 @@ describe('MyDashboardComponent', () => {
   it('does not delete unless the entered code verifies', async () => {
     confirmationCodeService.verify.and.resolveTo(false);
     component.requestDeleteTransfer(0);
-    component.deleteConfirmationCode.setValue('12345678');
+    component.deleteConfirmationCode.setValue('12345678901234');
     component.validateDeleteConfirmationCode();
     await Promise.resolve();
 
@@ -682,7 +682,7 @@ describe('MyDashboardComponent', () => {
       throwError(() => new Error('Delete failed'))
     );
     component.requestDeleteTransfer(0);
-    component.deleteConfirmationCode.setValue('12345678');
+    component.deleteConfirmationCode.setValue('12345678901234');
     component.validateDeleteConfirmationCode();
     await Promise.resolve();
 

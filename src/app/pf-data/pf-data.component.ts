@@ -40,7 +40,7 @@ export class PfDataComponent implements OnDestroy {
   });
   readonly deleteConfirmationCode = new FormControl('', {
     nonNullable: true,
-    validators: [Validators.required, Validators.pattern(/^\d{8}$/)]
+    validators: [Validators.required, Validators.pattern(/^\d{14}$/)]
   });
   pfData: PfApiDocument | null = null;
   isExpanded = false;

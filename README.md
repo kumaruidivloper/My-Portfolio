@@ -14,6 +14,8 @@ Dashboard grids default to descending date/month order (newest first). Click a c
 
 ## 1. Install dependencies
 
+Dashboard access and edit/delete confirmations require the configured 14-digit code. Dashboard entry automatically verifies after all 14 digits are entered; pasted codes also fill all 14 fields.
+
 ```bash
 npm install
 ```

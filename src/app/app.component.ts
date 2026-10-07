@@ -18,7 +18,7 @@ import { environment } from '../environments/environment';
     standalone: false
 })
 export class AppComponent implements OnInit, OnDestroy {
-  readonly dashboardCodeDigits = Array.from({ length: 8 }, () => '');
+  readonly dashboardCodeDigits = Array.from({ length: 14 }, () => '');
   isDashboardPromptOpen = false;
   dashboardCodeError = '';
 
@@ -353,12 +353,12 @@ export class AppComponent implements OnInit, OnDestroy {
 
   onDashboardCodePaste(event: ClipboardEvent): void {
     event.preventDefault();
-    const digits = event.clipboardData?.getData('text').replace(/\D/g, '').slice(0, 8) ?? '';
+    const digits = event.clipboardData?.getData('text').replace(/\D/g, '').slice(0, this.dashboardCodeDigits.length) ?? '';
     this.dashboardCodeDigits.fill('');
     Array.from(digits).forEach((digit, index) => {
       this.dashboardCodeDigits[index] = digit;
     });
-    this.dashboardCodeInputs()[Math.min(digits.length, 7)]?.focus();
+    this.dashboardCodeInputs()[Math.min(digits.length, this.dashboardCodeDigits.length - 1)]?.focus();
     this.dashboardCodeError = '';
     if (this.dashboardCodeDigits.every((digit) => digit !== '')) {
       void this.submitDashboardCode();
@@ -367,8 +367,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
   async submitDashboardCode(): Promise<void> {
     const enteredCode = this.dashboardCodeDigits.join('');
-    if (!/^\d{8}$/.test(enteredCode)) {
-      this.dashboardCodeError = 'Enter the correct 8-digit code to open the dashboard.';
+    if (!/^\d{14}$/.test(enteredCode)) {
+      this.dashboardCodeError = 'Enter the correct 14-digit code to open the dashboard.';
       return;
     }
 
@@ -381,7 +381,7 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     if (!isValid) {
-      this.dashboardCodeError = 'Enter the correct 8-digit code to open the dashboard.';
+      this.dashboardCodeError = 'Enter the correct 14-digit code to open the dashboard.';
       return;
     }
 

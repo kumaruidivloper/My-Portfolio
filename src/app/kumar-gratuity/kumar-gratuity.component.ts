@@ -59,7 +59,7 @@ export class KumarGratuityComponent implements OnDestroy {
   });
   readonly confirmationCode = new FormControl('', {
     nonNullable: true,
-    validators: [Validators.required, Validators.pattern(/^\d{8}$/)]
+    validators: [Validators.required, Validators.pattern(/^\d{14}$/)]
   });
   gratuityData: GratuityApiDocument | null = null;
   previousMonthFound = false;

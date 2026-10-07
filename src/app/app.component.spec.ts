@@ -40,18 +40,18 @@ describe('AppComponent', () => {
   it('keeps the dashboard prompt open for an incorrect code', async () => {
     const verify = jasmine.createSpy('verify').and.resolveTo(false);
     Object.assign(component, {
-      dashboardCodeDigits: Array.from({ length: 8 }, () => ''),
+      dashboardCodeDigits: Array.from({ length: 14 }, () => ''),
       document,
       confirmationCodeService: { verify }
     });
     component.isDashboardPromptOpen = true;
-    component.dashboardCodeDigits.splice(0, 8, ...'12345678');
+    component.dashboardCodeDigits.splice(0, 14, ...'12345678901234');
 
     await component.submitDashboardCode();
 
     expect(component.isDashboardPromptOpen).toBeTrue();
-    expect(component.dashboardCodeError).toContain('correct 8-digit code');
-    expect(verify).toHaveBeenCalledWith('12345678');
+    expect(component.dashboardCodeError).toContain('correct 14-digit code');
+    expect(verify).toHaveBeenCalledWith('12345678901234');
   });
 
   it('opens the dashboard directly without a code prompt in local development', () => {
@@ -77,7 +77,7 @@ describe('AppComponent', () => {
       router: { navigateByUrl },
       dashboardAccessGuard: { grantOneTimeAccess },
       confirmationCodeService: { verify },
-      dashboardCodeDigits: Array.from('12345678')
+      dashboardCodeDigits: Array.from('12345678901234')
     });
     component.isDashboardPromptOpen = true;
     Object.assign(component, { document });
@@ -96,11 +96,11 @@ describe('AppComponent', () => {
       router: { navigateByUrl },
       dashboardAccessGuard: { grantOneTimeAccess },
       confirmationCodeService: { verify: jasmine.createSpy('verify').and.resolveTo(true) },
-      dashboardCodeDigits: Array.from('1234567'),
+      dashboardCodeDigits: [...Array.from('1234567890123'), ''],
       document
     });
 
-    component.onDashboardCodeInput({ target: { value: '4' } } as unknown as Event, 7);
+    component.onDashboardCodeInput({ target: { value: '4' } } as unknown as Event, 13);
     await component.submitDashboardCode();
 
     expect(grantOneTimeAccess).toHaveBeenCalled();
@@ -112,5 +112,31 @@ describe('AppComponent', () => {
     expect(component.getGreeting(new Date(2026, 7, 24, 8))).toBe('Good morning');
     expect(component.getGreeting(new Date(2026, 7, 24, 14))).toBe('Good afternoon');
     expect(component.getGreeting(new Date(2026, 7, 24, 20))).toBe('Good evening');
+  });
+
+  it('rejects an eight-digit entry before requesting verification', async () => {
+    const verify = jasmine.createSpy('verify');
+    Object.assign(component, {
+      dashboardCodeDigits: [...Array.from('12345678'), ...Array(6).fill('')],
+      confirmationCodeService: { verify }
+    });
+    await component.submitDashboardCode();
+    expect(verify).not.toHaveBeenCalled();
+    expect(component.dashboardCodeError).toContain('14-digit');
+  });
+
+  it('fills all fourteen digits from a paste and automatically verifies them', async () => {
+    const verify = jasmine.createSpy('verify').and.resolveTo(false);
+    Object.assign(component, {
+      dashboardCodeDigits: Array.from({ length: 14 }, () => ''),
+      confirmationCodeService: { verify },
+      document
+    });
+    const data = new DataTransfer();
+    data.setData('text', '12345678901234');
+    component.onDashboardCodePaste(new ClipboardEvent('paste', { clipboardData: data }));
+    await Promise.resolve();
+    expect(component.dashboardCodeDigits.join('')).toBe('12345678901234');
+    expect(verify).toHaveBeenCalledOnceWith('12345678901234');
   });
 });

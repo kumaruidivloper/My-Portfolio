@@ -443,7 +443,8 @@ body.night .ngx-charts-tooltip-content .chart-value-tooltip span {
 }
 
 .dashboard-code-inputs {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 4rem));
     gap: .8rem;
     justify-content: center;
     margin: 2.5rem 0 1rem;
@@ -457,7 +458,8 @@ body.night .ngx-charts-tooltip-content .chart-value-tooltip span {
     font-size: 2rem;
     height: 4.5rem;
     text-align: center;
-    width: 4rem;
+    min-width: 0;
+    width: 100%;
 }
 
 .dashboard-code-input:focus-visible {

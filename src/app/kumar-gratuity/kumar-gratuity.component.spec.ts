@@ -45,7 +45,7 @@ describe('KumarGratuityComponent', () => {
   });
 
   async function verifyCode(): Promise<void> {
-    component.confirmationCode.setValue('12345678');
+    component.confirmationCode.setValue('12345678901234');
     component.validateConfirmationCode();
     await Promise.resolve();
   }
@@ -198,7 +198,7 @@ describe('KumarGratuityComponent', () => {
 
     expect(component.editForm.controls.date.value).toBe('2026-07');
     component.editForm.controls.date.setValue('2026-09');
-    component.confirmationCode.setValue('12345678');
+    component.confirmationCode.setValue('12345678901234');
     component.validateConfirmationCode();
     await Promise.resolve();
 
