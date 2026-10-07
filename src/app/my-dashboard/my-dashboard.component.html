@@ -11,7 +11,12 @@
     <section class="transfer-data-accordion" aria-labelledby="transfer-data-title">
       <header class="records-heading transfer-accordion-header">
         <div class="records-toggle-copy transfer-accordion-copy">
-          <h2 class="records-title" id="transfer-data-title">Australia to India Transfers</h2>
+          <h2 class="records-title transfer-flag-title" id="transfer-data-title" aria-label="Australia to India Transfers">
+            <img src="assets/flags/australia.svg" alt="" title="Australia" width="36" height="36">
+            <span aria-hidden="true">to</span>
+            <img src="assets/flags/india.svg" alt="" title="India" width="36" height="36">
+            <span aria-hidden="true">Transfers</span>
+          </h2>
           <p class="records-description">
             {{ !isLoading && !errorMessage ? transfers.length + ' transfer records' : 'Transfer amounts and exchange rates.' }}
           </p>

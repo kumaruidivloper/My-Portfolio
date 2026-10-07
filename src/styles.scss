@@ -45,6 +45,21 @@ body:has(.dashboard-page) {
     overscroll-behavior: contain;
 }
 
+.dashboard-page .transfer-flag-title {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .8rem;
+}
+
+.transfer-flag-title img {
+    border-radius: 50%;
+    flex: 0 0 3.6rem;
+    height: 3.6rem;
+    object-fit: cover;
+    width: 3.6rem;
+}
+
 html body .dashboard-page:has(.modal-backdrop, .pf-modal-backdrop, .gratuity-modal-backdrop) {
     overflow-y: hidden;
 }
@@ -462,6 +477,7 @@ body.night .ngx-charts-tooltip-content .chart-value-tooltip span {
 }
 
 .dashboard-code-actions .btn {
+    border-radius: 2rem;
     margin-top: 1rem;
 }
 
