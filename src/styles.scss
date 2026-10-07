@@ -425,7 +425,7 @@ body.night .ngx-charts-tooltip-content .chart-value-tooltip span {
     box-shadow: var(--box-shadow);
     color: var(--black);
     flex: 0 1 auto;
-    max-width: 44rem;
+    max-width: 72rem;
     min-height: 0;
     padding: 2.5rem;
     width: 100%;
@@ -444,8 +444,8 @@ body.night .ngx-charts-tooltip-content .chart-value-tooltip span {
 
 .dashboard-code-inputs {
     display: grid;
-    grid-template-columns: repeat(7, minmax(0, 4rem));
-    gap: .8rem;
+    grid-template-columns: repeat(14, minmax(0, 4rem));
+    gap: clamp(.2rem, 1vw, .8rem);
     justify-content: center;
     margin: 2.5rem 0 1rem;
 }
@@ -455,7 +455,7 @@ body.night .ngx-charts-tooltip-content .chart-value-tooltip span {
     border-radius: .6rem;
     box-shadow: var(--box-shadow-inset);
     color: var(--black);
-    font-size: 2rem;
+    font-size: clamp(1.2rem, 3vw, 2rem);
     height: 4.5rem;
     text-align: center;
     min-width: 0;
