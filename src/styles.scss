@@ -442,15 +442,15 @@ body.night .ngx-charts-tooltip-content .chart-value-tooltip span {
     margin-top: .5rem;
 }
 
-.dashboard-code-inputs {
-    display: grid;
-    grid-template-columns: repeat(14, minmax(0, 4rem));
+.dashboard-code-modal .dashboard-code-inputs {
+    display: flex;
+    flex-wrap: nowrap;
     gap: clamp(.2rem, 1vw, .8rem);
     justify-content: center;
     margin: 2.5rem 0 1rem;
 }
 
-.dashboard-code-input {
+.dashboard-code-modal .dashboard-code-input {
     background: var(--bg-color);
     border-radius: .6rem;
     box-shadow: var(--box-shadow-inset);
@@ -459,11 +459,20 @@ body.night .ngx-charts-tooltip-content .chart-value-tooltip span {
     height: 4.5rem;
     text-align: center;
     min-width: 0;
+    flex: 0 1 4rem;
     width: 100%;
 }
 
 .dashboard-code-input:focus-visible {
     outline: .2rem solid var(--green);
+}
+
+@media (max-width: 600px) {
+    .dashboard-code-modal .dashboard-code-inputs {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 4rem));
+        gap: .8rem;
+    }
 }
 
 .dashboard-code-error {
