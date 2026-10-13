@@ -379,6 +379,53 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     return this.dateRangeLabel(this.allDashboardToValue);
   }
 
+  private dateLabelDrag: { pointerId: number; endpoint: 'from' | 'to'; startX: number; position: number; width: number } | null = null;
+
+  startDateLabelDrag(endpoint: 'from' | 'to', event: PointerEvent): void {
+    if (event.button !== 0 || !this.allDashboardSliderMax || !(event.currentTarget instanceof HTMLElement)) {
+      return;
+    }
+    const width = event.currentTarget.parentElement?.getBoundingClientRect().width;
+    if (!width) {
+      return;
+    }
+    event.currentTarget.setPointerCapture(event.pointerId);
+    this.dateLabelDrag = {
+      pointerId: event.pointerId, endpoint, startX: event.clientX, width,
+      position: endpoint === 'from' ? this.allDashboardSliderFrom : this.allDashboardSliderTo
+    };
+  }
+
+  moveDateLabelDrag(event: PointerEvent): void {
+    const drag = this.dateLabelDrag;
+    if (!drag || drag.pointerId !== event.pointerId) {
+      return;
+    }
+    const position = Math.round(drag.position + (event.clientX - drag.startX) / drag.width * this.allDashboardSliderMax);
+    this.setAllDashboardSliderRange(drag.endpoint, Math.max(0, Math.min(this.allDashboardSliderMax, position)));
+  }
+
+  endDateLabelDrag(event: PointerEvent): void {
+    if (this.dateLabelDrag?.pointerId === event.pointerId) {
+      this.dateLabelDrag = null;
+    }
+  }
+
+  onDateLabelKeydown(endpoint: 'from' | 'to', event: KeyboardEvent): void {
+    const current = endpoint === 'from' ? this.allDashboardSliderFrom : this.allDashboardSliderTo;
+    const step = Math.max(1, Math.round(this.allDashboardSliderMax / 10));
+    const positions: Record<string, number> = {
+      ArrowLeft: current - 1, ArrowDown: current - 1,
+      ArrowRight: current + 1, ArrowUp: current + 1,
+      PageDown: current - step, PageUp: current + step,
+      Home: 0, End: this.allDashboardSliderMax
+    };
+    if (event.key in positions && this.allDashboardSliderMax) {
+      event.preventDefault();
+      this.setAllDashboardSliderRange(endpoint, Math.max(0, Math.min(this.allDashboardSliderMax, positions[event.key])));
+    }
+  }
+
   setAllDashboardSliderRange(endpoint: 'from' | 'to', position: number): void {
     const min = this.allDashboardDateBounds.min;
     if (!min || !Number.isInteger(position) || position < 0 || position > this.allDashboardSliderMax) {
@@ -434,6 +481,7 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
   }
 
   resetAllDashboardDateRange(): void {
+    this.dateLabelDrag = null;
     this.allDashboardFrom = '';
     this.allDashboardTo = '';
     this.allDashboardRangeError = '';

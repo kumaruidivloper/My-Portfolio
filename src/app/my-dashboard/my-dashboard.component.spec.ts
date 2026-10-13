@@ -268,6 +268,23 @@ describe('MyDashboardComponent', () => {
     expect(component.allDashboardToValue).toBe('2024-02-29');
   });
 
+  it('adjusts dates from label keyboard controls and prevents handles crossing', () => {
+    component.openAllDetailsModal();
+    const right = new KeyboardEvent('keydown', { key: 'ArrowRight', cancelable: true });
+    component.onDateLabelKeydown('from', right);
+    expect(right.defaultPrevented).toBeTrue();
+    expect(component.allDashboardSliderFrom).toBe(1);
+    component.onDateLabelKeydown('to', new KeyboardEvent('keydown', { key: 'Home' }));
+    expect(component.allDashboardSliderTo).toBe(1);
+    component.onDateLabelKeydown('from', new KeyboardEvent('keydown', { key: 'End' }));
+    expect(component.allDashboardSliderFrom).toBe(1);
+    component.onDateLabelKeydown('to', new KeyboardEvent('keydown', { key: 'End' }));
+    expect(component.allDashboardSliderTo).toBe(32);
+    const unrelated = new KeyboardEvent('keydown', { key: 'Tab', cancelable: true });
+    component.onDateLabelKeydown('from', unrelated);
+    expect(unrelated.defaultPrevented).toBeFalse();
+  });
+
   it('uses month slider steps across years and clears selections', () => {
     totalBalanceService.getTotals.and.returnValue(of({
       id: '7', name: 'All', type: 'Total',

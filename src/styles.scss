@@ -80,44 +80,99 @@ html body .dashboard-page .dashboard-top-actions .icon-action svg {
 }
 
 .dashboard-page .all-details-chart-heading {
-    align-items: center;
+    align-items: stretch;
     display: flex;
-    gap: 2rem;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 1rem;
+    position: relative;
+}
+
+.dashboard-page .all-details-chart-heading:has(.date-range-reset) > div:first-child {
+    padding-right: 17rem;
 }
 
 .dashboard-page .chart-select-row.all-details-date-filters {
     display: grid;
-    flex: 0 1 48rem;
-    grid-template-columns: minmax(0, 1fr) auto;
+    flex: none;
+    grid-template-columns: minmax(0, 1fr);
     margin-top: 0;
     min-width: 0;
+    width: 100%;
 }
 
 .date-range-slider {
     min-width: 0;
 }
 
-.date-range-labels {
-    display: flex;
-    gap: 1rem;
-    justify-content: space-between;
+.date-range-handle-label {
+    background: var(--bg-color);
+    border-radius: .8rem;
+    box-shadow: var(--box-shadow-inset);
+    color: var(--black);
+    cursor: ew-resize;
     font-size: 1.2rem;
+    max-width: 100%;
+    padding: .4rem 12px;
+    position: absolute;
+    text-align: center;
+    transition: none;
+    white-space: nowrap;
+    width: max-content;
+    touch-action: none;
+    user-select: none;
 }
 
-.date-range-labels strong {
-    display: block;
+.date-range-handle-label:focus-visible {
+    outline: .2rem solid var(--green);
+}
+
+.date-range-handle-label:disabled {
+    cursor: not-allowed;
+}
+
+.date-range-handle-label strong {
+    display: inline;
+    margin-left: .3rem;
     font-size: 1.4rem;
     font-weight: 500;
 }
 
-.date-range-labels > :last-child {
-    text-align: right;
+.date-range-from-label {
+    --handle-position: var(--range-from);
+    top: 0;
+}
+
+.date-range-to-label {
+    --handle-position: var(--range-to);
+    bottom: 0;
+}
+
+.date-range-handle-label {
+    left: var(--handle-position);
+    transform: translateX(calc(-1 * var(--handle-position)));
+}
+
+.date-range-handle-label::after {
+    content: '';
+    position: absolute;
+    left: var(--handle-position);
+    border: .5rem solid transparent;
+    transform: translateX(-50%);
+}
+
+.date-range-from-label::after {
+    top: 100%;
+    border-top-color: var(--green);
+}
+
+.date-range-to-label::after {
+    bottom: 100%;
+    border-bottom-color: var(--green);
 }
 
 .date-range-track {
     position: relative;
-    height: 4rem;
+    height: 9rem;
     margin: 0 1.2rem;
 }
 
@@ -133,7 +188,7 @@ input.date-range-input {
     appearance: none;
     background: transparent;
     position: absolute;
-    inset: 0 -1.2rem;
+    inset: calc(50% - 2rem) -1.2rem auto;
     width: calc(100% + 2.4rem);
     height: 4rem;
     pointer-events: none;
@@ -186,12 +241,18 @@ input.date-range-input {
 }
 
 html body .dashboard-page .all-details-date-filters button.control-button.date-range-reset {
-    align-self: end;
-    margin-bottom: .6rem;
+    border-radius: 2rem;
+    gap: .6rem;
+    margin: 0;
+    padding: .6rem 1rem;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: auto;
 }
 
 .date-range-reset-label {
-    display: none;
+    display: inline;
 }
 
 @media (max-width: 600px) {
@@ -199,36 +260,6 @@ html body .dashboard-page .all-details-date-filters button.control-button.date-r
         padding-top: 8rem;
     }
 
-    .dashboard-page .all-details-chart-heading {
-        align-items: stretch;
-        flex-direction: column;
-        position: relative;
-    }
-
-    .dashboard-page .all-details-chart-heading:has(.date-range-reset) > div:first-child {
-        padding-right: 17rem;
-    }
-
-    .dashboard-page .chart-select-row.all-details-date-filters {
-        flex: none;
-        grid-template-columns: minmax(0, 1fr);
-        width: 100%;
-    }
-
-    html body .dashboard-page .all-details-date-filters button.control-button.date-range-reset {
-        border-radius: 2rem;
-        gap: .6rem;
-        margin: 0;
-        padding: .6rem 1rem;
-        position: absolute;
-        right: 0;
-        top: 0;
-        width: auto;
-    }
-
-    .date-range-reset-label {
-        display: inline;
-    }
 }
 
 .dashboard-page .transfer-flag-title {

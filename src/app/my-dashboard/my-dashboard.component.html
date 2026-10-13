@@ -334,13 +334,23 @@
               </div>
             <div class="chart-select-row all-details-controls all-details-date-filters">
               <div class="date-range-slider" role="group" aria-label="Chart date range">
-                <div class="date-range-labels">
-                  <span>From <strong>{{ allDashboardFromLabel }}</strong></span>
-                  <span>To <strong>{{ allDashboardToLabel }}</strong></span>
-                </div>
                 <div class="date-range-track"
                   [style.--range-from]="(allDashboardSliderMax ? allDashboardSliderFrom / allDashboardSliderMax * 100 : 0) + '%'"
                   [style.--range-to]="(allDashboardSliderMax ? allDashboardSliderTo / allDashboardSliderMax * 100 : 100) + '%'">
+                  <button type="button" class="date-range-handle-label date-range-from-label"
+                    [disabled]="!allDashboardSliderMax" [attr.aria-label]="'Adjust From date: ' + allDashboardFromLabel"
+                    (pointerdown)="startDateLabelDrag('from', $event)" (pointermove)="moveDateLabelDrag($event)"
+                    (pointerup)="endDateLabelDrag($event)" (pointercancel)="endDateLabelDrag($event)"
+                    (lostpointercapture)="endDateLabelDrag($event)" (keydown)="onDateLabelKeydown('from', $event)">
+                    From <strong>{{ allDashboardFromLabel }}</strong>
+                  </button>
+                  <button type="button" class="date-range-handle-label date-range-to-label"
+                    [disabled]="!allDashboardSliderMax" [attr.aria-label]="'Adjust To date: ' + allDashboardToLabel"
+                    (pointerdown)="startDateLabelDrag('to', $event)" (pointermove)="moveDateLabelDrag($event)"
+                    (pointerup)="endDateLabelDrag($event)" (pointercancel)="endDateLabelDrag($event)"
+                    (lostpointercapture)="endDateLabelDrag($event)" (keydown)="onDateLabelKeydown('to', $event)">
+                    To <strong>{{ allDashboardToLabel }}</strong>
+                  </button>
                   <input #fromSlider type="range" class="date-range-input" aria-label="Chart range from"
                     min="0" [max]="allDashboardSliderMax" step="1"
                     [value]="allDashboardSliderFrom"
