@@ -285,6 +285,41 @@ describe('MyDashboardComponent', () => {
     expect(unrelated.defaultPrevented).toBeFalse();
   });
 
+  it('moves the nearest handle on track clicks or touch and supports continued dragging', () => {
+    component.openAllDetailsModal();
+    const track = document.createElement('div');
+    spyOn(track, 'getBoundingClientRect').and.returnValue(new DOMRect(100, 0, 320, 40));
+    spyOn(track, 'setPointerCapture');
+    track.addEventListener('pointerdown', event => component.startDateTrackDrag(event));
+    track.dispatchEvent(new PointerEvent('pointerdown', { clientX: 180, pointerId: 1, button: 0 }));
+    expect(component.allDashboardSliderFrom).toBe(8);
+    expect(component.allDashboardSliderTo).toBe(32);
+    component.moveDateLabelDrag(new PointerEvent('pointermove', { clientX: 200, pointerId: 2 }));
+    expect(component.allDashboardSliderFrom).toBe(8);
+    component.moveDateLabelDrag(new PointerEvent('pointermove', { clientX: 200, pointerId: 1 }));
+    expect(component.allDashboardSliderFrom).toBe(10);
+    component.endDateLabelDrag(new PointerEvent('pointerup', { pointerId: 1 }));
+    component.moveDateLabelDrag(new PointerEvent('pointermove', { clientX: 220, pointerId: 1 }));
+    expect(component.allDashboardSliderFrom).toBe(10);
+    track.dispatchEvent(new PointerEvent('pointerdown', {
+      clientX: 380, pointerId: 3, button: 0, pointerType: 'touch'
+    }));
+    expect(component.allDashboardSliderTo).toBe(28);
+    component.moveDateLabelDrag(new PointerEvent('pointermove', { clientX: -100, pointerId: 3 }));
+    expect(component.allDashboardSliderTo).toBe(10);
+    component.endDateLabelDrag(new PointerEvent('pointercancel', { pointerId: 3 }));
+    component.resetAllDashboardDateRange();
+    track.dispatchEvent(new PointerEvent('pointerdown', { clientX: 260, pointerId: 4, button: 0 }));
+    expect(component.allDashboardSliderFrom).toBe(16);
+    expect(component.allDashboardSliderTo).toBe(32);
+    component.resetAllDashboardDateRange();
+    track.dispatchEvent(new PointerEvent('pointerdown', { clientX: 260, pointerId: 5, button: 2 }));
+    expect(component.allDashboardSliderFrom).toBe(0);
+    component.transfers = [];
+    track.dispatchEvent(new PointerEvent('pointerdown', { clientX: 260, pointerId: 6, button: 0 }));
+    expect(component.allDashboardRangeError).toBe('');
+  });
+
   it('uses month slider steps across years and clears selections', () => {
     totalBalanceService.getTotals.and.returnValue(of({
       id: '7', name: 'All', type: 'Total',

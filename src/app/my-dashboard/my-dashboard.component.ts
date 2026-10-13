@@ -381,6 +381,25 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
 
   private dateLabelDrag: { pointerId: number; endpoint: 'from' | 'to'; startX: number; position: number; width: number } | null = null;
 
+  startDateTrackDrag(event: PointerEvent): void {
+    if (event.button !== 0 || !this.allDashboardSliderMax || !(event.currentTarget instanceof HTMLElement)) {
+      return;
+    }
+    const track = event.currentTarget;
+    const { left, width } = track.getBoundingClientRect();
+    if (!width) {
+      return;
+    }
+    const position = Math.max(0, Math.min(this.allDashboardSliderMax,
+      Math.round((event.clientX - left) / width * this.allDashboardSliderMax)));
+    const endpoint = Math.abs(position - this.allDashboardSliderFrom) <= Math.abs(position - this.allDashboardSliderTo)
+      ? 'from' : 'to';
+    this.setAllDashboardSliderRange(endpoint, position);
+    track.setPointerCapture(event.pointerId);
+    this.dateLabelDrag = { pointerId: event.pointerId, endpoint, startX: event.clientX, position, width };
+    track.parentElement?.querySelector<HTMLInputElement>(`input[aria-label="Chart range ${endpoint}"]`)?.focus();
+  }
+
   startDateLabelDrag(endpoint: 'from' | 'to', event: PointerEvent): void {
     if (event.button !== 0 || !this.allDashboardSliderMax || !(event.currentTarget instanceof HTMLElement)) {
       return;

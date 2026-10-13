@@ -337,6 +337,11 @@
                 <div class="date-range-track"
                   [style.--range-from]="(allDashboardSliderMax ? allDashboardSliderFrom / allDashboardSliderMax * 100 : 0) + '%'"
                   [style.--range-to]="(allDashboardSliderMax ? allDashboardSliderTo / allDashboardSliderMax * 100 : 100) + '%'">
+                  <div class="date-range-track-hit-area" aria-hidden="true"
+                    [class.disabled]="!allDashboardSliderMax"
+                    (pointerdown)="startDateTrackDrag($event)" (pointermove)="moveDateLabelDrag($event)"
+                    (pointerup)="endDateLabelDrag($event)" (pointercancel)="endDateLabelDrag($event)"
+                    (lostpointercapture)="endDateLabelDrag($event)"></div>
                   <button type="button" class="date-range-handle-label date-range-from-label"
                     [disabled]="!allDashboardSliderMax" [attr.aria-label]="'Adjust From date: ' + allDashboardFromLabel"
                     (pointerdown)="startDateLabelDrag('from', $event)" (pointermove)="moveDateLabelDrag($event)"

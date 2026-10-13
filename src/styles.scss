@@ -184,6 +184,18 @@ html body .dashboard-page .dashboard-top-actions .icon-action svg {
     background: linear-gradient(to right, var(--light-color) var(--range-from), var(--green) var(--range-from), var(--green) var(--range-to), var(--light-color) var(--range-to));
 }
 
+.date-range-track-hit-area {
+    position: absolute;
+    inset: calc(50% - 2rem) 0 auto;
+    height: 4rem;
+    cursor: pointer;
+    touch-action: none;
+}
+
+.date-range-track-hit-area.disabled {
+    pointer-events: none;
+}
+
 input.date-range-input {
     appearance: none;
     background: transparent;
