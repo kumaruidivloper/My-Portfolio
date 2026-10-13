@@ -89,18 +89,100 @@ html body .dashboard-page .dashboard-top-actions .icon-action svg {
 .dashboard-page .chart-select-row.all-details-date-filters {
     display: grid;
     flex: 0 1 48rem;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     margin-top: 0;
     min-width: 0;
 }
 
-.dashboard-page .all-details-date-filters .chart-select {
-    flex: 1 1 0;
+.date-range-slider {
     min-width: 0;
 }
 
-.all-details-date-filters .date-picker-trigger span {
-    white-space: nowrap;
+.date-range-labels {
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    font-size: 1.2rem;
+}
+
+.date-range-labels strong {
+    display: block;
+    font-size: 1.4rem;
+    font-weight: 500;
+}
+
+.date-range-labels > :last-child {
+    text-align: right;
+}
+
+.date-range-track {
+    position: relative;
+    height: 4rem;
+    margin: 0 1.2rem;
+}
+
+.date-range-track::before {
+    content: '';
+    position: absolute;
+    inset: calc(50% - .3rem) 0;
+    border-radius: 1rem;
+    background: linear-gradient(to right, var(--light-color) var(--range-from), var(--green) var(--range-from), var(--green) var(--range-to), var(--light-color) var(--range-to));
+}
+
+input.date-range-input {
+    appearance: none;
+    background: transparent;
+    position: absolute;
+    inset: 0 -1.2rem;
+    width: calc(100% + 2.4rem);
+    height: 4rem;
+    pointer-events: none;
+    transition: none;
+}
+
+.date-range-input:last-child {
+    z-index: 2;
+}
+
+.date-range-input::-webkit-slider-thumb {
+    appearance: none;
+    width: 2.4rem;
+    height: 2.4rem;
+    border: .3rem solid var(--green);
+    border-radius: 50%;
+    background: var(--bg-color);
+    box-shadow: var(--box-shadow);
+    cursor: ew-resize;
+    pointer-events: auto;
+}
+
+.date-range-input::-moz-range-thumb {
+    width: 1.8rem;
+    height: 1.8rem;
+    border: .3rem solid var(--green);
+    border-radius: 50%;
+    background: var(--bg-color);
+    box-shadow: var(--box-shadow);
+    cursor: ew-resize;
+    pointer-events: auto;
+}
+
+.date-range-input:focus-visible {
+    outline: .2rem solid var(--green);
+    outline-offset: .2rem;
+    border-radius: 1rem;
+}
+
+.date-range-input:disabled {
+    opacity: .4;
+}
+
+.date-range-input:disabled::-webkit-slider-thumb {
+    pointer-events: none;
+}
+
+.date-range-input:disabled::-moz-range-thumb {
+    pointer-events: none;
 }
 
 html body .dashboard-page .all-details-date-filters button.control-button.date-range-reset {

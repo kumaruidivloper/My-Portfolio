@@ -333,35 +333,28 @@
                 }
               </div>
             <div class="chart-select-row all-details-controls all-details-date-filters">
-              <div class="chart-select">
-                <span class="control-label">From</span>
-                <app-theme-date-picker
-                  #fromRangePicker
-                  ariaLabel="Chart range from"
-                  (opened)="toRangePicker.close()"
-                  [mode]="allDashboardDateMode"
-                  [value]="allDashboardFromValue"
-                  [min]="allDashboardDateBounds.min"
-                  [max]="allDashboardToValue"
-                  [allowClear]="false"
-                  [isDisabled]="!allDashboardDateBounds.min"
-                  (valueChange)="setAllDashboardDateRange('from', $event)">
-                </app-theme-date-picker>
-              </div>
-              <div class="chart-select">
-                <span class="control-label">To</span>
-                <app-theme-date-picker
-                  #toRangePicker
-                  ariaLabel="Chart range to"
-                  (opened)="fromRangePicker.close()"
-                  [mode]="allDashboardDateMode"
-                  [value]="allDashboardToValue"
-                  [min]="allDashboardFromValue"
-                  [max]="allDashboardDateBounds.max"
-                  [allowClear]="false"
-                  [isDisabled]="!allDashboardDateBounds.max"
-                  (valueChange)="setAllDashboardDateRange('to', $event)">
-                </app-theme-date-picker>
+              <div class="date-range-slider" role="group" aria-label="Chart date range">
+                <div class="date-range-labels">
+                  <span>From <strong>{{ allDashboardFromLabel }}</strong></span>
+                  <span>To <strong>{{ allDashboardToLabel }}</strong></span>
+                </div>
+                <div class="date-range-track"
+                  [style.--range-from]="(allDashboardSliderMax ? allDashboardSliderFrom / allDashboardSliderMax * 100 : 0) + '%'"
+                  [style.--range-to]="(allDashboardSliderMax ? allDashboardSliderTo / allDashboardSliderMax * 100 : 100) + '%'">
+                  <input #fromSlider type="range" class="date-range-input" aria-label="Chart range from"
+                    min="0" [max]="allDashboardSliderMax" step="1"
+                    [value]="allDashboardSliderFrom"
+                    [attr.aria-valuetext]="allDashboardFromLabel"
+                    [disabled]="!allDashboardSliderMax"
+                    [style.z-index]="allDashboardSliderFrom === allDashboardSliderMax ? 3 : 1"
+                    (input)="setAllDashboardSliderRange('from', fromSlider.valueAsNumber); fromSlider.value = '' + allDashboardSliderFrom">
+                  <input #toSlider type="range" class="date-range-input" aria-label="Chart range to"
+                    min="0" [max]="allDashboardSliderMax" step="1"
+                    [value]="allDashboardSliderTo"
+                    [attr.aria-valuetext]="allDashboardToLabel"
+                    [disabled]="!allDashboardSliderMax"
+                    (input)="setAllDashboardSliderRange('to', toSlider.valueAsNumber); toSlider.value = '' + allDashboardSliderTo">
+                </div>
               </div>
               @if (allDashboardFrom || allDashboardTo) {
                 <button
@@ -369,7 +362,7 @@
                   type="button"
                   aria-label="Reset date filter"
                   title="Reset date filter"
-                  (click)="fromRangePicker.close(); toRangePicker.close(); resetAllDashboardDateRange()">
+                  (click)="resetAllDashboardDateRange()">
                   <span class="date-range-reset-label">Reset date filter</span>
                   <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8">
                     <path d="M3 10a9 9 0 1 1 2.6 8.4M3 4v6h6" />

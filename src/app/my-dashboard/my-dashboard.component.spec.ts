@@ -235,6 +235,81 @@ describe('MyDashboardComponent', () => {
     }
   });
 
+  it('slides by calendar days, clamps crossing handles, and restores the full range', () => {
+    component.openAllDetailsModal();
+    expect(component.allDashboardSliderMax).toBe(32);
+    expect(component.allDashboardSliderFrom).toBe(0);
+    expect(component.allDashboardSliderTo).toBe(32);
+    component.setAllDashboardSliderRange('from', 1);
+    expect(component.allDashboardFromValue).toBe('2023-09-30');
+    expect(component.allDashboardFromLabel).toBe('30 Sep 2023');
+    expect(component.allDashboardChartData.length).toBe(1);
+    component.setAllDashboardSliderRange('to', 0);
+    expect(component.allDashboardToValue).toBe('2023-09-30');
+    expect(component.allDashboardChartData.length).toBe(0);
+    component.setAllDashboardSliderRange('from', 32);
+    expect(component.allDashboardSliderFrom).toBe(1);
+    component.resetAllDashboardDateRange();
+    expect(component.allDashboardSliderFrom).toBe(0);
+    expect(component.allDashboardSliderTo).toBe(32);
+    expect(component.allDashboardChartData.length).toBe(2);
+  });
+
+  it('uses daily slider steps across leap day without timezone shifts', () => {
+    component.transfers = [
+      { ...transfers[0], dateOfTransfer: '28-Feb-24' },
+      { ...transfers[1], dateOfTransfer: '01-Mar-24' }
+    ];
+    component.openAllDetailsModal();
+    expect(component.allDashboardSliderMax).toBe(2);
+    component.setAllDashboardSliderRange('from', 1);
+    expect(component.allDashboardFromValue).toBe('2024-02-29');
+    component.setAllDashboardSliderRange('to', 1);
+    expect(component.allDashboardToValue).toBe('2024-02-29');
+  });
+
+  it('uses month slider steps across years and clears selections', () => {
+    totalBalanceService.getTotals.and.returnValue(of({
+      id: '7', name: 'All', type: 'Total',
+      totalRecords: [
+        { date: "Feb'26", total: 30, difference: 10 },
+        { date: "Jan'26", total: 20, difference: 10 },
+        { date: "Dec'25", total: 10, difference: 10 }
+      ]
+    }));
+    component.openAllDetailsModal();
+    component.selectAllDashboardMetric('overallBalance');
+    expect(component.allDashboardSliderMax).toBe(2);
+    component.selectAllDashboardChartItem({ name: 'Dec 2025', value: 10 });
+    component.setAllDashboardSliderRange('from', 1);
+    expect(component.allDashboardFromValue).toBe('2026-01');
+    expect(component.allDashboardFromLabel).toBe('Jan 2026');
+    expect(component.selectedAllDashboardDatum).toBeNull();
+    component.setAllDashboardSliderRange('to', 1);
+    expect(component.allDashboardChartData).toEqual([{ name: 'Jan 2026', value: 20 }]);
+    component.selectAllDashboardMetric('amountTransferredAUD');
+    expect(component.allDashboardSliderFrom).toBe(0);
+    expect(component.allDashboardSliderTo).toBe(32);
+  });
+
+  it('rejects invalid slider positions and supports single-date and missing histories', () => {
+    component.openAllDetailsModal();
+    for (const position of [-1, 33, 1.5, NaN]) {
+      component.setAllDashboardSliderRange('from', position);
+      expect(component.allDashboardRangeError).not.toBe('');
+      expect(component.allDashboardFrom).toBe('');
+    }
+    component.transfers = [transfers[0]];
+    component.resetAllDashboardDateRange();
+    expect(component.allDashboardSliderMax).toBe(0);
+    expect(component.allDashboardFromLabel).toBe(component.allDashboardToLabel);
+    component.transfers = [];
+    expect(component.allDashboardSliderMax).toBe(0);
+    expect(component.allDashboardFromLabel).toBe('No data');
+    component.setAllDashboardSliderRange('from', 0);
+    expect(component.allDashboardRangeError).not.toBe('');
+  });
+
   it('filters exchange rate extrema and previous transfers using only the chosen range', () => {
     component.transfers = [
       { ...transfers[0], conversionRate: 1 },

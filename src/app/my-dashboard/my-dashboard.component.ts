@@ -356,6 +356,67 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     return this.allDashboardTo || this.allDashboardDateBounds.max;
   }
 
+  get allDashboardSliderMax(): number {
+    const { min, max } = this.allDashboardDateBounds;
+    return min && max ? this.dateRangePosition(max) - this.dateRangePosition(min) : 0;
+  }
+
+  get allDashboardSliderFrom(): number {
+    const min = this.allDashboardDateBounds.min;
+    return min ? this.dateRangePosition(this.allDashboardFromValue) - this.dateRangePosition(min) : 0;
+  }
+
+  get allDashboardSliderTo(): number {
+    const min = this.allDashboardDateBounds.min;
+    return min ? this.dateRangePosition(this.allDashboardToValue) - this.dateRangePosition(min) : 0;
+  }
+
+  get allDashboardFromLabel(): string {
+    return this.dateRangeLabel(this.allDashboardFromValue);
+  }
+
+  get allDashboardToLabel(): string {
+    return this.dateRangeLabel(this.allDashboardToValue);
+  }
+
+  setAllDashboardSliderRange(endpoint: 'from' | 'to', position: number): void {
+    const min = this.allDashboardDateBounds.min;
+    if (!min || !Number.isInteger(position) || position < 0 || position > this.allDashboardSliderMax) {
+      this.allDashboardRangeError = 'Choose a valid range within the available dates.';
+      return;
+    }
+    const bounded = endpoint === 'from'
+      ? Math.min(position, this.allDashboardSliderTo)
+      : Math.max(position, this.allDashboardSliderFrom);
+    const absolute = this.dateRangePosition(min) + bounded;
+    const value = this.allDashboardDateMode === 'month'
+      ? `${Math.floor(absolute / 12)}-${String(absolute % 12 + 1).padStart(2, '0')}`
+      : new Date(absolute * 86400000).toISOString().slice(0, 10);
+    this.setAllDashboardDateRange(endpoint, value);
+  }
+
+  private dateRangePosition(value: string): number {
+    if (this.allDashboardDateMode === 'month') {
+      const [year, month] = value.split('-').map(Number);
+      return year * 12 + month - 1;
+    }
+    return Date.parse(`${value}T00:00:00Z`) / 86400000;
+  }
+
+  private dateRangeLabel(value: string): string {
+    if (!value) {
+      return 'No data';
+    }
+    if (this.allDashboardDateMode === 'date') {
+      return this.formatDate(value);
+    }
+    const month = monthDetails(value);
+    if (!month) {
+      throw new Error(`Unable to display date range month "${value}".`);
+    }
+    return month.label;
+  }
+
   setAllDashboardDateRange(endpoint: 'from' | 'to', value: string): void {
     const bounds = this.allDashboardDateBounds;
     const from = endpoint === 'from' ? value : this.allDashboardFromValue;
