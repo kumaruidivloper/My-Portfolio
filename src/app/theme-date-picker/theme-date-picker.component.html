@@ -2,6 +2,8 @@
   <button
     type="button"
     class="date-picker-trigger"
+    cdkOverlayOrigin
+    #pickerOrigin="cdkOverlayOrigin"
     aria-haspopup="dialog"
     [attr.aria-expanded]="isOpen"
     [attr.aria-label]="ariaLabel"
@@ -14,21 +16,39 @@
     </svg>
   </button>
 
-  @if (isOpen) {
-    <div class="date-picker-popup" role="dialog" [attr.aria-label]="ariaLabel" (click)="$event.preventDefault()">
+  <ng-template
+    cdkConnectedOverlay
+    [cdkConnectedOverlayOrigin]="pickerOrigin"
+    [cdkConnectedOverlayOpen]="isOpen"
+    [cdkConnectedOverlayPositions]="popupPositions"
+    [cdkConnectedOverlayViewportMargin]="12"
+    [cdkConnectedOverlayPush]="true"
+    (overlayOutsideClick)="onDocumentClick($event)"
+    (overlayKeydown)="$event.key === 'Escape' && close()">
+    <div class="date-picker-popup" role="dialog" [attr.aria-label]="ariaLabel">
       <div class="date-picker-header">
-        <button type="button" class="date-picker-nav" aria-label="Previous" (click)="shift(-1)">‹</button>
-        <strong>{{ title }}</strong>
-        <button type="button" class="date-picker-nav" aria-label="Next" (click)="shift(1)">›</button>
+        <button type="button" class="date-picker-nav" aria-label="Previous" [disabled]="!canShift(-1)" (click)="shift(-1)">‹</button>
+        <button type="button" class="date-picker-title" aria-label="Choose year" title="Choose year" [attr.aria-expanded]="isChoosingYear" (click)="toggleYearChooser()">
+          {{ title }}
+          <svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"></path></svg>
+        </button>
+        <button type="button" class="date-picker-nav" aria-label="Next" [disabled]="!canShift(1)" (click)="shift(1)">›</button>
       </div>
 
-      @if (mode === 'month') {
+      @if (isChoosingYear) {
+        <div class="date-picker-months" aria-label="Years">
+          @for (year of years; track year) {
+            <button type="button" class="date-picker-cell" [class.selected]="year === viewYear" [disabled]="!isYearAllowed(year)" (click)="selectYear(year)">{{ year }}</button>
+          }
+        </div>
+      } @else if (mode === 'month') {
         <div class="date-picker-months">
           @for (name of months; track name; let i = $index) {
             <button
               type="button"
               class="date-picker-cell"
               [class.selected]="isSelectedMonth(i)"
+              [disabled]="!isAllowed(monthValue(i))"
               (click)="selectMonth(i)">
               {{ name }}
             </button>
@@ -48,6 +68,7 @@
               [class.outside]="!day.inMonth"
               [class.today]="day.isToday"
               [class.selected]="isSelectedDay(day)"
+              [disabled]="!isAllowed(day.value)"
               (click)="selectDay(day)">
               {{ day.day }}
             </button>
@@ -56,9 +77,11 @@
       }
 
       <div class="date-picker-footer">
-        <button type="button" class="date-picker-link" (click)="clear()">Clear</button>
-        <button type="button" class="date-picker-link" (click)="selectToday()">{{ mode === 'month' ? 'This month' : 'Today' }}</button>
+        @if (allowClear) {
+          <button type="button" class="date-picker-link" (click)="clear()">Clear</button>
+        }
+        <button type="button" class="date-picker-link" [disabled]="!isAllowed(todayValue)" (click)="selectToday()">{{ mode === 'month' ? 'This month' : 'Today' }}</button>
       </div>
     </div>
-  }
+  </ng-template>
 </div>

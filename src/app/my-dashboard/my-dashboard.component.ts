@@ -145,7 +145,7 @@ function isDashboardMetric(metric: string): metric is DashboardMetric {
 }
 
 function monthDetails(value: string): { key: string; label: string } | null {
-  const monthYear = /^([A-Za-z]+)'(\d{2}|\d{4})$/.exec(value.trim());
+  const monthYear = /^([A-Za-z]+)(?:'|\s+)(\d{2}|\d{4})$/.exec(value.trim());
   if (monthYear) {
     const monthIndex = MONTHS.findIndex((month) =>
       month.toLowerCase() === monthYear[1].slice(0, 3).toLowerCase()
@@ -248,6 +248,9 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
   selectedChartType: DashboardChartType = 'bar';
   selectedMetric: TransferMetric = 'amountTransferredAUD';
   selectedAllDashboardMetric: DashboardMetric = 'amountTransferredAUD';
+  allDashboardFrom = '';
+  allDashboardTo = '';
+  allDashboardRangeError = '';
   selectedAllDashboardDatum: ChartDatum | null = null;
   isAllDetailsModalOpen = false;
   isAllDashboardChartsLoading = false;
@@ -332,24 +335,86 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
   }
 
   get allDashboardChartData(): ChartDatum[] {
-    if (isTransferMetric(this.selectedAllDashboardMetric)) {
-      return this.chartData;
+    return this.getDataForMetric(this.selectedAllDashboardMetric);
+  }
+
+  get allDashboardDateMode(): 'date' | 'month' {
+    return isTransferMetric(this.selectedAllDashboardMetric) ? 'date' : 'month';
+  }
+
+  get allDashboardDateBounds(): { min: string; max: string } {
+    const dates = this.getUnfilteredDataForMetric(this.selectedAllDashboardMetric)
+      .map(({ name }) => this.chartDateValue(name)).sort();
+    return { min: dates[0] ?? '', max: dates[dates.length - 1] ?? '' };
+  }
+
+  get allDashboardFromValue(): string {
+    return this.allDashboardFrom || this.allDashboardDateBounds.min;
+  }
+
+  get allDashboardToValue(): string {
+    return this.allDashboardTo || this.allDashboardDateBounds.max;
+  }
+
+  setAllDashboardDateRange(endpoint: 'from' | 'to', value: string): void {
+    const bounds = this.allDashboardDateBounds;
+    const from = endpoint === 'from' ? value : this.allDashboardFromValue;
+    const to = endpoint === 'to' ? value : this.allDashboardToValue;
+    const valid = this.allDashboardDateMode === 'date'
+      ? isValidDateInput(value) : /^\d{4}-(0[1-9]|1[0-2])$/.test(value);
+    if (!valid || !bounds.min || value < bounds.min || value > bounds.max || from > to) {
+      this.allDashboardRangeError = 'Choose a valid range within the available dates; From must not be after To.';
+      return;
     }
-    return this.allDashboardChartDataByMetric[this.selectedAllDashboardMetric] ?? [];
+    this.allDashboardFrom = from;
+    this.allDashboardTo = to;
+    this.allDashboardRangeError = '';
+    this.clearAllDashboardSelection();
+  }
+
+  resetAllDashboardDateRange(): void {
+    this.allDashboardFrom = '';
+    this.allDashboardTo = '';
+    this.allDashboardRangeError = '';
+    this.clearAllDashboardSelection();
+  }
+
+  private chartDateValue(name: string): string {
+    const month = monthDetails(name);
+    if (month) {
+      return month.key;
+    }
+    const displayDate = /^(\d{2}) ([A-Za-z]+) (\d{4})$/.exec(name);
+    const date = toDateInputValue(displayDate ? `${displayDate[1]}-${displayDate[2]}-${displayDate[3]}` : name);
+    if (!date) {
+      throw new Error(`Unable to filter records with date "${name}".`);
+    }
+    return date;
+  }
+
+  private isInAllDashboardRange(date: string): boolean {
+    return (!this.allDashboardFrom || date >= this.allDashboardFrom) &&
+      (!this.allDashboardTo || date <= this.allDashboardTo);
+  }
+
+  private get allDashboardTransfers(): TransferRecord[] {
+    return this.transfers.filter(({ dateOfTransfer }) =>
+      this.isInAllDashboardRange(toDateInputValue(dateOfTransfer)));
   }
 
   get allDashboardSummaryCards(): DashboardSummaryCard[] {
     const metric = this.selectedAllDashboardMetric;
-    const transactionCount = this.transfers.length;
+    const transfers = this.allDashboardTransfers;
+    const transactionCount = transfers.length;
     const selectedIndex = this.selectedAllDashboardIndex;
     if (isTransferMetric(metric) && selectedIndex >= 0) {
-      const transfer = this.transfers[selectedIndex];
+      const transfer = transfers[selectedIndex];
       const datum = this.allDashboardChartData[selectedIndex];
       const countCard = this.createRecordCountSummaryCard(metric, transactionCount);
       if (metric === 'conversionRate') {
         return [
           this.createExchangeRateSummaryCard('Selected exchange rate', transfer),
-          this.createExchangeRateSummaryCard('Previous exchange rate', this.transfers[selectedIndex - 1]),
+          this.createExchangeRateSummaryCard('Previous exchange rate', transfers[selectedIndex - 1]),
           countCard
         ];
       }
@@ -363,7 +428,7 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     }
 
     if (metric === 'conversionRate') {
-      const eligible = this.transfers.filter(({ conversionRate }) =>
+      const eligible = transfers.filter(({ conversionRate }) =>
         Number.isFinite(conversionRate) && conversionRate >= 1
       );
       const lowest = eligible.reduce<TransferRecord | undefined>((result, transfer) =>
@@ -378,8 +443,8 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     }
 
     if (isTransferMetric(metric)) {
-      const totalSent = this.transfers.reduce((sum, transfer) => sum + transfer.amountTransferredAUD, 0);
-      const totalReceived = this.transfers.reduce((sum, transfer) => sum + transfer.amountReceivedINR, 0);
+      const totalSent = transfers.reduce((sum, transfer) => sum + transfer.amountTransferredAUD, 0);
+      const totalReceived = transfers.reduce((sum, transfer) => sum + transfer.amountReceivedINR, 0);
       return [
         this.createRecordCountSummaryCard(metric, transactionCount),
         {
@@ -404,6 +469,9 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     const data = this.getDataForMetric(metric);
     const recordCount = data.length;
     cards.push(this.createRecordCountSummaryCard(metric, recordCount));
+    if (metric === 'overallBalance' || metric === 'overallInterest') {
+      cards.push(this.createOverallInterestComparisonCard());
+    }
     if (metric === 'vasukiSuper') {
       const index = selectedIndex >= 0 ? selectedIndex : data.length - 1;
       const latest = data[index];
@@ -577,7 +645,7 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
   }
 
   selectMetric(metric: TransferMetric): void {
-    this.clearAllDashboardSelection();
+    this.resetAllDashboardDateRange();
     this.selectedMetric = metric;
     if (this.isAllDetailsModalOpen) {
       this.selectedAllDashboardMetric = metric;
@@ -589,14 +657,14 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
       return;
     }
     this.selectedAllDashboardMetric = metric;
-    this.clearAllDashboardSelection();
+    this.resetAllDashboardDateRange();
     if (isTransferMetric(this.selectedAllDashboardMetric)) {
       this.selectedMetric = this.selectedAllDashboardMetric;
     }
   }
 
   openAllDetailsModal(): void {
-    this.clearAllDashboardSelection();
+    this.resetAllDashboardDateRange();
     this.isAllDetailsModalOpen = true;
     this.selectedAllDashboardMetric = this.selectedMetric;
     if (!Object.keys(this.allDashboardChartDataByMetric).length) {
@@ -733,6 +801,16 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
 
   private createMetricSummaryCard(metric: DashboardMetric, label: string): DashboardSummaryCard {
     const data = this.getDataForMetric(metric);
+    if (metric === 'overallInterest') {
+      return {
+        label: 'Total interest',
+        value: data.length
+          ? this.formatDashboardMetricValue(metric, data.reduce((sum, { value }) => sum + value, 0))
+          : '—',
+        detail: this.allDashboardFrom || this.allDashboardTo
+          ? 'Sum of monthly interest in the selected range' : 'Sum of all recorded monthly interest'
+      };
+    }
     const selected = this.selectedAllDashboardDatum;
     const latest = selected
       ? data.find(({ name }) => name === selected.name)
@@ -742,6 +820,22 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
       value: latest ? this.formatDashboardMetricValue(metric, latest.value) : '—',
       ...(selected ? { detail: selected.name } : {}),
       ...this.getSummaryColor(latest)
+    };
+  }
+
+  private createOverallInterestComparisonCard(): DashboardSummaryCard {
+    const data = this.getDataForMetric('overallInterest');
+    const selected = this.selectedAllDashboardDatum;
+    const index = selected ? data.findIndex(({ name }) => name === selected.name) : data.length - 1;
+    const current = data[index];
+    const previous = data[index - 1];
+    return {
+      label: selected ? 'Selected monthly interest' : 'Current monthly interest',
+      value: current ? this.formatDashboardMetricValue('overallInterest', current.value) : '—',
+      detail: current && previous
+        ? `${current.name} | Previous (${previous.name}): ${this.formatDashboardMetricValue('overallInterest', previous.value)} | Difference: ${this.formatDashboardMetricValue('overallInterest', current.value - previous.value)}`
+        : current ? `${current.name} | Difference: — (No previous recorded month)` : 'No recorded interest',
+      ...this.getSummaryColor(current)
     };
   }
 
@@ -787,6 +881,11 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
   }
 
   private getDataForMetric(metric: DashboardMetric): ChartDatum[] {
+    return this.getUnfilteredDataForMetric(metric).filter(({ name }) =>
+      this.isInAllDashboardRange(this.chartDateValue(name)));
+  }
+
+  private getUnfilteredDataForMetric(metric: DashboardMetric): ChartDatum[] {
     if (isTransferMetric(metric)) {
       return this.transfers.map((transfer) => ({
         name: this.formatDate(transfer.dateOfTransfer),

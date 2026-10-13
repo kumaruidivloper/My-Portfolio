@@ -144,8 +144,9 @@ describe('MyDashboardComponent', () => {
     expect(component.allDashboardChartData).toEqual([{ name: 'Sep 2026', value: 1000 }]);
     expect(component.allDashboardSummaryCards.map(({ label }) => label)).toEqual([
       'Current total balance',
-      'Latest monthly interest',
-      'Recorded periods'
+      'Total interest',
+      'Recorded periods',
+      'Current monthly interest'
     ]);
 
     component.selectAllDashboardMetric('amountReceivedINR');
@@ -181,10 +182,10 @@ describe('MyDashboardComponent', () => {
       { name: 'Sep 2026', value: 1500 }
     ]);
     expect(component.allDashboardSummaryCards[0].value).toBe('₹ 1,500.00');
-    expect(component.allDashboardSummaryCards[1].value).toBe('₹ 50.00');
+    expect(component.allDashboardSummaryCards[1].value).toBe('₹ 120.00');
 
     component.selectAllDashboardMetric('overallInterest');
-    expect(component.allDashboardSummaryCards[0].value).toBe('₹ 50.00');
+    expect(component.allDashboardSummaryCards[0].value).toBe('₹ 120.00');
     expect(component.allDashboardSummaryCards[1].value).toBe('₹ 1,500.00');
     expect(totalRecords.map(({ date }) => date)).toEqual(["Sep'26", "Aug'26", "Jul'26"]);
   });
@@ -192,6 +193,198 @@ describe('MyDashboardComponent', () => {
   it('uses the selected transfer metric for its normal chart', () => {
     component.selectMetric('amountReceivedINR');
     expect(component.chartData.map(({ value }) => value)).toEqual([5350, 10800]);
+  });
+
+  it('bounds transfer filters by actual dates and filters totals and selection indexes inclusively', () => {
+    component.transfers = [
+      { ...transfers[1] },
+      { ...transfers[0] },
+      { ...transfers[0], dateOfTransfer: '01-Nov-23', amountTransferredAUD: 400 }
+    ];
+    const original = [...component.transfers];
+    component.openAllDetailsModal();
+    expect(component.allDashboardDateMode).toBe('date');
+    expect(component.allDashboardDateBounds).toEqual({ min: '2023-09-29', max: '2023-11-01' });
+    component.setAllDashboardDateRange('from', '2023-10-31');
+    component.setAllDashboardDateRange('to', '2023-10-31');
+    expect(component.allDashboardChartData).toEqual([{ name: '31 Oct 2023', value: 200 }]);
+    expect(component.allDashboardSummaryCards.map(({ value }) => value)).toEqual(['1', '$200.00', '₹ 10,800']);
+    component.selectAllDashboardChartItem({ name: '31 Oct 2023', value: 200 });
+    expect(component.allDashboardSummaryCards[0].value).toBe('1 of 1');
+    expect(component.allDashboardSummaryCards[1].value).toBe('$200.00');
+    expect(component.chartData.length).toBe(3);
+    expect(component.transfers).toEqual(original);
+    component.resetAllDashboardDateRange();
+    expect(component.selectedAllDashboardDatum).toBeNull();
+    expect(component.allDashboardChartData.length).toBe(3);
+  });
+
+  it('provides data-bound ranges for every dashboard metric', () => {
+    component.openAllDetailsModal();
+    for (const { value } of component.allDashboardMetricOptions) {
+      component.selectAllDashboardMetric(value);
+      const bounds = component.allDashboardDateBounds;
+      expect(bounds.min).not.toBe('');
+      expect(bounds.max).not.toBe('');
+      expect(component.allDashboardFromValue).toBe(bounds.min);
+      expect(component.allDashboardToValue).toBe(bounds.max);
+      component.setAllDashboardDateRange('from', bounds.min);
+      component.setAllDashboardDateRange('to', bounds.max);
+      expect(component.allDashboardRangeError).toBe('');
+      expect(component.allDashboardChartData.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('filters exchange rate extrema and previous transfers using only the chosen range', () => {
+    component.transfers = [
+      { ...transfers[0], conversionRate: 1 },
+      { ...transfers[1], conversionRate: 55 }
+    ];
+    component.selectAllDashboardMetric('conversionRate');
+    component.setAllDashboardDateRange('from', '2023-10-31');
+    expect(component.allDashboardSummaryCards[0].value).toBe('₹ 55.00 / AUD');
+    expect(component.allDashboardSummaryCards[2].value).toBe('1');
+    component.selectAllDashboardChartItem({ name: '31 Oct 2023', value: 55 });
+    expect(component.allDashboardSummaryCards[1].value).toBe('—');
+    expect(component.allDashboardSummaryCards[2].value).toBe('1 of 1');
+  });
+
+  it('filters both overall metrics, interest sums, and comparisons by month and resets on metric changes', () => {
+    totalBalanceService.getTotals.and.returnValue(of({
+      id: '7', name: 'All', type: 'Total',
+      totalRecords: [
+        { date: "Sep'26", total: 1500, difference: 50 },
+        { date: "Aug'26", total: 1450, difference: 40 },
+        { date: "Jul'26", total: 1410, difference: 30 }
+      ]
+    }));
+    component.openAllDetailsModal();
+    for (const metric of ['overallBalance', 'overallInterest']) {
+      component.selectAllDashboardMetric(metric);
+      expect(component.allDashboardDateMode).toBe('month');
+      expect(component.allDashboardDateBounds).toEqual({ min: '2026-07', max: '2026-09' });
+      component.setAllDashboardDateRange('from', '2026-08');
+      component.setAllDashboardDateRange('to', '2026-08');
+      const cards = component.allDashboardSummaryCards;
+      expect(cards[metric === 'overallBalance' ? 1 : 0].value).toBe('₹ 40.00');
+      expect(cards[2].value).toBe('1');
+      expect(cards[3].detail).toContain('No previous recorded month');
+      expect(component.allDashboardChartData[0].name).toBe('Aug 2026');
+    }
+    component.selectAllDashboardMetric('amountTransferredAUD');
+    expect(component.allDashboardFromValue).toBe('2023-09-29');
+    expect(component.allDashboardToValue).toBe('2023-10-31');
+    expect(component.allDashboardRangeError).toBe('');
+  });
+
+  it('clears chart selections after changing the range and compares super periods within it', () => {
+    gratuityDataService.getGratuityData.and.returnValue(of({
+      id: '6', name: 'Vasuki', title: 'Super', description: 'History', type: 'Super',
+      gratuityRecords: [
+        { date: "Sep'26", gratuity: 250, difference: 50 },
+        { date: "Aug'26", gratuity: 200, difference: 20 },
+        { date: "Jul'26", gratuity: 180, difference: 10 }
+      ]
+    }));
+    component.openAllDetailsModal();
+    component.selectAllDashboardMetric('vasukiSuper');
+    component.selectAllDashboardChartItem({ name: 'Jul 2026', value: 180 });
+    component.setAllDashboardDateRange('from', '2026-08');
+    expect(component.selectedAllDashboardDatum).toBeNull();
+    expect(component.allDashboardSummaryCards[0].detail).toContain('₹ 50.00 (Sep 2026 minus Aug 2026)');
+    expect(component.allDashboardSummaryCards[2].value).toBe('2');
+    component.setAllDashboardDateRange('to', '2026-08');
+    expect(component.allDashboardSummaryCards[1].value).toBe('—');
+    component.closeAllDetails();
+    component.openAllDetailsModal();
+    expect(component.allDashboardFrom).toBe('');
+    expect(component.allDashboardTo).toBe('');
+  });
+
+  it('rejects out-of-bounds, invalid, empty, and reversed ranges without altering the valid range', () => {
+    component.openAllDetailsModal();
+    for (const [endpoint, value] of [
+      ['from', '2023-09-28'], ['to', '2023-11-01'], ['from', '2023-02-30'], ['from', '']
+    ] as const) {
+      component.setAllDashboardDateRange(endpoint, value);
+      expect(component.allDashboardRangeError).toContain('Choose a valid range');
+      expect(component.allDashboardFrom).toBe('');
+      expect(component.allDashboardTo).toBe('');
+    }
+    component.setAllDashboardDateRange('from', '2023-10-30');
+    expect(component.allDashboardRangeError).toBe('');
+    component.setAllDashboardDateRange('to', '2023-10-01');
+    expect(component.allDashboardFrom).toBe('2023-10-30');
+    expect(component.allDashboardTo).toBe('2023-10-31');
+    expect(component.allDashboardRangeError).not.toBe('');
+  });
+
+  it('supports an empty range without altering the available bounds', () => {
+    component.openAllDetailsModal();
+    component.setAllDashboardDateRange('from', '2023-10-01');
+    component.setAllDashboardDateRange('to', '2023-10-02');
+    expect(component.allDashboardChartData).toEqual([]);
+    expect(component.allDashboardSummaryCards[0].value).toBe('0');
+    expect(component.allDashboardDateBounds).toEqual({ min: '2023-09-29', max: '2023-10-31' });
+    component.transfers = [];
+    component.resetAllDashboardDateRange();
+    expect(component.allDashboardDateBounds).toEqual({ min: '', max: '' });
+  });
+
+  it('compares overall interest with the previous recorded month and follows chart selections', () => {
+    const totalRecords = [
+      { date: "Sep'26", total: 1500, difference: 40 },
+      { date: "Aug'26", total: 1460, difference: 50 },
+      { date: "Jul'26", total: 1410, difference: 30 }
+    ];
+    totalBalanceService.getTotals.and.returnValue(of({
+      id: '7', name: 'All', type: 'Total', totalRecords
+    }));
+    component.openAllDetailsModal();
+    for (const metric of ['overallBalance', 'overallInterest']) {
+      component.selectAllDashboardMetric(metric);
+      expect(component.allDashboardSummaryCards.length).toBe(4);
+      let card = component.allDashboardSummaryCards[3];
+      expect(card.label).toBe('Current monthly interest');
+      expect(card.value).toBe('₹ 40.00');
+      expect(card.detail).toBe('Sep 2026 | Previous (Aug 2026): ₹ 50.00 | Difference: ₹ -10.00');
+      const totalIndex = metric === 'overallBalance' ? 1 : 0;
+      expect(component.allDashboardSummaryCards[totalIndex].value).toBe('₹ 120.00');
+      for (const type of ['bar', 'line', 'pie', 'doughnut']) {
+        component.selectChartType(type);
+        component.selectAllDashboardChartItem({
+          name: 'Aug 2026', value: metric === 'overallBalance' ? 1460 : 50
+        });
+        card = component.allDashboardSummaryCards[3];
+        expect(card.label).toBe('Selected monthly interest');
+        expect(card.value).toBe('₹ 50.00');
+        expect(card.detail).toBe('Aug 2026 | Previous (Jul 2026): ₹ 30.00 | Difference: ₹ 20.00');
+        expect(card.color).toBe(component.allDashboardChartColorScheme.domain[type === 'line' ? 0 : 1]);
+        expect(component.allDashboardSummaryCards[totalIndex]).toEqual({
+          label: 'Total interest', value: '₹ 120.00', detail: 'Sum of all recorded monthly interest'
+        });
+      }
+      component.selectAllDashboardChartItem({
+        name: 'Jul 2026', value: metric === 'overallBalance' ? 1410 : 30
+      });
+      expect(component.allDashboardSummaryCards[3].detail).toContain('No previous recorded month');
+      component.clearAllDashboardSelection();
+      expect(component.allDashboardSummaryCards[3].value).toBe('₹ 40.00');
+    }
+    expect(totalRecords.map(({ date }) => date)).toEqual(["Sep'26", "Aug'26", "Jul'26"]);
+    component.selectAllDashboardMetric('kumarPfAmount');
+    expect(component.allDashboardSummaryCards.length).toBe(3);
+  });
+
+  it('shows unavailable overall interest when there are no recorded months', () => {
+    totalBalanceService.getTotals.and.returnValue(of({
+      id: '7', name: 'All', type: 'Total', totalRecords: []
+    }));
+    component.openAllDetailsModal();
+    component.selectAllDashboardMetric('overallBalance');
+    expect(component.allDashboardSummaryCards[3]).toEqual({
+      label: 'Current monthly interest', value: '—', detail: 'No recorded interest'
+    });
   });
 
   it('matches highlight dots to their chart periods and leaves aggregate cards neutral', () => {
@@ -328,15 +521,16 @@ describe('MyDashboardComponent', () => {
     component.selectAllDashboardMetric('overallBalance');
     component.selectAllDashboardChartItem({ name: 'Aug 2026', value: 900 });
     expect(component.allDashboardSummaryCards[0].value).toBe('₹ 900.00');
-    expect(component.allDashboardSummaryCards[1].value).toBe('₹ 20.00');
-    expect(component.allDashboardSummaryCards[1].detail).toBe('Aug 2026');
-    expect(component.allDashboardSummaryCards[1].color).toBe(component.allDashboardChartColorScheme.domain[0]);
+    expect(component.allDashboardSummaryCards[1].value).toBe('₹ 50.00');
+    expect(component.allDashboardSummaryCards[1].detail).toBe('Sum of all recorded monthly interest');
+    expect(component.allDashboardSummaryCards[1].color).toBeUndefined();
+    expect(component.allDashboardSummaryCards[3].value).toBe('₹ 20.00');
     expect(component.allDashboardSummaryCards[2]).toEqual({
       label: 'Selected record', value: '1 of 2', detail: 'Aug 2026'
     });
     component.selectAllDashboardMetric('overallInterest');
     expect(component.selectedAllDashboardDatum).toBeNull();
-    expect(component.allDashboardSummaryCards[0].value).toBe('₹ 30.00');
+    expect(component.allDashboardSummaryCards[0].value).toBe('₹ 50.00');
     expect(component.allDashboardSummaryCards[2]).toEqual({ label: 'Recorded periods', value: '2' });
   });
 

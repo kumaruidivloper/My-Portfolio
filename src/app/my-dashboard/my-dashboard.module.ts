@@ -4,6 +4,8 @@ import { ThemeSelectComponent } from '../theme-select/theme-select.component';
 import { TotalBalanceComponent } from '../total-balance/total-balance.component';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { OverlayModule } from '@angular/cdk/overlay';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -32,6 +34,8 @@ import { ResponsiveTableComponent } from '../responsive-table/responsive-table.c
   ],
   imports: [
     CommonModule,
+    OverlayModule,
+    ScrollingModule,
     NgxChartsModule,
     ReactiveFormsModule,
     RouterModule.forChild([{ path: '', component: MyDashboardComponent }])

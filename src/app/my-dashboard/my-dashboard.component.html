@@ -1,12 +1,26 @@
 <main class="dashboard-page">
   <div class="dashboard-content">
-    <a routerLink="/" class="btn back-button">
-      <svg aria-hidden="true" viewBox="0 0 24 24">
-        <path d="m15 18-6-6 6-6"></path>
-        <path d="M9 12h12"></path>
-      </svg>
-      <span>Back to portfolio</span>
-    </a>
+    <div class="dashboard-top-actions">
+      <a routerLink="/" class="btn back-button icon-action" aria-label="Back to portfolio" title="Back to portfolio">
+        <svg aria-hidden="true" viewBox="0 0 24 24">
+          <path d="m15 18-6-6 6-6"></path>
+          <path d="M9 12h12"></path>
+        </svg>
+      </a>
+      <button
+        type="button"
+        class="control-button save-action icon-action"
+        aria-label="View all details"
+        title="View all details"
+        aria-haspopup="dialog"
+        aria-controls="all-details-modal"
+        (click)="openAllDetailsModal()">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8">
+          <rect x="3" y="3" width="18" height="18" rx="3"></rect>
+          <path d="M7 16v-3M12 16V8M17 16v-5"></path>
+        </svg>
+      </button>
+    </div>
 
     <section class="transfer-data-accordion" aria-labelledby="transfer-data-title">
       <header class="records-heading transfer-accordion-header">
@@ -22,14 +36,6 @@
           </p>
         </div>
         <div class="records-actions">
-          <button
-            type="button"
-            class="control-button"
-            aria-haspopup="dialog"
-            aria-controls="all-details-modal"
-            (click)="openAllDetailsModal()">
-            View all details
-          </button>
           <button
             type="button"
             class="control-button accordion-toggle"
@@ -288,7 +294,7 @@
             <span aria-hidden="true">&times;</span>
           </button>
         </header>
-        <div class="all-details-content">
+        <div class="all-details-content" cdkScrollable>
           @if (isAllDashboardChartsLoading) {
             <p class="status-message" role="status">Loading chart data…</p>
           }
@@ -296,7 +302,7 @@
             <p class="status-message error-message" role="alert">{{ allDashboardChartsError }}</p>
           }
           @if (!isAllDashboardChartsLoading && !allDashboardChartsError) {
-          <section class="summary-grid all-details-summary" aria-label="Selected metric highlights">
+          <section class="summary-grid all-details-summary" [style.--summary-columns]="allDashboardSummaryCards.length" aria-label="Selected metric highlights">
             @for (summary of allDashboardSummaryCards; track summary.label) {
               <article class="summary-card">
                 @if (summary.color) {
@@ -326,6 +332,51 @@
                   </div>
                 }
               </div>
+            <div class="chart-select-row all-details-controls all-details-date-filters">
+              <div class="chart-select">
+                <span class="control-label">From</span>
+                <app-theme-date-picker
+                  #fromRangePicker
+                  ariaLabel="Chart range from"
+                  (opened)="toRangePicker.close()"
+                  [mode]="allDashboardDateMode"
+                  [value]="allDashboardFromValue"
+                  [min]="allDashboardDateBounds.min"
+                  [max]="allDashboardToValue"
+                  [allowClear]="false"
+                  [isDisabled]="!allDashboardDateBounds.min"
+                  (valueChange)="setAllDashboardDateRange('from', $event)">
+                </app-theme-date-picker>
+              </div>
+              <div class="chart-select">
+                <span class="control-label">To</span>
+                <app-theme-date-picker
+                  #toRangePicker
+                  ariaLabel="Chart range to"
+                  (opened)="fromRangePicker.close()"
+                  [mode]="allDashboardDateMode"
+                  [value]="allDashboardToValue"
+                  [min]="allDashboardFromValue"
+                  [max]="allDashboardDateBounds.max"
+                  [allowClear]="false"
+                  [isDisabled]="!allDashboardDateBounds.max"
+                  (valueChange)="setAllDashboardDateRange('to', $event)">
+                </app-theme-date-picker>
+              </div>
+              @if (allDashboardFrom || allDashboardTo) {
+                <button
+                  class="control-button save-action icon-action reset-action date-range-reset"
+                  type="button"
+                  aria-label="Reset date filter"
+                  title="Reset date filter"
+                  (click)="fromRangePicker.close(); toRangePicker.close(); resetAllDashboardDateRange()">
+                  <span class="date-range-reset-label">Reset date filter</span>
+                  <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8">
+                    <path d="M3 10a9 9 0 1 1 2.6 8.4M3 4v6h6" />
+                  </svg>
+                </button>
+              }
+            </div>
             </header>
             <div class="chart-select-row all-details-controls">
               <div class="chart-select">
@@ -348,6 +399,12 @@
                 </app-theme-select>
               </div>
             </div>
+            @if (allDashboardRangeError) {
+              <p class="error-message" role="alert">{{ allDashboardRangeError }}</p>
+            }
+            @if (!allDashboardChartData.length) {
+              <p class="records-description" role="status">No records in this date range.</p>
+            }
           <div class="chart-container all-details-chart">
             <div class="all-details-plot">
             @if (selectedChartType === 'bar') {

@@ -1,4 +1,5 @@
-import { Component, ElementRef, HostListener, Input, forwardRef } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, Output, forwardRef } from '@angular/core';
+import { ConnectedPosition } from '@angular/cdk/overlay';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 export type DatePickerMode = 'date' | 'month';
@@ -25,20 +26,33 @@ const pad = (value: number): string => String(value).padStart(2, '0');
 export class ThemeDatePickerComponent implements ControlValueAccessor {
   @Input() mode: DatePickerMode = 'date';
   @Input() ariaLabel = 'Choose date';
+  @Input() min = '';
+  @Input() max = '';
+  @Input() allowClear = true;
+  @Input() isDisabled = false;
+  @Output() valueChange = new EventEmitter<string>();
+  @Output() opened = new EventEmitter<void>();
 
   readonly months = MONTHS;
   readonly weekdays = WEEKDAYS;
+  readonly popupPositions: ConnectedPosition[] = [
+    { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top', offsetY: 6 },
+    { originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top', offsetY: 6 },
+    { originX: 'start', originY: 'top', overlayX: 'start', overlayY: 'bottom', offsetY: -6 },
+    { originX: 'end', originY: 'top', overlayX: 'end', overlayY: 'bottom', offsetY: -6 }
+  ];
 
-  value = '';
+  @Input() value = '';
   isOpen = false;
-  isDisabled = false;
+  isChoosingYear = false;
+  yearPageStart = 0;
   viewYear = new Date().getFullYear();
   viewMonth = new Date().getMonth();
 
   private onChange: (value: string) => void = () => undefined;
   private onTouched: () => void = () => undefined;
 
-  constructor(private host: ElementRef<HTMLElement>) {}
+  constructor(private host: ElementRef<HTMLElement>, private changeDetector: ChangeDetectorRef) {}
 
   get displayValue(): string {
     const parts = this.parse(this.value);
@@ -51,7 +65,41 @@ export class ThemeDatePickerComponent implements ControlValueAccessor {
   }
 
   get title(): string {
+    if (this.isChoosingYear) {
+      return `${this.yearPageStart} - ${this.yearPageStart + 11}`;
+    }
     return this.mode === 'month' ? `${this.viewYear}` : `${MONTHS[this.viewMonth]} ${this.viewYear}`;
+  }
+
+  get years(): number[] {
+    return Array.from({ length: 12 }, (_, index) => this.yearPageStart + index);
+  }
+
+  toggleYearChooser(): void {
+    this.yearPageStart = Math.floor(this.viewYear / 12) * 12;
+    this.isChoosingYear = !this.isChoosingYear;
+  }
+
+  isYearAllowed(year: number): boolean {
+    return year >= 1 && year <= 9999 &&
+      (!this.min || year >= Number(this.min.slice(0, 4))) &&
+      (!this.max || year <= Number(this.max.slice(0, 4)));
+  }
+
+  selectYear(year: number): void {
+    if (this.isDisabled || !Number.isInteger(year) || !this.isYearAllowed(year)) {
+      throw new RangeError('Year selection is outside the allowed range.');
+    }
+    this.viewYear = year;
+    const min = this.parse(this.min);
+    const max = this.parse(this.max);
+    if (min?.year === year) {
+      this.viewMonth = Math.max(this.viewMonth, min.month);
+    }
+    if (max?.year === year) {
+      this.viewMonth = Math.min(this.viewMonth, max.month);
+    }
+    this.isChoosingYear = false;
   }
 
   get days(): CalendarDay[] {
@@ -89,6 +137,13 @@ export class ThemeDatePickerComponent implements ControlValueAccessor {
   }
 
   shift(step: number): void {
+    if (!this.canShift(step)) {
+      return;
+    }
+    if (this.isChoosingYear) {
+      this.yearPageStart += step * 12;
+      return;
+    }
     if (this.mode === 'month') {
       this.viewYear += step;
       return;
@@ -124,7 +179,32 @@ export class ThemeDatePickerComponent implements ControlValueAccessor {
     return day.value === this.value;
   }
 
-  @HostListener('document:click', ['$event'])
+  isAllowed(value: string): boolean {
+    return (!this.min || value >= this.min) && (!this.max || value <= this.max);
+  }
+
+  monthValue(index: number): string {
+    return `${this.viewYear}-${pad(index + 1)}`;
+  }
+
+  get todayValue(): string {
+    const now = new Date();
+    return this.mode === 'month' ? `${now.getFullYear()}-${pad(now.getMonth() + 1)}` : this.format(now);
+  }
+
+  canShift(step: number): boolean {
+    if (this.isChoosingYear) {
+      const start = this.yearPageStart + step * 12;
+      return Array.from({ length: 12 }, (_, index) => start + index).some(year => this.isYearAllowed(year));
+    }
+    const date = new Date(this.viewYear + (this.mode === 'month' ? step : 0),
+      this.viewMonth + (this.mode === 'date' ? step : 0), 1);
+    const start = this.mode === 'month' ? `${date.getFullYear()}-01` : this.format(date);
+    const end = this.mode === 'month' ? `${date.getFullYear()}-12`
+      : this.format(new Date(date.getFullYear(), date.getMonth() + 1, 0));
+    return (!this.min || end >= this.min) && (!this.max || start <= this.max);
+  }
+
   onDocumentClick(event: Event): void {
     if (this.isOpen && !this.host.nativeElement.contains(event.target as Node)) {
       this.close();
@@ -139,21 +219,32 @@ export class ThemeDatePickerComponent implements ControlValueAccessor {
   }
 
   private open(): void {
-    const parts = this.parse(this.value);
+    const parts = this.parse(this.value || this.min);
     const base = parts ?? { year: new Date().getFullYear(), month: new Date().getMonth(), day: 1 };
     this.viewYear = base.year;
     this.viewMonth = base.month;
+    this.isChoosingYear = false;
     this.isOpen = true;
+    this.changeDetector.markForCheck();
+    this.opened.emit();
   }
 
-  private close(): void {
+  close(): void {
+    if (!this.isOpen) {
+      return;
+    }
     this.isOpen = false;
+    this.changeDetector.markForCheck();
     this.onTouched();
   }
 
   private commit(value: string): void {
+    if (this.isDisabled || (value ? !this.isAllowed(value) : !this.allowClear)) {
+      throw new RangeError('Date selection is outside the allowed range.');
+    }
     this.value = value;
     this.onChange(value);
+    this.valueChange.emit(value);
     this.close();
   }
 

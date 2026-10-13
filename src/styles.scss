@@ -1,4 +1,5 @@
 /* You can add global styles to this file, and also import other style files */
+@import '@angular/cdk/overlay-prebuilt.css';
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700&display=swap');
 
@@ -41,8 +42,111 @@ body:has(.dashboard-page) {
     overflow: hidden;
 }
 
+.cdk-overlay-container {
+    z-index: 1100;
+}
+
 .dashboard-page {
     overscroll-behavior: contain;
+}
+
+.dashboard-top-actions {
+    align-items: center;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+}
+
+.dashboard-top-actions .btn.back-button {
+    margin: 0;
+}
+
+html body .dashboard-page .dashboard-top-actions a.back-button.icon-action,
+html body .dashboard-page .dashboard-top-actions button.control-button.icon-action {
+    align-items: center;
+    border-radius: 2.6rem;
+    flex: 0 0 6.7rem;
+    height: 5.1rem;
+    justify-content: center;
+    padding: .8rem 1.6rem;
+    width: 6.7rem;
+}
+
+html body .dashboard-page .dashboard-top-actions .icon-action svg {
+    flex-basis: 3.5rem;
+    height: 3.5rem;
+    width: 3.5rem;
+}
+
+.dashboard-page .all-details-chart-heading {
+    align-items: center;
+    display: flex;
+    gap: 2rem;
+    justify-content: space-between;
+}
+
+.dashboard-page .chart-select-row.all-details-date-filters {
+    display: grid;
+    flex: 0 1 48rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+    margin-top: 0;
+    min-width: 0;
+}
+
+.dashboard-page .all-details-date-filters .chart-select {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.all-details-date-filters .date-picker-trigger span {
+    white-space: nowrap;
+}
+
+html body .dashboard-page .all-details-date-filters button.control-button.date-range-reset {
+    align-self: end;
+    margin-bottom: .6rem;
+}
+
+.date-range-reset-label {
+    display: none;
+}
+
+@media (max-width: 600px) {
+    body:has(.dashboard-page) main.dashboard-page {
+        padding-top: 8rem;
+    }
+
+    .dashboard-page .all-details-chart-heading {
+        align-items: stretch;
+        flex-direction: column;
+        position: relative;
+    }
+
+    .dashboard-page .all-details-chart-heading:has(.date-range-reset) > div:first-child {
+        padding-right: 17rem;
+    }
+
+    .dashboard-page .chart-select-row.all-details-date-filters {
+        flex: none;
+        grid-template-columns: minmax(0, 1fr);
+        width: 100%;
+    }
+
+    html body .dashboard-page .all-details-date-filters button.control-button.date-range-reset {
+        border-radius: 2rem;
+        gap: .6rem;
+        margin: 0;
+        padding: .6rem 1rem;
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: auto;
+    }
+
+    .date-range-reset-label {
+        display: inline;
+    }
 }
 
 .dashboard-page .transfer-flag-title {
