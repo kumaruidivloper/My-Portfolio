@@ -3,7 +3,7 @@ import { ChangeDetectorRef, Component, Input, OnDestroy } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Subscription, timer } from 'rxjs';
 import {
-  chartColorScheme, CHART_TYPE_OPTIONS, ChartDatum, ChartType, isChartType, toLineChartSeries
+  chartColorScheme, CHART_TYPE_OPTIONS, ChartDatum, ChartType, isChartType, toLineChartSeries, formatCompactAxisValue
 } from '../model/chart-type';
 import { PfDataService, PfResourceId } from '../service/pf-data.service';
 import { PfApiDocument, PfRecord } from '../model/pf-record';
@@ -66,6 +66,7 @@ export class PfDataComponent implements OnDestroy {
   selectedMetric: PfMetric = 'pfAmount';
   selectedChartType: ChartType = 'bar';
   readonly chartTypeOptions = CHART_TYPE_OPTIONS;
+  readonly formatYAxisTick = formatCompactAxisValue;
   readonly gridColumns: readonly ResponsiveGridColumn[] = [
     { key: 'month', label: 'Month', sortable: true },
     { key: 'balance', label: 'PF balance', sortable: true, numeric: true },

@@ -50,6 +50,26 @@ body:has(.dashboard-page) {
     overscroll-behavior: contain;
 }
 
+.dashboard-page .ngx-charts .bar,
+.dashboard-page .ngx-charts .arc,
+.dashboard-page .ngx-charts .circle {
+    fill-opacity: 0.6;
+}
+
+.dashboard-page .ngx-charts .line-series .line {
+    stroke-opacity: 0.6;
+}
+
+body:not(.active):not(.night) .dashboard-page .ngx-charts .bar,
+body:not(.active):not(.night) .dashboard-page .ngx-charts .arc,
+body:not(.active):not(.night) .dashboard-page .ngx-charts .circle {
+    fill-opacity: 0.75;
+}
+
+body:not(.active):not(.night) .dashboard-page .ngx-charts .line-series .line {
+    stroke-opacity: 0.75;
+}
+
 .dashboard-top-actions {
     align-items: center;
     display: flex;

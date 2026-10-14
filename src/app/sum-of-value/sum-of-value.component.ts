@@ -2,7 +2,7 @@ import { announceAccordionOpened, collapseWhenAnotherOpens } from '../service/ac
 import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { forkJoin, Subscription } from 'rxjs';
 import {
-  chartColorScheme, CHART_TYPE_OPTIONS, ChartDatum, ChartType, isChartType, toLineChartSeries
+  chartColorScheme, CHART_TYPE_OPTIONS, ChartDatum, ChartType, isChartType, toLineChartSeries, formatCompactAxisValue
 } from '../model/chart-type';
 import { PfApiDocument, PfRecord } from '../model/pf-record';
 import { PfDataService } from '../service/pf-data.service';
@@ -51,6 +51,7 @@ export class SumOfValueComponent implements OnDestroy {
   selectedInterestChartType: ChartType = 'bar';
   selectedTotalChartType: ChartType = 'bar';
   readonly chartTypeOptions = CHART_TYPE_OPTIONS;
+  readonly formatYAxisTick = formatCompactAxisValue;
   monthlyTotals: MonthlyTotal[] = [];
   private loadSubscription?: Subscription;
   private readonly accordionSubscription = collapseWhenAnotherOpens(

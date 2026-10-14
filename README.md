@@ -6,6 +6,8 @@ Animated counters use shaded 3D digit drums that rotate continuously through 9 t
 
 Dashboard highlight color dots follow the chart's category/legend mapping, including repeated transfer dates. In line view, the dots use the single metric series color.
 
+All dashboard bar and line charts use compact Y-axis ticks (1k, 1.5k, 1M, 1B), while tooltips, tables, and summary cards retain their full-value formatting.
+
 The Vasuki super Current super balance card shows the difference from the previous recorded period as small supporting text. The difference is unavailable until two periods are recorded.
 
 For either Overall metric, View all details includes an interest comparison card showing the current (or selected) month's interest, the previous recorded month's interest, and the change between them. Without an earlier record, the comparison is marked unavailable.

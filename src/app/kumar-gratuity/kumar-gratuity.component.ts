@@ -3,7 +3,7 @@ import { ChangeDetectorRef, Component, Input, OnDestroy } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Subscription, timer } from 'rxjs';
 import {
-  chartColorScheme, CHART_TYPE_OPTIONS, ChartDatum, ChartType, isChartType, toLineChartSeries
+  chartColorScheme, CHART_TYPE_OPTIONS, ChartDatum, ChartType, isChartType, toLineChartSeries, formatCompactAxisValue
 } from '../model/chart-type';
 import { GratuityApiDocument, GratuityRecord } from '../model/gratuity-record';
 import { ConfirmationCodeService } from '../service/confirmation-code.service';
@@ -80,6 +80,7 @@ export class KumarGratuityComponent implements OnDestroy {
   isCodeIncorrect = false;
   selectedChartType: ChartType = 'bar';
   readonly chartTypeOptions = CHART_TYPE_OPTIONS;
+  readonly formatYAxisTick = formatCompactAxisValue;
   private hasLoaded = false;
   private openAddAfterLoad = false;
   private codeValidationAttempt = 0;

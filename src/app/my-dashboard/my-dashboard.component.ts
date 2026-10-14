@@ -3,7 +3,7 @@ import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { forkJoin, merge, Subscription, timer } from 'rxjs';
 import { ColorHelper, ScaleType } from '@swimlane/ngx-charts';
-import { chartColorScheme, CHART_TYPE_OPTIONS, ChartType, isChartType } from '../model/chart-type';
+import { chartColorScheme, CHART_TYPE_OPTIONS, ChartType, isChartType, formatCompactAxisValue } from '../model/chart-type';
 import { TransferRecord } from '../model/transfer';
 import { TransferService } from '../service/transfer.service';
 import { ConfirmationCodeService } from '../service/confirmation-code.service';
@@ -194,6 +194,7 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
   });
 
   readonly chartTypeOptions = CHART_TYPE_OPTIONS;
+  readonly formatYAxisTick = formatCompactAxisValue;
 
   get metricOptions(): { label: string; value: string }[] {
     return this.metrics.map((metric) => ({ label: metric.label, value: metric.key }));

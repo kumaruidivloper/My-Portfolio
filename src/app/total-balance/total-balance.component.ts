@@ -2,7 +2,7 @@ import { announceAccordionOpened, collapseWhenAnotherOpens } from '../service/ac
 import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import {
-  chartColorScheme, CHART_TYPE_OPTIONS, ChartDatum, ChartType, isChartType, toLineChartSeries
+  chartColorScheme, CHART_TYPE_OPTIONS, ChartDatum, ChartType, isChartType, toLineChartSeries, formatCompactAxisValue
 } from '../model/chart-type';
 import { ResponsiveGridColumn, ResponsiveGridRow } from '../responsive-table/responsive-table.component';
 import { TotalRecord } from '../model/total-record';
@@ -25,6 +25,7 @@ export class TotalBalanceComponent implements OnDestroy {
   selectedInterestChartType: ChartType = 'bar';
   selectedTotalChartType: ChartType = 'bar';
   readonly chartTypeOptions = CHART_TYPE_OPTIONS;
+  readonly formatYAxisTick = formatCompactAxisValue;
   readonly gridColumns: readonly ResponsiveGridColumn[] = [
     { key: 'month', label: 'Month', sortable: true },
     { key: 'total', label: 'Overall balance', sortable: true, numeric: true },

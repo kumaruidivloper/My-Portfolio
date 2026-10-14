@@ -19,6 +19,15 @@ export interface ChartSeries {
   series: ChartDatum[];
 }
 
+const compactAxisFormatter = new Intl.NumberFormat('en-US', {
+  notation: 'compact',
+  maximumFractionDigits: 1
+});
+
+export function formatCompactAxisValue(value: number): string {
+  return compactAxisFormatter.format(value).replace('K', 'k');
+}
+
 export function chartColorScheme(data: readonly ChartDatum[], name: string): Color {
   const usedHues = new Set<number>();
   const domain = data.map(({ name: category }) => {
