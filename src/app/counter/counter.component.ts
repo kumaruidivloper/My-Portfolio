@@ -13,8 +13,13 @@ export class CounterComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() active = false;
   @Input() observeViewport = true;
 
-  counters: { value: number, intervalId: ReturnType<typeof setInterval> | null, flip: boolean }[] = [];
-  digitWheel = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+  counters: {
+    value: number,
+    intervalId: ReturnType<typeof setInterval> | null,
+    flip: boolean,
+    previousValue?: number,
+    hasFlipped?: boolean
+  }[] = [];
   private visibilityObserver?: IntersectionObserver;
   private viewInitialized = false;
   private isInViewport = false;
@@ -42,7 +47,13 @@ export class CounterComponent implements AfterViewInit, OnChanges, OnDestroy {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['stopRange']) {
       this.stopCounters();
-      this.counters = this.stopRange.map(() => ({ value: 0, intervalId: null, flip: false }));
+      this.counters = this.stopRange.map(() => ({
+        value: 0,
+        intervalId: null,
+        flip: false,
+        previousValue: 0,
+        hasFlipped: false
+      }));
     }
 
     if (this.viewInitialized && changes['active']) {
@@ -60,7 +71,13 @@ export class CounterComponent implements AfterViewInit, OnChanges, OnDestroy {
   startCounters(countUp: boolean): void {
     this.stopCounters();
     if (this.counters.length !== this.stopRange.length) {
-      this.counters = this.stopRange.map(() => ({ value: 0, intervalId: null, flip: false }));
+      this.counters = this.stopRange.map(() => ({
+        value: 0,
+        intervalId: null,
+        flip: false,
+        previousValue: 0,
+        hasFlipped: false
+      }));
     }
 
     this.counters.forEach((counter, index) => {
@@ -82,11 +99,15 @@ export class CounterComponent implements AfterViewInit, OnChanges, OnDestroy {
   incrementCounter(stopRange: number, countUp = true): void {
     for (let counter of this.counters) {
       if (countUp && counter.value < stopRange) {
+        counter.previousValue = counter.value;
         counter.value++;
         counter.flip = !counter.flip;
+        counter.hasFlipped = true;
       } else if (!countUp && counter.value > 0) {
+        counter.previousValue = counter.value;
         counter.value--;
         counter.flip = !counter.flip;
+        counter.hasFlipped = true;
       } else if (counter.intervalId !== null) {
         clearInterval(counter.intervalId);
         counter.intervalId = null;
@@ -100,6 +121,8 @@ export class CounterComponent implements AfterViewInit, OnChanges, OnDestroy {
     this.counters.forEach(counter => {
       counter.value = 0;
       counter.flip = false;
+      counter.previousValue = 0;
+      counter.hasFlipped = false;
     });
   }
 
@@ -107,12 +130,15 @@ export class CounterComponent implements AfterViewInit, OnChanges, OnDestroy {
     return String(Math.max(0, Math.floor(value)));
   }
 
-  digitValue(digit: string): number {
-    return Number(digit);
+  previousDigit(value: number, previousValue: number, digitIndex: number): string {
+    const currentDigits = this.formatCounter(value);
+    const previousDigits = this.formatCounter(previousValue)
+      .padStart(currentDigits.length, '0')
+      .slice(-currentDigits.length);
+    return previousDigits[digitIndex] ?? currentDigits[digitIndex] ?? '0';
   }
 
-  wheelRotation(value: number, digitIndex: number): number {
-    const place = this.formatCounter(value).length - digitIndex - 1;
-    return Math.floor(Math.max(0, Math.floor(value)) / 10 ** place) * 36;
+  digitChanged(value: number, previousValue: number, digitIndex: number): boolean {
+    return this.previousDigit(value, previousValue, digitIndex) !== this.formatCounter(value)[digitIndex];
   }
 }

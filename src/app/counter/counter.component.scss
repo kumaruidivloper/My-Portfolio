@@ -6,52 +6,135 @@
 
 .counter-element {
   display: inline-flex;
-  gap: 0.04em;
+  gap: 0.06em;
   vertical-align: baseline;
 }
 
 .digit-window {
   --digit-side-padding: 0.16em;
-  background: var(--bg-color);
-  border-radius: 0.18em;
-  box-shadow: inset 0 0.06em 0.16em rgba(0, 0, 0, 0.3);
+  background: color-mix(in srgb, var(--bg-color) 78%, #000);
+  border: 1px solid color-mix(in srgb, var(--black) 18%, transparent);
+  border-radius: 0.16em;
+  box-shadow:
+    0 0.08em 0 color-mix(in srgb, var(--bg-color) 54%, #000),
+    0 0.16em 0.22em rgba(0, 0, 0, 0.22),
+    inset 0 0.035em 0 rgba(255, 255, 255, 0.46),
+    inset 0 -0.04em 0 rgba(0, 0, 0, 0.25);
   box-sizing: border-box;
   display: inline-block;
   flex: none;
   font-variant-numeric: tabular-nums;
   height: 1.35em;
+  isolation: isolate;
   line-height: 1.35em;
   overflow: hidden;
-  perspective: 12em;
+  perspective: 10em;
   position: relative;
   vertical-align: baseline;
   width: calc(1ch + 2 * var(--digit-side-padding) + 2px);
 }
 
-.digit-window::after {
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), transparent 35%, rgba(255, 255, 255, 0.12) 50%, transparent 65%, rgba(0, 0, 0, 0.28));
-  border: 1px solid color-mix(in srgb, var(--green, #0f0) 30%, transparent);
-  border-radius: inherit;
+.digit-half {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--bg-color) 76%, #000),
+    color-mix(in srgb, var(--bg-color) 94%, #fff) 46%,
+    color-mix(in srgb, var(--bg-color) 80%, #000)
+  );
   box-sizing: border-box;
-  content: '';
-  inset: 0;
-  pointer-events: none;
+  color: var(--green);
+  display: block;
+  height: 50%;
+  left: 0;
+  overflow: hidden;
   position: absolute;
+  width: 100%;
 }
 
-.digit-strip {
+.digit-upper {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.24);
+  top: 0;
+}
+
+.digit-lower {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--bg-color) 80%, #000),
+    color-mix(in srgb, var(--bg-color) 92%, #fff) 55%,
+    color-mix(in srgb, var(--bg-color) 70%, #000)
+  );
+  bottom: 0;
+}
+
+.digit-face,
+.digit-flap-face {
+  align-items: center;
   box-sizing: border-box;
-  display: block;
-  height: 1.35em;
+  display: flex;
+  font-size: 1em;
+  font-weight: 700;
+  justify-content: center;
+  left: 0;
   line-height: 1.35em;
-  transition: transform 180ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  padding: 0 var(--digit-side-padding);
+  position: absolute;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3), 0 -1px 1px rgba(0, 0, 0, 0.24);
+  width: 100%;
+}
+
+.digit-face {
+  height: 200%;
+  top: 0;
+}
+
+.digit-lower .digit-face {
+  top: -100%;
+}
+
+.digit-flap {
+  height: 50%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  transform-origin: center bottom;
   transform-style: preserve-3d;
   width: 100%;
-  will-change: transform;
+  z-index: 2;
 }
 
-:host-context(.work-hr) .counter-element {
-  gap: 0.04em;
+.digit-flap-face {
+  backface-visibility: hidden;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--bg-color) 76%, #000),
+    color-mix(in srgb, var(--bg-color) 94%, #fff) 46%,
+    color-mix(in srgb, var(--bg-color) 80%, #000)
+  );
+  color: var(--green);
+  height: 200%;
+  top: 0;
+}
+
+.flap-back {
+  transform: rotateX(180deg);
+}
+
+.flip-a .digit-flap {
+  animation: split-flap-a 420ms cubic-bezier(0.37, 0, 0.22, 1) both;
+}
+
+.flip-b .digit-flap {
+  animation: split-flap-b 420ms cubic-bezier(0.37, 0, 0.22, 1) both;
+}
+
+@keyframes split-flap-a {
+  from { transform: rotateX(0); }
+  to { transform: rotateX(-180deg); }
+}
+
+@keyframes split-flap-b {
+  from { transform: rotateX(0); }
+  to { transform: rotateX(-180deg); }
 }
 
 :host-context(.experience-highlight) .digit-window {
@@ -59,37 +142,8 @@
   font-style: normal;
 }
 
-.digit-tile {
-  align-items: center;
-  background: linear-gradient(to bottom, color-mix(in srgb, var(--bg-color) 85%, var(--black)), var(--bg-color) 45%, color-mix(in srgb, var(--bg-color) 90%, var(--green)));
-  backface-visibility: hidden;
-  border: 1px solid color-mix(in srgb, var(--green, #0f0) 25%, transparent);
-  border-radius: 0.18em;
-  box-sizing: border-box;
-  box-shadow: inset 0 0.04em 0 rgba(255, 255, 255, 0.12), 0 0.05em 0.12em rgba(0, 0, 0, 0.16);
-  color: var(--green, #0f0);
-  display: inline-flex;
-  flex: 0 0 1.35em;
-  font-variant-numeric: tabular-nums;
-  font-size: 1em;
-  height: 1.35em;
-  justify-content: center;
-  line-height: 1.35em;
-  min-width: 0;
-  padding: 0 var(--digit-side-padding);
-  position: absolute;
-  inset: 0;
-  transition: none;
-  width: 100%;
-}
-
-:host-context(.work-hr) .digit-tile {
-  background: linear-gradient(
-    145deg,
-    color-mix(in srgb, var(--green, #0f0) 24%, var(--bg-color)),
-    color-mix(in srgb, var(--green, #0f0) 8%, var(--bg-color))
-  );
-  box-shadow: inset 0 0.05em 0 rgba(255, 255, 255, 0.2), 0 0.06em 0.14em rgba(0, 0, 0, 0.2);
+:host-context(.work-hr) .counter-element {
+  gap: 0.04em;
 }
 
 :host-context(.work-hr) .digit-window {
@@ -97,8 +151,18 @@
   font-size: 0.65em;
 }
 
+:host-context(.work-hr) .digit-half,
+:host-context(.work-hr) .digit-flap-face {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--green) 22%, var(--bg-color)),
+    color-mix(in srgb, var(--green) 8%, var(--bg-color)) 50%,
+    color-mix(in srgb, var(--green) 24%, var(--bg-color))
+  );
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .digit-strip {
-    transition: none;
+  .digit-flap {
+    display: none;
   }
 }
