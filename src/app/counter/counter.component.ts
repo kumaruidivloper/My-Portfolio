@@ -110,4 +110,9 @@ export class CounterComponent implements AfterViewInit, OnChanges, OnDestroy {
   digitValue(digit: string): number {
     return Number(digit);
   }
+
+  wheelRotation(value: number, digitIndex: number): number {
+    const place = this.formatCounter(value).length - digitIndex - 1;
+    return Math.floor(Math.max(0, Math.floor(value)) / 10 ** place) * 36;
+  }
 }

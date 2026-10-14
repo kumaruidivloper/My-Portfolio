@@ -67,6 +67,25 @@
   text-shadow: 0 0 0.35rem rgba(0, 0, 0, 0.08);
 }
 
+:host .box.work-hr h3.animCounter {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  gap: 0.12em;
+
+  app-counter {
+    display: flex;
+    flex: 0 0 auto;
+    line-height: 1;
+  }
+
+  .plus-mark {
+    flex: 0 0 auto;
+    margin-left: 0;
+    top: 0;
+  }
+}
+
 .work-time-status {
   position: absolute;
   right: 0.8rem;

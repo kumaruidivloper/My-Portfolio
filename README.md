@@ -2,6 +2,8 @@
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 22.1.4.
 
+Animated counters use shaded 3D digit drums that rotate continuously through 9 to 0, reverse when counting down, and disable rotation transitions when reduced motion is preferred.
+
 Dashboard highlight color dots follow the chart's category/legend mapping, including repeated transfer dates. In line view, the dots use the single metric series color.
 
 The Vasuki super Current super balance card shows the difference from the previous recorded period as small supporting text. The difference is unavailable until two periods are recorded.
