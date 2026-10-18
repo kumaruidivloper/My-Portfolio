@@ -18,6 +18,7 @@ import { VasukiGratuityComponent } from '../vasuki-gratuity/vasuki-gratuity.comp
 import { VasukiSuperComponent } from '../vasuki-super/vasuki-super.component';
 import { ResponsiveTableComponent } from '../responsive-table/responsive-table.component';
 import { WidgetPreviewChartComponent } from '../widget-preview-chart/widget-preview-chart.component';
+import { DashboardLoaderComponent } from '../dashboard-loader/dashboard-loader.component';
 
 @NgModule({
   declarations: [
@@ -32,7 +33,8 @@ import { WidgetPreviewChartComponent } from '../widget-preview-chart/widget-prev
     VasukiGratuityComponent,
     VasukiSuperComponent,
     ResponsiveTableComponent,
-    WidgetPreviewChartComponent
+    WidgetPreviewChartComponent,
+    DashboardLoaderComponent
   ],
   imports: [
     CommonModule,

@@ -1570,14 +1570,24 @@ body:has(.dashboard-page) {
   grid-auto-flow: row dense;
   align-items: stretch;
   gap: 2.5rem;
+  /* Cards reorder when opened; browser scroll anchoring would fight the scroll-to-card */
+  overflow-anchor: none;
 }
 
 .dashboard-widget-grid > * {
   min-width: 0;
 }
 
+.dashboard-widget-grid > * {
+  scroll-margin-top: 2rem;
+  /* The global "transition: all" would animate order and delay the move to the top */
+  transition: none;
+}
+
+/* The opened card moves to the top; closing it returns it to its original slot */
 .dashboard-widget-grid > :has(.accordion-toggle[aria-expanded="true"]) {
   grid-column: 1 / -1;
+  order: -1;
 }
 
 @media (max-width: 700px) {
@@ -1585,4 +1595,36 @@ body:has(.dashboard-page) {
     grid-template-columns: minmax(0, 1fr);
     gap: 1.5rem;
   }
+}
+
+/* Expand/collapse chevrons: down when collapsed, up when expanded */
+.toggle-chevron {
+  transition: transform 0.25s ease;
+}
+
+[aria-expanded="true"] > .toggle-chevron {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toggle-chevron {
+    transition: none;
+  }
+}
+
+/* "Add new" buttons: plus icon + label */
+button.add-button {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.8rem;
+}
+
+.add-button-icon {
+  fill: none;
+  flex: 0 0 1.6rem;
+  height: 1.6rem;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 2.4;
+  width: 1.6rem;
 }

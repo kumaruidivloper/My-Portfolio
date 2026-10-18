@@ -1,0 +1,46 @@
+:host {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-height: 16rem;
+  padding: 2rem 0;
+  width: 100%;
+}
+
+:host(.inline) {
+  display: inline-flex;
+  min-height: 0;
+  padding: 0;
+  width: auto;
+}
+
+.loader-ring {
+  animation: loader-spin 0.9s linear infinite;
+  border: 0.45rem solid transparent;
+  border-radius: 50%;
+  border-right-color: var(--green);
+  border-top-color: var(--green);
+  box-shadow: var(--box-shadow);
+  display: block;
+  height: 5rem;
+  width: 5rem;
+}
+
+:host(.inline) .loader-ring {
+  border-width: 0.22rem;
+  box-shadow: none;
+  height: 1.6rem;
+  width: 1.6rem;
+}
+
+@keyframes loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loader-ring {
+    animation-duration: 2.4s;
+  }
+}

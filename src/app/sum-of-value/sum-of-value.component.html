@@ -13,11 +13,8 @@
         [attr.aria-label]="isExpanded ? 'Collapse combined PF charts' : 'Expand combined PF charts'"
         [title]="isExpanded ? 'Collapse combined PF charts' : 'Expand combined PF charts'"
         (click)="toggleExpanded()">
-        <svg aria-hidden="true" viewBox="0 0 24 24">
-          <path d="M5 12h14"></path>
-          @if (!isExpanded) {
-            <path d="M12 5v14"></path>
-          }
+        <svg class="toggle-chevron" aria-hidden="true" viewBox="0 0 24 24">
+          <path d="m6 9 6 6 6-6"></path>
         </svg>
       </button>
     </div>
@@ -30,7 +27,7 @@
   @if (isExpanded) {
     <div id="sum-of-value-panel">
       @if (isLoading) {
-        <p class="sum-of-value-status" role="status">Loading combined PF records…</p>
+        <app-dashboard-loader label="Loading combined PF records"></app-dashboard-loader>
       }
       @if (errorMessage) {
         <p class="sum-of-value-status sum-of-value-error" role="alert">{{ errorMessage }}</p>

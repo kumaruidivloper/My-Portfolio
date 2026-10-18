@@ -87,6 +87,42 @@ describe('MyDashboardComponent', () => {
     await Promise.resolve();
   }
 
+  it('scrolls the card into view once it re-renders after its main toggle or preview is clicked', async () => {
+    const grid = document.createElement('div');
+    grid.className = 'dashboard-widget-grid';
+    grid.innerHTML = `
+      <section>
+        <button class="accordion-toggle main" aria-expanded="false"></button>
+        <app-widget-preview-chart><span class="inside"></span></app-widget-preview-chart>
+        <button class="accordion-toggle inner" aria-expanded="false"></button>
+      </section>`;
+    document.body.appendChild(grid);
+    const widget = grid.querySelector('section') as HTMLElement;
+    const mainToggle = grid.querySelector('.main') as HTMLElement;
+    const scrollSpy = spyOn(widget, 'scrollIntoView');
+    const clickAndToggle = async (selector: string) => {
+      component.onWidgetGridClick({ target: grid.querySelector(selector) } as unknown as Event);
+      expect(scrollSpy).not.toHaveBeenCalled();
+      mainToggle.setAttribute('aria-expanded', String(mainToggle.getAttribute('aria-expanded') !== 'true'));
+      await new Promise((resolve) => setTimeout(resolve));
+    };
+
+    await clickAndToggle('.main');
+    expect(scrollSpy).toHaveBeenCalledTimes(1);
+    scrollSpy.calls.reset();
+
+    await clickAndToggle('.inside');
+    expect(scrollSpy).toHaveBeenCalledTimes(1);
+    expect(scrollSpy.calls.mostRecent().args[0]).toEqual(jasmine.objectContaining({ block: 'start' }));
+    scrollSpy.calls.reset();
+
+    component.onWidgetGridClick({ target: grid.querySelector('.inner') } as unknown as Event);
+    mainToggle.setAttribute('aria-expanded', 'true');
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(scrollSpy).not.toHaveBeenCalled();
+    grid.remove();
+  });
+
   it('changes chart type without changing loaded transfers', () => {
     component.selectChartType('line');
 

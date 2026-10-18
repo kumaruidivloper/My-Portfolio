@@ -9,6 +9,7 @@ import { PfDataService } from '../service/pf-data.service';
 import { PfDataComponent } from './pf-data.component';
 import { PfApiDocument } from '../model/pf-record';
 import { WidgetPreviewChartComponent } from '../widget-preview-chart/widget-preview-chart.component';
+import { DashboardLoaderComponent } from '../dashboard-loader/dashboard-loader.component';
 
 describe('PfDataComponent (Vasuki)', () => {
   it('renders the Vasuki accordion collapsed and loads its preview data from resource 3', async () => {
@@ -26,7 +27,7 @@ describe('PfDataComponent (Vasuki)', () => {
 
     await TestBed.configureTestingModule({
       imports: [CommonModule, NgxChartsModule, ReactiveFormsModule],
-      declarations: [PfDataComponent, WidgetPreviewChartComponent],
+      declarations: [PfDataComponent, WidgetPreviewChartComponent, DashboardLoaderComponent],
       providers: [
         { provide: PfDataService, useValue: pfDataService },
         { provide: ConfirmationCodeService, useValue: confirmationCodeService }

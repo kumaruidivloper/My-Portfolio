@@ -1,5 +1,5 @@
 import { announceAccordionOpened, collapseWhenAnotherOpens } from '../service/accordion-group';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { forkJoin, merge, Subscription, timer } from 'rxjs';
 import { ColorHelper, ScaleType } from '@swimlane/ngx-charts';
@@ -174,7 +174,9 @@ function monthDetails(value: string): { key: string; label: string } | null {
   styleUrls: ['./my-dashboard.component.scss'],
   standalone: false
 })
-export class MyDashboardComponent implements OnInit, OnDestroy {
+export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('widgetGrid') private widgetGrid?: ElementRef<HTMLElement>;
+
   readonly editForm = new FormGroup({
     dateOfTransfer: new FormControl('', {
       nonNullable: true,
@@ -314,12 +316,41 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
+  ngAfterViewInit(): void {
+    // Capture phase runs before the card's own toggle handler, so the observer below never misses the change.
+    this.widgetGrid?.nativeElement.addEventListener('click', this.onWidgetGridClick, true);
+  }
+
   ngOnDestroy(): void {
+    this.widgetGrid?.nativeElement.removeEventListener('click', this.onWidgetGridClick, true);
     this.toastTimeout?.unsubscribe();
     this.amountCalculation?.unsubscribe();
     this.allDashboardChartsSubscription?.unsubscribe();
     this.accordionSubscription.unsubscribe();
   }
+
+  readonly onWidgetGridClick = (event: Event): void => {
+    const target = event.target instanceof Element ? event.target : null;
+    const widget = target?.closest<HTMLElement>('.dashboard-widget-grid > *');
+    const trigger = target?.closest('.accordion-toggle, app-widget-preview-chart');
+    const mainToggle = widget?.querySelector('.accordion-toggle');
+
+    // Only the card's own (first) toggle or its preview chart moves the card; inner toggles don't.
+    if (!widget || !trigger || !mainToggle || (trigger.matches('.accordion-toggle') && trigger !== mainToggle)) {
+      return;
+    }
+
+    // Wait until the card has actually re-rendered (and moved in the grid) before scrolling to it.
+    const scrollToWidget = () => {
+      observer.disconnect();
+      clearTimeout(fallback);
+      const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+      widget.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'start' });
+    };
+    const observer = new MutationObserver(scrollToWidget);
+    const fallback = setTimeout(() => observer.disconnect(), 1000);
+    observer.observe(mainToggle, { attributes: true, attributeFilter: ['aria-expanded'] });
+  };
 
   dismissToast(): void {
     this.toastTimeout?.unsubscribe();
