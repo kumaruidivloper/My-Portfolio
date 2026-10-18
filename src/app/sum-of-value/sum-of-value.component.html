@@ -23,6 +23,10 @@
     </div>
   </header>
 
+  @if (!isExpanded) {
+    <app-widget-preview-chart [data]="totalPfChartData" [label]="'Total PF amount'" [loading]="isLoading" (click)="toggleExpanded()"></app-widget-preview-chart>
+  }
+
   @if (isExpanded) {
     <div id="sum-of-value-panel">
       @if (isLoading) {

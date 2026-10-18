@@ -26,7 +26,16 @@ describe('SumOfValueComponent', () => {
     }));
   });
 
-  it('loads both PF resources only when expanded and sums values by month', () => {
+  it('loads combined totals on init for the collapsed preview chart', () => {
+    const component = new SumOfValueComponent(pfDataService, changeDetector);
+
+    component.ngOnInit();
+
+    expect(pfDataService.getPfData).toHaveBeenCalledTimes(2);
+    expect(component.totalPfChartData.length).toBe(2);
+  });
+
+  it('loads both PF resources when expanded and sums values by month', () => {
     const component = new SumOfValueComponent(pfDataService, changeDetector);
 
     expect(pfDataService.getPfData).not.toHaveBeenCalled();

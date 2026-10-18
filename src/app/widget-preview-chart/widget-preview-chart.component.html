@@ -1,0 +1,40 @@
+@if (loading && !latest) {
+  <div class="preview-skeleton" role="status" aria-label="Loading chart preview"></div>
+} @else if (latest) {
+  <figure class="preview" role="img" [attr.aria-label]="summary">
+    <figcaption class="preview-meta" aria-hidden="true">
+      <span class="preview-label">{{ label }}</span>
+      <span class="preview-value">{{ formatValue(latest.value) }}</span>
+      @if (change !== null) {
+        <span class="preview-change" [class.down]="change < 0" [class.flat]="change === 0">
+          {{ change > 0 ? '▲' : change < 0 ? '▼' : '' }} {{ (change < 0 ? -change : change) | number: '1.0-1' }}%
+        </span>
+      }
+    </figcaption>
+    @if (linePath) {
+      <div class="preview-plot">
+      <svg class="preview-chart" [attr.viewBox]="'0 0 ' + width + ' ' + height" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient [attr.id]="gradientId" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="currentColor" stop-opacity="0.32"></stop>
+            <stop offset="100%" stop-color="currentColor" stop-opacity="0"></stop>
+          </linearGradient>
+        </defs>
+        <path class="preview-area" [attr.d]="areaPath" [attr.fill]="'url(#' + gradientId + ')'"></path>
+        <path class="preview-line" [attr.d]="linePath"></path>
+      </svg>
+      @if (lastPoint) {
+        <span
+          class="preview-dot"
+          aria-hidden="true"
+          [style.left.%]="(lastPoint.x / width) * 100"
+          [style.top.%]="(lastPoint.y / height) * 100"></span>
+      }
+      </div>
+    }
+    <div class="preview-range" aria-hidden="true">
+      <span>{{ first?.name }}</span>
+      <span>{{ latest.name }}</span>
+    </div>
+  </figure>
+}

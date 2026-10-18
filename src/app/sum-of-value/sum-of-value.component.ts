@@ -1,5 +1,5 @@
 import { announceAccordionOpened, collapseWhenAnotherOpens } from '../service/accordion-group';
-import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { forkJoin, Subscription } from 'rxjs';
 import {
   chartColorScheme, CHART_TYPE_OPTIONS, ChartDatum, ChartType, isChartType, toLineChartSeries, formatCompactAxisValue
@@ -44,7 +44,7 @@ function formatMonth(key: string): string {
   styleUrls: ['./sum-of-value.component.scss'],
   standalone: false
 })
-export class SumOfValueComponent implements OnDestroy {
+export class SumOfValueComponent implements OnInit, OnDestroy {
   isExpanded = false;
   isLoading = false;
   errorMessage = '';
@@ -63,6 +63,10 @@ export class SumOfValueComponent implements OnDestroy {
     private pfDataService: PfDataService,
     private changeDetectorRef: ChangeDetectorRef
   ) {}
+
+  ngOnInit(): void {
+    this.loadMonthlyTotals();
+  }
 
   ngOnDestroy(): void {
     this.accordionSubscription.unsubscribe();

@@ -22,6 +22,7 @@
       </button>
     </div>
 
+    <div class="dashboard-widget-grid">
     <section class="transfer-data-accordion" aria-labelledby="transfer-data-title">
       <header class="records-heading transfer-accordion-header">
         <div class="records-toggle-copy transfer-accordion-copy">
@@ -59,6 +60,10 @@
           <span>{{ toastMessage }}</span>
           <button type="button" aria-label="Dismiss notification" (click)="dismissToast()">&times;</button>
         </div>
+      }
+
+      @if (!isTransferSectionExpanded) {
+        <app-widget-preview-chart [data]="chartData" [label]="selectedMetricOption.label" [loading]="isLoading" [formatValue]="formatPreviewValue" (click)="toggleTransferSection()"></app-widget-preview-chart>
       }
 
       @if (isTransferSectionExpanded) {
@@ -266,16 +271,15 @@
     </section>
 
     @if (!isAllDetailsModalOpen) {
-      <div class="pf-data-sections">
-        <app-pf-data resourceId="2" ownerName="Kumar"></app-pf-data>
-        <app-pf-data resourceId="3" ownerName="Vasuki"></app-pf-data>
-        <app-sum-of-value></app-sum-of-value>
-        <app-kumar-gratuity></app-kumar-gratuity>
-        <app-vasuki-gratuity></app-vasuki-gratuity>
-        <app-vasuki-super></app-vasuki-super>
-        <app-total-balance></app-total-balance>
-      </div>
+      <app-pf-data resourceId="2" ownerName="Kumar"></app-pf-data>
+      <app-pf-data resourceId="3" ownerName="Vasuki"></app-pf-data>
+      <app-sum-of-value></app-sum-of-value>
+      <app-kumar-gratuity></app-kumar-gratuity>
+      <app-vasuki-gratuity></app-vasuki-gratuity>
+      <app-vasuki-super></app-vasuki-super>
+      <app-total-balance></app-total-balance>
     }
+    </div>
   </div>
 
   @if (isAllDetailsModalOpen) {

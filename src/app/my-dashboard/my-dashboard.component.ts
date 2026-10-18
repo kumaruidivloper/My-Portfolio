@@ -650,6 +650,8 @@ export class MyDashboardComponent implements OnInit, OnDestroy {
     return chartColorScheme(this.chartData, 'transfers');
   }
 
+  readonly formatPreviewValue = (value: number): string => this.formatChartValue(value);
+
   get chartData(): ChartDatum[] {
     return this.transfers.map((transfer) => ({
       name: this.formatDate(transfer.dateOfTransfer),

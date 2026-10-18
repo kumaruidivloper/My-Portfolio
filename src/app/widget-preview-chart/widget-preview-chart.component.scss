@@ -1,0 +1,107 @@
+:host {
+  cursor: pointer;
+  display: block;
+  margin-top: 1.6rem;
+}
+
+.preview {
+  border-radius: 1rem;
+  box-shadow: var(--box-shadow-inset);
+  color: var(--green);
+  margin: 0;
+  padding: 1.2rem 1.4rem 1rem;
+  position: relative;
+}
+
+.preview-meta {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  margin-bottom: 0.8rem;
+}
+
+.preview-label {
+  color: var(--light-color);
+  flex: 1 1 auto;
+  font-size: 1.2rem;
+}
+
+.preview-value {
+  color: var(--black);
+  font-size: 1.6rem;
+  font-weight: 600;
+  text-transform: none;
+}
+
+.preview-change {
+  color: var(--green);
+  font-size: 1.15rem;
+  font-weight: 600;
+
+  &.down {
+    color: #c0392b;
+  }
+
+  &.flat {
+    color: var(--light-color);
+  }
+}
+
+.preview-plot {
+  position: relative;
+}
+
+.preview-chart {
+  display: block;
+  height: 7.2rem;
+  overflow: visible;
+  width: 100%;
+}
+
+.preview-line {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.preview-dot {
+  background: currentColor;
+  border: 0.2rem solid var(--bg-color);
+  border-radius: 50%;
+  height: 1rem;
+  pointer-events: none;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 1rem;
+}
+
+.preview-range {
+  color: var(--light-color);
+  display: flex;
+  font-size: 1.05rem;
+  justify-content: space-between;
+  margin-top: 0.4rem;
+}
+
+.preview-skeleton {
+  animation: preview-pulse 1.2s ease-in-out infinite;
+  border-radius: 1rem;
+  box-shadow: var(--box-shadow-inset);
+  height: 13rem;
+}
+
+@keyframes preview-pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .preview-skeleton {
+    animation: none;
+  }
+}

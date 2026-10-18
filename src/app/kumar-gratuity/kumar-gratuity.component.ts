@@ -1,5 +1,5 @@
 import { announceAccordionOpened, collapseWhenAnotherOpens } from '../service/accordion-group';
-import { ChangeDetectorRef, Component, Input, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Subscription, timer } from 'rxjs';
 import {
@@ -35,7 +35,7 @@ function monthParts(value: string): { year: string; monthIndex: number } | null 
   styleUrls: ['./kumar-gratuity.component.scss'],
   standalone: false
 })
-export class KumarGratuityComponent implements OnDestroy {
+export class KumarGratuityComponent implements OnInit, OnDestroy {
   @Input() resourceId: GratuityResourceId = '4';
   @Input() ownerName = 'Kumar';
 
@@ -98,6 +98,10 @@ export class KumarGratuityComponent implements OnDestroy {
     this.dateSubscription = this.editForm.controls.date.valueChanges.subscribe((month) =>
       this.populatePreviousMonthValue(month)
     );
+  }
+
+  ngOnInit(): void {
+    this.loadData();
   }
 
   ngOnDestroy(): void {

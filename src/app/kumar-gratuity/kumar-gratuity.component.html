@@ -30,6 +30,10 @@
     </div>
   </header>
 
+  @if (!isExpanded) {
+    <app-widget-preview-chart [data]="chartData" [label]="recordTypeLabel" [loading]="isLoading" (click)="toggleExpanded()"></app-widget-preview-chart>
+  }
+
   @if (isExpanded) {
     <div [id]="'gratuity-panel-' + resourceId">
       @if (isLoading) {

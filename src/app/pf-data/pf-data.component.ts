@@ -1,5 +1,5 @@
 import { announceAccordionOpened, collapseWhenAnotherOpens } from '../service/accordion-group';
-import { ChangeDetectorRef, Component, Input, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Subscription, timer } from 'rxjs';
 import {
@@ -20,7 +20,7 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
   styleUrls: ['./pf-data.component.scss'],
   standalone: false
 })
-export class PfDataComponent implements OnDestroy {
+export class PfDataComponent implements OnInit, OnDestroy {
   @Input() resourceId: PfResourceId = '2';
   @Input() ownerName = 'Kumar';
 
@@ -83,6 +83,10 @@ export class PfDataComponent implements OnDestroy {
       () => this.collapse()
     );
     this.formSubscription = this.editForm.valueChanges.subscribe(() => this.syncDifference());
+  }
+
+  ngOnInit(): void {
+    this.loadPfData();
   }
 
   ngOnDestroy(): void {

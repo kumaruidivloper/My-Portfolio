@@ -39,7 +39,7 @@ describe('PfDataComponent', () => {
     await Promise.resolve();
   }
 
-  it('loads PF records only when the accordion is expanded', () => {
+  it('does not load PF records from the constructor alone', () => {
     pfDataService.getPfData.calls.reset();
     const collapsedComponent = new PfDataComponent(pfDataService, changeDetector, confirmationCodeService);
 
@@ -48,6 +48,17 @@ describe('PfDataComponent', () => {
     collapsedComponent.toggleExpanded();
 
     expect(pfDataService.getPfData).toHaveBeenCalled();
+  });
+
+  it('loads PF records on init so the collapsed card can show its preview chart', () => {
+    pfDataService.getPfData.calls.reset();
+    const collapsedComponent = new PfDataComponent(pfDataService, changeDetector, confirmationCodeService);
+
+    collapsedComponent.ngOnInit();
+    collapsedComponent.toggleExpanded();
+
+    expect(pfDataService.getPfData).toHaveBeenCalledTimes(1);
+    expect(collapsedComponent.chartData.length).toBe(2);
   });
 
   it('toggles the monthly records sub-accordion independently', () => {

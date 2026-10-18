@@ -17,6 +17,7 @@ import { KumarGratuityComponent } from '../kumar-gratuity/kumar-gratuity.compone
 import { VasukiGratuityComponent } from '../vasuki-gratuity/vasuki-gratuity.component';
 import { VasukiSuperComponent } from '../vasuki-super/vasuki-super.component';
 import { ResponsiveTableComponent } from '../responsive-table/responsive-table.component';
+import { WidgetPreviewChartComponent } from '../widget-preview-chart/widget-preview-chart.component';
 
 @NgModule({
   declarations: [
@@ -30,7 +31,8 @@ import { ResponsiveTableComponent } from '../responsive-table/responsive-table.c
     KumarGratuityComponent,
     VasukiGratuityComponent,
     VasukiSuperComponent,
-    ResponsiveTableComponent
+    ResponsiveTableComponent,
+    WidgetPreviewChartComponent
   ],
   imports: [
     CommonModule,

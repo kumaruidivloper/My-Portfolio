@@ -50,6 +50,13 @@ describe('KumarGratuityComponent', () => {
     await Promise.resolve();
   }
 
+  it('loads records on init for the collapsed preview chart', () => {
+    component.ngOnInit();
+
+    expect(gratuityDataService.getGratuityData).toHaveBeenCalledTimes(1);
+    expect(component.chartData.length).toBe(initialData.gratuityRecords.length);
+  });
+
   it('loads and presents the response records newest-first in the chart', () => {
     component.toggleExpanded();
 

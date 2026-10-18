@@ -8,9 +8,10 @@ import { ConfirmationCodeService } from '../service/confirmation-code.service';
 import { PfDataService } from '../service/pf-data.service';
 import { PfDataComponent } from './pf-data.component';
 import { PfApiDocument } from '../model/pf-record';
+import { WidgetPreviewChartComponent } from '../widget-preview-chart/widget-preview-chart.component';
 
 describe('PfDataComponent (Vasuki)', () => {
-  it('renders the Vasuki accordion while collapsed before loading data', async () => {
+  it('renders the Vasuki accordion collapsed and loads its preview data from resource 3', async () => {
     const pfDataService = jasmine.createSpyObj<PfDataService>('PfDataService', ['getPfData', 'updatePfData']);
     pfDataService.getPfData.and.returnValue(of({
       id: '3',
@@ -25,7 +26,7 @@ describe('PfDataComponent (Vasuki)', () => {
 
     await TestBed.configureTestingModule({
       imports: [CommonModule, NgxChartsModule, ReactiveFormsModule],
-      declarations: [PfDataComponent],
+      declarations: [PfDataComponent, WidgetPreviewChartComponent],
       providers: [
         { provide: PfDataService, useValue: pfDataService },
         { provide: ConfirmationCodeService, useValue: confirmationCodeService }
@@ -39,7 +40,7 @@ describe('PfDataComponent (Vasuki)', () => {
 
     expect(fixture.nativeElement.querySelector('#pf-data-title-3')?.textContent).toContain('Vasuki - PF DATA');
     expect(fixture.nativeElement.querySelector('#pf-data-panel-3')).toBeNull();
-    expect(pfDataService.getPfData).not.toHaveBeenCalled();
+    expect(pfDataService.getPfData).toHaveBeenCalledOnceWith('3');
   });
 
   it('loads Vasuki PF data from its configured resource', () => {

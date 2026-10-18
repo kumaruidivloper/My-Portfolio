@@ -1,5 +1,5 @@
 import { announceAccordionOpened, collapseWhenAnotherOpens } from '../service/accordion-group';
-import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import {
   chartColorScheme, CHART_TYPE_OPTIONS, ChartDatum, ChartType, isChartType, toLineChartSeries, formatCompactAxisValue
@@ -14,7 +14,7 @@ import { TotalBalanceService } from '../service/total-balance.service';
   styleUrls: ['../sum-of-value/sum-of-value.component.scss'],
   standalone: false
 })
-export class TotalBalanceComponent implements OnDestroy {
+export class TotalBalanceComponent implements OnInit, OnDestroy {
   isExpanded = false;
   isLoading = false;
   errorMessage = '';
@@ -43,11 +43,11 @@ export class TotalBalanceComponent implements OnDestroy {
     private totalBalanceService: TotalBalanceService,
     private changeDetectorRef: ChangeDetectorRef
   ) {
-    this.updateSubscription = this.totalBalanceService.totalsUpdated$.subscribe(() => {
-      if (this.isExpanded) {
-        this.load();
-      }
-    });
+    this.updateSubscription = this.totalBalanceService.totalsUpdated$.subscribe(() => this.load());
+  }
+
+  ngOnInit(): void {
+    this.load();
   }
 
   ngOnDestroy(): void {

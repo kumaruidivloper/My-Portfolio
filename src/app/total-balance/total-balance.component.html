@@ -23,6 +23,10 @@
     </div>
   </header>
 
+  @if (!isExpanded) {
+    <app-widget-preview-chart [data]="totalChartData" [label]="'Overall balance'" [loading]="isLoading" (click)="toggleExpanded()"></app-widget-preview-chart>
+  }
+
   @if (isExpanded) {
     <div id="total-balance-panel">
       @if (isLoading) {
