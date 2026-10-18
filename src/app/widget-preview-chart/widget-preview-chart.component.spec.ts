@@ -29,6 +29,17 @@ describe('WidgetPreviewChartComponent', () => {
       .toContain('Latest Mar');
   });
 
+  it('draws dashed grid lines like the full chart, thinning columns for long series', () => {
+    const short = render({ data: [{ name: 'Jan', value: 1 }, { name: 'Feb', value: 2 }, { name: 'Mar', value: 3 }] });
+    const shortLines = (short.nativeElement as HTMLElement).querySelectorAll('.preview-grid line');
+    expect(shortLines.length).toBe(5 + 3);
+
+    const long = render({ data: Array.from({ length: 50 }, (_, index) => ({ name: `M${index}`, value: index })) });
+    const columns = long.componentInstance.gridColumns;
+    expect(columns.length).toBeLessThanOrEqual(13);
+    expect(columns[columns.length - 1]).toBe(long.componentInstance.lastPoint!.x);
+  });
+
   it('centres a flat series and shows no direction arrow', () => {
     const fixture = render({ label: 'Gratuity', data: [{ name: 'Jan', value: 5 }, { name: 'Feb', value: 5 }] });
     const component = fixture.componentInstance;

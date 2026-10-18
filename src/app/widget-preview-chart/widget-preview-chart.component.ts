@@ -4,6 +4,8 @@ import { ChartDatum, formatCompactAxisValue } from '../model/chart-type';
 const WIDTH = 300;
 const HEIGHT = 72;
 const PADDING = 4;
+const GRID_ROWS = 4;
+const MAX_GRID_COLUMNS = 12;
 
 let nextGradientId = 0;
 
@@ -26,6 +28,8 @@ export class WidgetPreviewChartComponent implements OnChanges {
   linePath = '';
   areaPath = '';
   lastPoint: { x: number; y: number } | null = null;
+  readonly gridRows = Array.from({ length: GRID_ROWS + 1 }, (_, index) => PADDING + (index * (HEIGHT - PADDING * 2)) / GRID_ROWS);
+  gridColumns: number[] = [];
   latest: ChartDatum | null = null;
   first: ChartDatum | null = null;
   change: number | null = null;
@@ -44,6 +48,7 @@ export class WidgetPreviewChartComponent implements OnChanges {
       this.linePath = '';
       this.areaPath = '';
       this.lastPoint = null;
+      this.gridColumns = [];
       return;
     }
 
@@ -58,6 +63,9 @@ export class WidgetPreviewChartComponent implements OnChanges {
     this.linePath = points.map(({ x, y }, index) => `${index ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join(' ');
     this.areaPath = `${this.linePath} L${points[points.length - 1].x.toFixed(1)} ${HEIGHT} L${PADDING} ${HEIGHT} Z`;
     this.lastPoint = points[points.length - 1];
+    // One vertical line per point like the full chart, thinned out for long series.
+    const every = Math.ceil(points.length / MAX_GRID_COLUMNS);
+    this.gridColumns = points.filter((_, index) => index % every === 0 || index === points.length - 1).map(({ x }) => x);
   }
 
   get summary(): string {

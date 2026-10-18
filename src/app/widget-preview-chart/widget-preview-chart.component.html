@@ -20,6 +20,14 @@
             <stop offset="100%" stop-color="currentColor" stop-opacity="0"></stop>
           </linearGradient>
         </defs>
+        <g class="preview-grid">
+          @for (y of gridRows; track $index) {
+            <line [attr.x1]="0" [attr.x2]="width" [attr.y1]="y" [attr.y2]="y"></line>
+          }
+          @for (x of gridColumns; track $index) {
+            <line [attr.x1]="x" [attr.x2]="x" [attr.y1]="0" [attr.y2]="height"></line>
+          }
+        </g>
         <path class="preview-area" [attr.d]="areaPath" [attr.fill]="'url(#' + gradientId + ')'"></path>
         <path class="preview-line" [attr.d]="linePath"></path>
       </svg>
