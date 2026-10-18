@@ -5,7 +5,6 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { provideHttpClient, withInterceptorsFromDi, withXhr } from  '@angular/common/http';
-import { AccordionComponent } from './accordion/accordion.component';
 import { QRCodeModule } from 'angularx-qrcode';
 import { FormsModule } from '@angular/forms';
 import { CounterComponent } from './counter/counter.component';
@@ -18,7 +17,6 @@ import { PortfolioComponent } from './portfolio/portfolio.component';
 
 @NgModule({ declarations: [
         AppComponent,
-        AccordionComponent,
         CounterComponent,
         StopwatchComponent,
         TimerComponent,

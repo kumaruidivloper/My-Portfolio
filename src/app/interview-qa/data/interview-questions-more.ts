@@ -1,0 +1,391 @@
+import { InterviewQuestion } from '../types';
+
+/** Additional original questions that extend the core set in interview-questions.ts. */
+export const moreInterviewQuestions: Record<string, InterviewQuestion[]> = {
+  html: [
+    {
+      question: 'What is the difference between the DOM, the HTML source and the accessibility tree?',
+      answer: 'The source is the text the server sends. The parser turns it into the DOM, fixing invalid markup on the way, and scripts can keep changing it. The browser then derives an accessibility tree from the DOM plus CSS and ARIA. That tree exposes role, name, state and value to screen readers, so `display: none` or `aria-hidden="true"` removes nodes from it even though they stay in the DOM.'
+    },
+    {
+      question: 'Why use a `<button>` instead of a clickable `<div>`?',
+      answer: 'A native button is focusable, activates with Enter and Space, has the button role, takes part in forms through `type="submit"` and respects `disabled`. A `<div>` needs `tabindex`, `role`, key handlers and disabled logic to match that, and it is easy to get wrong.'
+    },
+    {
+      question: 'How do Shadow DOM, `<template>` and `<slot>` work together in Web Components?',
+      answer: '`<template>` holds inert markup that you clone. Attaching a shadow root gives the element an encapsulated DOM and style scope. `<slot>` elements inside the shadow tree project the light-DOM children the user supplies. Styles do not leak in or out, except inherited properties, CSS custom properties, `::part()` and `::slotted()`.'
+    },
+    {
+      question: 'Which HTML features help prevent XSS and clickjacking?',
+      answer: 'Escape output and avoid assigning untrusted strings to `innerHTML`. Send a Content-Security-Policy, ideally with nonces or hashes and no `unsafe-inline`. Use `sandbox` on untrusted iframes, `rel="noopener"` on new-window links, and `frame-ancestors` (or `X-Frame-Options`) to stop your pages being framed.'
+    }
+  ],
+  css: [
+    {
+      question: 'How is specificity calculated, and how do `:is()` and `:where()` affect it?',
+      answer: 'Specificity is compared as (IDs, classes/attributes/pseudo-classes, elements/pseudo-elements). `:is()` takes the specificity of its most specific argument, while `:where()` always adds zero, which makes it ideal for easily overridden library defaults. Inline styles and `!important` sit above normal specificity, and layers are compared before specificity.'
+    },
+    {
+      question: 'Grid or Flexbox: how do you decide?',
+      answer: 'Flexbox is one-dimensional and content-out: items size themselves and wrap along one axis. Grid is two-dimensional and layout-in: you define tracks and place items in rows and columns at once. Use Grid for page and card layouts that must align in both directions, Flexbox for toolbars, chips and distributing items in a line. `subgrid` lets nested items align to the parent grid.'
+    },
+    {
+      question: 'What causes layout shift (CLS) and how do you prevent it with CSS?',
+      answer: 'Content that changes size after first paint: images without dimensions, late ads or embeds, web fonts swapping, and banners injected above content. Reserve space with `width`/`height` attributes or `aspect-ratio`, use `min-height` placeholders, match fallback font metrics with `size-adjust`, and animate with `transform` instead of changing layout properties.'
+    },
+    {
+      question: 'What does `:has()` enable that was not possible before?',
+      answer: 'It is a relational selector that styles an element based on its descendants or following siblings, for example `form:has(:invalid)` or `.card:has(img)`. Before it, a parent could not react to its children without JavaScript. Keep the inner selector specific, because very broad `:has()` rules can be costly to re-evaluate.'
+    }
+  ],
+  javascript: [
+    {
+      question: 'Explain hoisting and the temporal dead zone.',
+      answer: 'Declarations are registered when a scope is created. `var` is hoisted and initialised to `undefined`; function declarations are hoisted with their body. `let`, `const` and `class` are hoisted but not initialised, so accessing them before the declaration line throws a `ReferenceError`. That window is the temporal dead zone.'
+    },
+    {
+      question: 'Implement and compare debounce and throttle.',
+      answer: 'Debounce waits until calls stop for `ms` before running: keep a timer, `clearTimeout` it on every call and set a new one. Throttle runs at most once per `ms`: record the last run time and skip or schedule calls inside the window. Use debounce for search input and resize end, throttle for scroll and pointer tracking.'
+    },
+    {
+      question: 'How do shallow copy, `structuredClone` and `JSON.parse(JSON.stringify())` differ?',
+      answer: 'Spread and `Object.assign` copy only the top level, so nested objects stay shared. `JSON` round-tripping drops functions, `undefined` and symbols, turns dates into strings and fails on cycles. `structuredClone` deep-copies most built-ins including `Map`, `Set`, `Date` and cyclic graphs, but it cannot clone functions, DOM nodes or class prototypes.'
+    },
+    {
+      question: 'What are generators and async iterators used for?',
+      answer: 'A generator (`function*`) pauses at each `yield` and resumes on `next()`, which makes lazy sequences and custom iterables simple. `async function*` plus `for await...of` consumes data that arrives over time, such as paginated APIs or streamed responses, with natural back-pressure because the consumer pulls each value.'
+    },
+    {
+      question: 'Explain `WeakMap`, `WeakRef` and when garbage collection can reclaim objects.',
+      answer: 'An object can be collected once it is unreachable from roots such as globals, the stack and active closures. `WeakMap` keys do not keep their objects alive, which makes it ideal for attaching metadata to DOM nodes or instances. `WeakRef` and `FinalizationRegistry` give non-deterministic access and cleanup, so use them only for caches, never for program logic.'
+    }
+  ],
+  typescript: [
+    {
+      question: 'How do discriminated unions enable exhaustive checks?',
+      answer: 'Give each member a literal tag such as `kind`. Switching on it narrows the type in each branch. In the `default` branch assign the value to `never`; if someone adds a new member and forgets to handle it, the assignment fails to compile.'
+    },
+    {
+      question: 'What is the difference between `interface` and `type`?',
+      answer: 'Both describe object shapes. Interfaces can be reopened through declaration merging and give clearer errors for class contracts. Type aliases can express unions, tuples, mapped and conditional types. Interfaces `extends` checks compatibility eagerly, while intersections (`&`) can silently produce `never` on conflicts.'
+    },
+    {
+      question: 'Explain variance and why method parameters are bivariant.',
+      answer: 'A type is covariant when it varies with its component (`Dog[]` assignable to `Animal[]`) and contravariant when it varies the other way (function parameters). With `strictFunctionTypes`, function-type properties are checked contravariantly, but method-syntax parameters stay bivariant for compatibility with patterns like DOM event handlers, which can hide real bugs.'
+    },
+    {
+      question: 'How do you write a type-safe `pick(obj, keys)` with generics?',
+      answer: 'Constrain the keys to the object: `function pick<T, K extends keyof T>(obj: T, keys: K[]): Pick<T, K>`. TypeScript infers `T` from the object and `K` as a union of the literal keys passed, so the return type contains exactly those properties and invalid keys are rejected.'
+    }
+  ],
+  angular: [
+    {
+      question: 'How does Angular hydration work, and what breaks it?',
+      answer: 'With `provideClientHydration()` the client reuses the server-rendered DOM instead of re-creating it, matching nodes to the component tree. Direct DOM manipulation, invalid HTML that the parser restructures, and content that differs between server and client cause mismatches. Use `ngSkipHydration` as an escape hatch and incremental hydration with `@defer` triggers to delay work.'
+    },
+    {
+      question: 'What are `input()`, `model()` and `output()` signal APIs?',
+      answer: '`input()` exposes a read-only signal for a component input, with `required` and `transform` options. `model()` creates a writable signal that supports two-way binding with `[(value)]`. `output()` replaces `@Output() EventEmitter` with a lighter emitter. They work naturally with `computed()` and change detection without zones.'
+    },
+    {
+      question: 'How do functional route guards and resolvers improve on class-based ones?',
+      answer: 'They are plain functions such as `CanActivateFn` that call `inject()` for dependencies. That removes boilerplate, makes them easy to compose, and works with standalone routing. They can return a boolean, a `UrlTree` for redirects, or an Observable/Promise of either.'
+    },
+    {
+      question: 'How do `@if`/`@for` control flow blocks differ from `*ngIf`/`*ngFor`?',
+      answer: 'They are built into the compiler, so no directive import is needed and type narrowing works better. `@for` requires a `track` expression, which prevents accidental full re-renders, and supports `@empty`. The new diffing algorithm is faster, and the blocks are the base for `@defer`.'
+    },
+    {
+      question: 'How do you profile and fix slow change detection?',
+      answer: 'Use the Angular DevTools profiler to find components that are checked often or take long. Move them to `OnPush` or signals, avoid calling expensive functions in templates (use `computed()` or pure pipes), add `track` to lists, run heavy third-party callbacks outside the zone, and virtualise long lists.'
+    }
+  ],
+  rxjs: [
+    {
+      question: 'How does `shareReplay` cause leaks, and how do you configure it safely?',
+      answer: 'With only a buffer size it keeps the source subscription alive forever, even after all subscribers leave. Use `shareReplay({ bufferSize: 1, refCount: true })` so the source is torn down when the last subscriber unsubscribes, or use `share()` with a `ReplaySubject` connector for finer control.'
+    },
+    {
+      question: 'Compare `combineLatest`, `withLatestFrom`, `zip` and `forkJoin`.',
+      answer: '`combineLatest` emits whenever any input emits, once all have emitted. `withLatestFrom` emits only when the source emits, sampling the others. `zip` pairs values by index. `forkJoin` waits for all inputs to complete and emits their last values once, which suits parallel HTTP calls.'
+    },
+    {
+      question: 'How do you implement retry with exponential backoff?',
+      answer: 'Use `retry({ count: 3, delay: (error, attempt) => timer(2 ** attempt * 500) })`. Inspect the error inside `delay` and rethrow with `throwError` for non-retryable cases such as 4xx responses, so only transient failures are retried.'
+    },
+    {
+      question: 'How do signals and observables interoperate in Angular?',
+      answer: '`toSignal(obs$)` subscribes and exposes the latest value as a signal, unsubscribing when the injection context is destroyed; provide `initialValue` or `requireSync`. `toObservable(sig)` emits when the signal changes, using an effect. Use signals for synchronous state, and observables for events and async streams.'
+    }
+  ],
+  scss: [
+    {
+      question: 'How do you structure a large Sass codebase?',
+      answer: 'Split it into layers: settings (tokens), tools (functions, mixins), generic resets, elements, objects/layout, components and utilities. Each partial is a module loaded with `@use` and exposed through `_index.scss` files using `@forward`. Components should only depend on tokens and tools, not on each other.'
+    },
+    {
+      question: 'What do `@function`, `@each` and maps let you build?',
+      answer: 'Functions return computed values such as `rem()` conversions or colour contrast. `@each` over maps generates repetitive rules, for example spacing utilities or theme variants. `sass:map` and `sass:math` provide safe helpers like `map.get` and `math.div`, which replaces the deprecated `/` division.'
+    },
+    {
+      question: 'Why can deep nesting hurt, and what is a good rule?',
+      answer: 'Deep nesting produces long, highly specific selectors that are hard to override and tie styles to DOM structure. Keep nesting to about three levels, nest mainly for states and pseudo-classes (`&:hover`, `&.is-active`), and prefer flat BEM-style class names.'
+    }
+  ],
+  tablets: [
+    {
+      question: 'How do you choose breakpoints that work for tablets?',
+      answer: 'Set breakpoints where the content breaks, not at device widths, because tablets range from about 600px to over 1300px and rotate. Use fluid layouts with `clamp()`, `minmax()` and container queries so components adapt to the space they have.'
+    },
+    {
+      question: 'What should you consider for keyboard and trackpad users on tablets?',
+      answer: 'Tablets often have keyboards and trackpads attached. Provide visible focus styles, keyboard shortcuts that do not clash with system ones, hover states that are not required, and pointer-friendly targets. Detect capabilities with `@media (pointer: fine)` rather than assuming touch only.'
+    },
+    {
+      question: 'How do you handle the on-screen keyboard covering inputs?',
+      answer: 'Use the `visualViewport` API or `interactive-widget=resizes-content` in the viewport meta tag to react to the keyboard, call `scrollIntoView` on focus if needed, and avoid fixed footers that cover inputs.'
+    }
+  ],
+  mobiles: [
+    {
+      question: 'How do you reduce JavaScript cost on low-end phones?',
+      answer: 'Ship less code: route-level splitting, `@defer` or dynamic `import()`, tree-shaking and removing heavy libraries. Break long tasks with `scheduler.yield()` or `setTimeout`, move work to Web Workers, and test on a throttled mid-range device rather than a desktop.'
+    },
+    {
+      question: 'What is the minimum touch target size and why?',
+      answer: 'WCAG 2.2 requires at least 24 by 24 CSS pixels (AA), and platform guidelines recommend about 44–48px. Larger targets with spacing reduce mis-taps, especially for users with motor impairments.'
+    },
+    {
+      question: 'How do service workers enable offline-first mobile apps?',
+      answer: 'A service worker intercepts fetches and serves responses from the Cache API. Precache the app shell at install, use stale-while-revalidate for content and network-first for fresh data, and version caches so updates activate cleanly. Background Sync can retry failed writes.'
+    }
+  ],
+  desktop: [
+    {
+      question: 'How do you implement accessible keyboard shortcuts?',
+      answer: 'Avoid single-key shortcuts unless they can be turned off or remapped (WCAG 2.1.4). Do not override browser or screen-reader keys, show shortcuts in a help dialog, and expose them with `aria-keyshortcuts`.'
+    },
+    {
+      question: 'How do you support multiple windows and tabs safely?',
+      answer: 'Sync state with the `storage` event, `BroadcastChannel` or a SharedWorker. Handle conflicting edits with versioning, and use the Web Locks API so only one tab runs a task such as token refresh.'
+    },
+    {
+      question: 'What is the right way to build a modal dialog today?',
+      answer: 'Use the native `<dialog>` element with `showModal()`. It traps focus, makes the rest of the page inert, closes on Escape and renders in the top layer. Return focus to the trigger on close and give it an accessible name with `aria-labelledby`.'
+    }
+  ],
+  chrome: [
+    {
+      question: 'How does Chrome’s bfcache work, and what stops a page from using it?',
+      answer: 'The back/forward cache keeps a frozen copy of the page so back navigation is instant. `unload` handlers, `Cache-Control: no-store`, open IndexedDB transactions or WebSockets can block it. Use `pagehide`/`pageshow` instead of `unload`, and check eligibility in DevTools under Application → Back/forward cache.'
+    },
+    {
+      question: 'What is the difference between the Coverage tab and bundle analysers?',
+      answer: 'Coverage shows which bytes of JS and CSS actually ran on the current page, highlighting code to lazy-load. A bundle analyser shows which modules make up each chunk. Use both: coverage finds what is unused, the analyser shows where it comes from.'
+    },
+    {
+      question: 'How do you debug a production issue with source maps?',
+      answer: 'Upload source maps to your error tracker or serve them privately, and load them in DevTools so stack traces map to original files. Use logpoints and conditional breakpoints instead of editing code, and the Network panel’s overrides to test fixes locally.'
+    }
+  ],
+  firefox: [
+    {
+      question: 'How do you profile performance in Firefox?',
+      answer: 'Use the Firefox Profiler (Performance panel). It records JS, layout, style and GC on a timeline with call trees and flame graphs, and the recording can be shared through a link. It is useful to confirm whether a slowdown is engine specific.'
+    },
+    {
+      question: 'What are common cross-browser differences you have seen in Firefox?',
+      answer: 'Differences in form control styling, scrollbar styling (Firefox uses `scrollbar-width` and `scrollbar-color`), subpixel rounding, font rendering and feature timing. Feature-detect with `@supports` and test in Firefox as part of CI with Playwright.'
+    },
+    {
+      question: 'How does Firefox handle extensions differently, and why does it matter?',
+      answer: 'Firefox supports WebExtensions with Manifest V3 but keeps blocking `webRequest`, so ad blockers can do more. Extensions may inject scripts or styles, so code defensively and do not depend on a clean DOM.'
+    }
+  ],
+  safari: [
+    {
+      question: 'How do you debug a page on a real iPhone?',
+      answer: 'Enable Web Inspector on the device, connect it to a Mac and open Safari → Develop → device name. You get the full inspector, including console, network and timelines. The iOS Simulator works for many layout issues but not for real performance.'
+    },
+    {
+      question: 'Why do date inputs and parsing behave differently in Safari?',
+      answer: 'Older Safari rejected non-ISO strings like `"2024-01-02 10:00"` in `new Date()`, returning `Invalid Date`. Always use full ISO 8601 (`2024-01-02T10:00:00Z`) or parse explicitly. Native date pickers also differ, so test the UX.'
+    },
+    {
+      question: 'How do you handle autoplay and audio restrictions in Safari?',
+      answer: 'Video autoplays only when `muted` and `playsinline` are set. Audio needs a user gesture to start an `AudioContext`, so resume the context inside a click or tap handler and handle the promise rejection from `play()`.'
+    }
+  ],
+  edge: [
+    {
+      question: 'What is IE mode in Edge and when would you encounter it?',
+      answer: 'IE mode runs legacy intranet sites with the Trident engine inside Edge, configured through an enterprise site list. Modern apps should make sure they are not on that list, because they would run with IE limitations.'
+    },
+    {
+      question: 'How do Edge’s tracking prevention levels affect your site?',
+      answer: 'In Balanced mode Edge blocks known trackers from sites you have not engaged with, and Strict blocks more. Third-party scripts, storage or embeds may fail, so handle missing resources gracefully.'
+    },
+    {
+      question: 'What can you do with Edge DevTools that is unique?',
+      answer: 'Edge adds tools such as 3D View for z-index and DOM depth, a Detached Elements tool for leaks, the Issues panel with accessibility and compatibility hints, and VS Code integration.'
+    }
+  ],
+  react: [
+    {
+      question: 'How does React reconciliation work, and why do keys matter?',
+      answer: 'React compares the new element tree with the previous one. Different types replace the subtree; same types update props. For lists, `key` identifies items so React can move them instead of re-creating them. Using the array index as a key breaks state and focus when items are reordered or removed.'
+    },
+    {
+      question: 'Explain the rules of hooks and why they exist.',
+      answer: 'Call hooks only at the top level of components or custom hooks, never in loops, conditions or nested functions. React stores hook state by call order, so the order must be the same on every render. The ESLint plugin enforces this.'
+    },
+    {
+      question: 'When do `useMemo`, `useCallback` and `React.memo` actually help?',
+      answer: 'They help when a calculation is expensive or when stable references prevent re-renders of memoised children or effect re-runs. They add overhead and complexity elsewhere. Measure with the Profiler first; the React Compiler can add memoisation automatically.'
+    },
+    {
+      question: 'What is the difference between `useEffect` and `useLayoutEffect`?',
+      answer: '`useEffect` runs after the browser paints, so it does not block rendering. `useLayoutEffect` runs synchronously after DOM mutations and before paint, which suits measuring layout and avoiding flicker. Neither runs on the server.'
+    },
+    {
+      question: 'What are React Server Components and how do they differ from SSR?',
+      answer: 'SSR renders client components to HTML that is then hydrated, so all their code still ships to the browser. Server Components run only on the server, can access data directly and send a serialised tree, so their code never reaches the client. Client Components are marked with `"use client"`.'
+    },
+    {
+      question: 'How do Suspense and transitions improve UX?',
+      answer: 'Suspense shows a fallback while a part of the tree waits for code or data. `useTransition` or `startTransition` marks updates as non-urgent so React keeps the current UI responsive and can interrupt the render. `useDeferredValue` delays an expensive derived value.'
+    },
+    {
+      question: 'How do you avoid stale closures in hooks?',
+      answer: 'A callback captures the props and state of the render it was created in. Include all dependencies in the effect array, use the functional updater (`setCount(c => c + 1)`), or store the latest value in a ref for event handlers that must not re-subscribe.'
+    },
+    {
+      question: 'When should state live in context, and when in a store library?',
+      answer: 'Context is good for rarely changing values such as theme or user. Every consumer re-renders on change, so frequently updated state is better in a store with selectors (Redux Toolkit, Zustand) or in server-state libraries like TanStack Query.'
+    }
+  ],
+  vue: [
+    {
+      question: 'How does Vue 3’s reactivity system work?',
+      answer: 'Vue wraps objects in Proxies. Reading a property inside an effect tracks it as a dependency; writing triggers the effects that depend on it. `ref` wraps primitives with a `.value` getter/setter, and `computed` is a cached effect that recalculates only when its dependencies change.'
+    },
+    {
+      question: 'What is the difference between `ref` and `reactive`?',
+      answer: '`ref` works with any value and must be accessed through `.value` in script. `reactive` returns a deep Proxy of an object but loses reactivity when destructured or replaced. Many teams use `ref` everywhere for consistency and `toRefs` when destructuring.'
+    },
+    {
+      question: 'Compare the Options API and the Composition API.',
+      answer: 'The Options API organises code by option type (`data`, `methods`, `computed`). The Composition API organises by feature inside `setup` or `<script setup>`, gives better TypeScript inference and lets you extract logic into composables.'
+    },
+    {
+      question: 'When do you use `watch` versus `watchEffect`?',
+      answer: '`watch` tracks explicit sources, gives old and new values and is lazy by default. `watchEffect` runs immediately and tracks whatever it reads. Use `watch` for side effects tied to a specific value, and `watchEffect` for simple syncing.'
+    },
+    {
+      question: 'How do `v-if`, `v-show` and `KeepAlive` differ?',
+      answer: '`v-if` creates and destroys the element. `v-show` toggles `display`, which is cheaper for frequent toggles. `KeepAlive` caches component instances when switching dynamic components so their state survives.'
+    },
+    {
+      question: 'How do provide/inject and Pinia compare for shared state?',
+      answer: 'provide/inject passes values down a component subtree without prop drilling and is good for plugin or layout context. Pinia is the official store, with devtools, SSR support, typed stores and actions, and suits app-wide state.'
+    },
+    {
+      question: 'How does Vue’s compiler optimise rendering?',
+      answer: 'The template compiler hoists static nodes, adds patch flags that tell the runtime which bindings are dynamic, and uses block trees so diffing skips static content. That is why templates are often faster than hand-written render functions.'
+    }
+  ],
+  output: [
+    {
+      question: 'What does this log? `console.log(1); setTimeout(() => console.log(2)); Promise.resolve().then(() => console.log(3)); console.log(4);`',
+      answer: '`1, 4, 3, 2`. Synchronous code runs first (1 and 4). The promise callback is a microtask, so it runs before the `setTimeout` task (3 before 2).'
+    },
+    {
+      question: 'What does `for (var i = 0; i < 3; i++) setTimeout(() => console.log(i));` print, and how do you fix it?',
+      answer: 'It prints `3, 3, 3` because `var` is function-scoped and all callbacks share one `i`. Using `let` creates a new binding per iteration and prints `0, 1, 2`.'
+    },
+    {
+      question: 'What are the results of `[] + {}`, `[] == false` and `null == 0`?',
+      answer: '`[] + {}` is `"[object Object]"` (both become strings). `[] == false` is `true`, because both convert to the number 0. `null == 0` is `false`, because `null` is only loosely equal to `null` and `undefined`.'
+    },
+    {
+      question: 'What does `typeof null`, `typeof NaN` and `typeof function(){}` return?',
+      answer: '`"object"` (a historic bug), `"number"` and `"function"`. Use `value === null` and `Number.isNaN(value)` for reliable checks.'
+    },
+    {
+      question: 'What is logged? `const o = { n: 1, f() { return this.n }, g: () => this?.n }; console.log(o.f(), o.g());`',
+      answer: '`1` and `undefined`. A method called as `o.f()` gets `this === o`. An arrow function takes `this` from the surrounding scope, which in a module is `undefined`.'
+    },
+    {
+      question: 'What does `[1, 2, 3].map(parseInt)` return?',
+      answer: '`[1, NaN, NaN]`. `map` passes `(value, index)`, so the calls are `parseInt("1", 0)`, `parseInt("2", 1)` and `parseInt("3", 2)`. Radix 1 is invalid and 3 is not a binary digit.'
+    },
+    {
+      question: 'What happens with `async function f() { return 1 } console.log(f())`?',
+      answer: 'It logs a `Promise` resolved with `1`, not `1`. An async function always returns a promise; use `await f()` or `.then()` to get the value.'
+    },
+    {
+      question: 'What does `0.1 + 0.2 === 0.3` give, and how do you compare safely?',
+      answer: '`false`, because binary floating point cannot represent these decimals exactly (the sum is `0.30000000000000004`). Compare with `Math.abs(a - b) < Number.EPSILON`, or use integers (cents) for money.'
+    }
+  ],
+  dsa: [
+    {
+      question: 'How do you find two numbers in an array that add up to a target in O(n)?',
+      answer: 'Walk the array with a `Map` of value to index. For each `x`, check whether `target - x` is in the map; if so, return both indices, otherwise store `x`. That is one pass, O(n) time and O(n) space.'
+    },
+    {
+      question: 'Explain the sliding-window technique with an example.',
+      answer: 'Keep a window `[left, right]` and move the ends instead of re-scanning. For “longest substring without repeating characters”, extend `right`, and when a character repeats, move `left` past its last index stored in a map. Each index moves at most twice, so it is O(n).'
+    },
+    {
+      question: 'How do you detect a cycle in a linked list?',
+      answer: 'Use Floyd’s tortoise and hare: a slow pointer moves one step and a fast pointer two. If they meet there is a cycle; if fast reaches `null` there is not. To find the cycle start, reset one pointer to the head and move both one step until they meet.'
+    },
+    {
+      question: 'When would you use BFS versus DFS?',
+      answer: 'BFS uses a queue and finds the shortest path in an unweighted graph, level by level. DFS uses recursion or a stack and suits path existence, topological sort, cycle detection and backtracking. Both are O(V + E).'
+    },
+    {
+      question: 'How do you flatten a nested array without `flat()`?',
+      answer: 'Recursively: for each item, if `Array.isArray(item)` concatenate the flattened item, otherwise push it. An iterative version uses a stack, popping items and pushing array contents back, and then reversing the result. Add a `depth` parameter to match `flat(depth)`.'
+    },
+    {
+      question: 'How do you implement an LRU cache with O(1) operations?',
+      answer: 'Combine a hash map with a doubly linked list, or in JavaScript use a `Map`, which keeps insertion order. On `get`, delete and re-insert the key to mark it recent. On `put`, if over capacity, delete `map.keys().next().value`, the oldest entry.'
+    },
+    {
+      question: 'What is memoisation, and how does it relate to dynamic programming?',
+      answer: 'Memoisation caches results of a pure function by its arguments. Top-down DP is recursion plus memoisation; bottom-up DP fills a table iteratively. Both turn exponential problems with overlapping subproblems, like Fibonacci or coin change, into polynomial time.'
+    }
+  ],
+  machineCoding: [
+    {
+      question: 'How would you build an autocomplete/typeahead component?',
+      answer: 'Debounce input (about 250ms), cancel stale requests (`switchMap` or `AbortController`), cache results by query, and handle loading, empty and error states. For accessibility use the combobox pattern: `role="combobox"`, a `listbox` popup, `aria-activedescendant`, and arrow/Enter/Escape keys. Highlight matches without using `innerHTML` on user text.'
+    },
+    {
+      question: 'How do you implement infinite scroll efficiently?',
+      answer: 'Use an `IntersectionObserver` on a sentinel element near the end of the list to load the next page, guard against duplicate requests, and stop when there are no more items. For long lists, virtualise so only visible rows are rendered, and keep a “Load more” button as a fallback.'
+    },
+    {
+      question: 'Design a reusable modal or toast system.',
+      answer: 'Expose a service or hook (`open(component, data)`) that renders into a portal or overlay container. Manage a stack for nested modals, trap focus and restore it, close on Escape and backdrop click, and return a result promise. Toasts queue with auto-dismiss timers that pause on hover, and announce through `aria-live`.'
+    },
+    {
+      question: 'How would you build a nested comments or file tree component?',
+      answer: 'Model it as a tree, or store it normalised as a flat map with parent IDs for easy updates. Render recursively, with collapse state kept per node. Use the `tree`/`treeitem` roles with arrow-key navigation, and lazy-load children for large trees.'
+    },
+    {
+      question: 'How do you build a star rating component?',
+      answer: 'Use a radio group so it is keyboard and screen-reader friendly: each star is a radio with a label like “4 stars”. Show a hover preview, support half stars with clipping, and control it with `value` and a change event so it works in forms.'
+    },
+    {
+      question: 'Implement a polyfill for `Promise.all`.',
+      answer: 'Return a new Promise. Track a results array and a remaining counter. For each input, call `Promise.resolve(item).then(value => { results[i] = value; if (--remaining === 0) resolve(results); }, reject)`. Resolve immediately for an empty input, and keep results in input order, not completion order.'
+    },
+    {
+      question: 'How do you approach a machine-coding round in general?',
+      answer: 'Clarify requirements and edge cases first, sketch the component and state shape, and build the simplest working version before polishing. Keep logic separate from the view, name things clearly, handle loading, error and empty states, and mention accessibility, performance and tests you would add with more time.'
+    }
+  ]
+};

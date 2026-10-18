@@ -139,4 +139,18 @@ describe('AppComponent', () => {
     expect(component.dashboardCodeDigits.join('')).toBe('12345678901234');
     expect(verify).toHaveBeenCalledOnceWith('12345678901234');
   });
+
+  it('routes to the lazy Interview Q&A feature and hides auto-scroll there', () => {
+    const navigateByUrl = jasmine.createSpy('navigateByUrl').and.resolveTo(true);
+    Object.assign(component, { router: { navigateByUrl, url: '/' } });
+
+    component.getNote();
+
+    expect(navigateByUrl).toHaveBeenCalledWith('/interview-qa');
+    expect(component.isOverlay).toBeFalse();
+
+    Object.assign(component, { router: { url: '/interview-qa' } });
+    expect(component.isOverlay).toBeTrue();
+    expect(component.showAutoScroll).toBeFalse();
+  });
 });

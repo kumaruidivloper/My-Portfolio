@@ -1,0 +1,87 @@
+:host {
+  background-color: var(--bg-color);
+  display: flex;
+  flex-direction: column;
+  inset: 0;
+  overflow: hidden;
+  position: fixed;
+  z-index: 99999;
+}
+
+.qa-header {
+  align-items: center;
+  background: var(--bg-color);
+  box-shadow: var(--box-shadow);
+  display: flex;
+  flex: 0 0 auto;
+  gap: 1.6rem;
+  justify-content: space-between;
+  padding: 1.4rem 2.4rem;
+  position: relative;
+  z-index: 1;
+}
+
+.qa-title {
+  color: var(--black);
+  font-size: 2rem;
+  font-weight: 600;
+
+  i,
+  span {
+    color: var(--green);
+  }
+}
+
+.qa-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+  justify-content: flex-end;
+}
+
+.qa-button {
+  align-items: center;
+  background: var(--bg-color);
+  border-radius: 5rem;
+  box-shadow: var(--box-shadow);
+  color: var(--black);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 1.5rem;
+  gap: 0.8rem;
+  padding: 0.9rem 2.2rem;
+}
+
+.qa-button:hover,
+.qa-button:focus-visible {
+  box-shadow: var(--box-shadow-inset);
+  color: var(--green);
+}
+
+.qa-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 2rem;
+}
+
+@media (max-width: 600px) {
+  .qa-header {
+    padding: 1.2rem 1.6rem;
+  }
+
+  .qa-title {
+    font-size: 1.7rem;
+    white-space: nowrap;
+  }
+
+  .qa-button {
+    font-size: 1.3rem;
+    padding: 0.8rem 1.4rem;
+  }
+
+  .hide-sm {
+    display: none;
+  }
+}

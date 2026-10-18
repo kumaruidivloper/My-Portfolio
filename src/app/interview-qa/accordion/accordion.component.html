@@ -1,0 +1,65 @@
+<div class="widget-dashboard">
+  @for (menu of menus; track menu; let i = $index) {
+    <article class="widget" [class.active]="menu.active">
+      <button
+        type="button"
+        class="widget-header"
+        (click)="toggle(i)"
+        [attr.aria-expanded]="menu.active"
+        [attr.aria-controls]="'widget-panel-' + i">
+        <span class="widget-icon"><i [class]="menu.iconClass" aria-hidden="true"></i></span>
+        <span class="widget-title">
+          <strong>{{ menu.name }}</strong>
+          <small>{{ menu.submenu.length }} topics · {{ questionCount(menu) }} questions</small>
+        </span>
+        <i class="fa fa-chevron-down widget-toggle" aria-hidden="true"></i>
+      </button>
+
+      <div class="topic-list" role="group" [attr.aria-label]="menu.name + ' topics'">
+        @for (item of menu.submenu; track $index; let t = $index) {
+          <button
+            type="button"
+            class="topic"
+            [class.selected]="menu.active && selectedTopicIndex(menu) === t"
+            [attr.aria-pressed]="menu.active && selectedTopicIndex(menu) === t"
+            (click)="openTopic(i, t)">
+            {{ item.name }}
+            <span class="topic-count">{{ item.questions?.length ?? 0 }}</span>
+          </button>
+        }
+      </div>
+
+      <div class="widget-panel" [id]="'widget-panel-' + i" [attr.inert]="menu.active ? null : ''">
+        <div class="widget-panel-inner">
+          @if (selectedTopic(menu); as topic) {
+            <div class="qa-panel">
+              <h4>
+                <i class="fa fa-comments" aria-hidden="true"></i>
+                Interview Q&amp;A · {{ topic.name }}
+              </h4>
+              @for (qa of topic.questions ?? []; track qa.question; let q = $index) {
+                <details class="qa-item" [open]="q === 0">
+                  <summary>
+                    <span class="qa-num">Q{{ q + 1 }}</span>
+                    <span>
+                      @for (seg of codeSegments(qa.question); track $index) {
+                        @if (seg.code) {<code>{{ seg.text }}</code>} @else {<span>{{ seg.text }}</span>}
+                      }
+                    </span>
+                  </summary>
+                  <p>
+                    @for (seg of codeSegments(qa.answer); track $index) {
+                      @if (seg.code) {<code>{{ seg.text }}</code>} @else {<span>{{ seg.text }}</span>}
+                    }
+                  </p>
+                </details>
+              } @empty {
+                <p class="qa-empty">No questions yet for this topic.</p>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </article>
+  }
+</div>

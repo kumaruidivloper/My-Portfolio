@@ -1,0 +1,14 @@
+<div class="qa-header">
+  <h2 class="qa-title"><i class="fas fa-comments" aria-hidden="true"></i> Interview <span>Q&amp;A</span></h2>
+  <div class="qa-actions">
+    <a class="qa-button" [href]="practiceUrl" target="_blank" rel="noopener noreferrer">
+      <i class="fas fa-external-link-alt" aria-hidden="true"></i> <span><span class="hide-sm">More practice on </span>InterviewDepth</span>
+    </a>
+    <button #closeButton type="button" class="qa-button" (click)="close()" aria-label="Close interview Q&A">
+      <i class="fas fa-times" aria-hidden="true"></i> Close
+    </button>
+  </div>
+</div>
+<div class="qa-body">
+  <app-accordion [options]="options" [menus]="menus"></app-accordion>
+</div>

@@ -93,15 +93,6 @@
     100%{transform: rotate(1turn)}
   }
 
-  .overlay {
-    display: block;
-    position: absolute;
-    width: 100%;
-    background-color: #000;
-    opacity: 0.997;
-    z-index: 99999;
-  }
-
   .landingTextStyle {
     padding: 2rem; 
     font-size: 3rem; 
@@ -110,45 +101,6 @@
   .W100 {
     width: 100%;
   }
-  .overlayButtonContainer {
-    width: 100%; 
-    padding: 8px; 
-    text-align: center; 
-    font-size: 1.8rem; 
-    color: #fff;
-  }
-  .buttonBg {
-    cursor: pointer; 
-    display: inline-block; 
-    padding: 5px 15px; 
-    background-color: red; 
-    border-radius: 2rem;
-  }
-  .accordionBg {
-    width: 100%; 
-    padding: 2rem;  
-    background-image: linear-gradient(20deg, #08aeea 0%, #2af598 100%); 
-    overflow:auto;
-  }
-  
-  .content
-  {
-    .javaScript-ref-link {
-      display: block;
-      margin: 6rem 0 0 0;
-      border-radius: 5rem;
-      font-size: 1.5rem;
-      box-shadow: var(--box-shadow);
-      color: var(--black);
-      padding: 1rem 4rem;
-    }
-    .javaScript-ref-link:hover
-    {
-      box-shadow: var(--box-shadow-inset);
-      color: var(--green);
-    }
-  }
-
   /* Put this code in your CSS file */
 
 /* The div container */

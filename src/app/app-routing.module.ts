@@ -10,6 +10,13 @@ const routes: Routes = [
       import('./my-dashboard/my-dashboard.module').then(
         (module) => module.MyDashboardModule
       )
+  },
+  {
+    path: 'interview-qa',
+    loadChildren: () =>
+      import('./interview-qa/interview-qa.module').then(
+        (module) => module.InterviewQaModule
+      )
   }
 ];
 

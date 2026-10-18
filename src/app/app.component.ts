@@ -6,7 +6,6 @@ import { AppOptions } from './model/model';
 import { DataService } from './service/data.service';
 import { DashboardAccessGuard } from './service/dashboard-access.guard';
 import { ConfirmationCodeService } from './service/confirmation-code.service';
-import { Config, Menu } from './accordion/types';
 import { TimeService } from './service/time.service';
 import { environment } from '../environments/environment';
 
@@ -22,46 +21,6 @@ export class AppComponent implements OnInit, OnDestroy {
   isDashboardPromptOpen = false;
   dashboardCodeError = '';
 
-      // signle open mode
-      options: Config = { multi: false };
-  
-      menus: Menu[] = [
-        { 
-          name: 'Front-end',
-          iconClass: 'fa fa-code',
-          active: true,
-          submenu: [
-            { name: 'HTML', url: '#' },
-            { name: 'CSS', url: '#' },
-            { name: 'Javascript', url: '#' },
-            { name: 'Javascript', url: '#' },
-            { name: 'Javascript', url: '#' },
-            { name: 'Javascript', url: '#' },
-            { name: 'Javascript', url: '#' }
-          ]
-        },
-        { 
-          name: 'Responsive web',
-          iconClass: 'fa fa-mobile',
-          active: false,
-          submenu: [
-            { name: 'Tablets', url: '#' },
-            { name: 'Mobiles', url: '#' },
-            { name: 'Desktop', url: '#' }
-          ]
-        },
-        { 
-          name: 'Web Browser',
-          iconClass: 'fa fa-globe',
-          active: false,
-          submenu: [
-            { name: 'Chrome', url: '#' },
-            { name: 'Firefox', url: '#' },
-            { name: 'Desktop', url: '#' }
-          ]
-        }
-      ];
-  
   data: any;
   isDataLoaded: boolean = false;
   title = 'Kumar UI';
@@ -72,8 +31,6 @@ export class AppComponent implements OnInit, OnDestroy {
   isDarkeMode = true;
   isScrollBottom = true;
   currentYear: number=new Date().getFullYear();
-  contentHeight: number | undefined;
-  isOverlay: boolean = false;
   currentTime: Date | undefined;
   greeting = '';
   isDaytime: boolean | undefined;
@@ -85,10 +42,13 @@ export class AppComponent implements OnInit, OnDestroy {
   private timeUpdateInterval?: ReturnType<typeof setInterval>;
   private dataSubscription?: Subscription;
   private loadedTimeout?: ReturnType<typeof setTimeout>;
-  private contentHeightTimeout?: ReturnType<typeof setTimeout>;
 
   get showAutoScroll(): boolean {
-    return !this.router.url.startsWith('/dashboard');
+    return !this.router.url.startsWith('/dashboard') && !this.isOverlay;
+  }
+
+  get isOverlay(): boolean {
+    return this.router.url.startsWith('/interview-qa');
   }
 
 
@@ -140,7 +100,6 @@ export class AppComponent implements OnInit, OnDestroy {
     }, () => {
       this.loadedTimeout = setTimeout(() => {
         this.isDataLoaded = true;
-        this.contentHeightTimeout = setTimeout(() => {this.contentHeight = document.body.scrollHeight}, 5000)
       },3500)
       
       //console.log("pross completed");
@@ -173,7 +132,6 @@ export class AppComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.dataSubscription?.unsubscribe();
     clearTimeout(this.loadedTimeout);
-    clearTimeout(this.contentHeightTimeout);
     this.renderer.removeClass(this.document.body, 'scrollOff');
     if (this.barAnimationTimeout) {
       clearTimeout(this.barAnimationTimeout);
@@ -293,9 +251,9 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   getNote(): void {
-    //console.log(this.contentHeight);
-    this.isOverlay = true;
-    this.renderer.addClass(document.body, 'scrollOff');
+    this.closeSideMenu();
+    // The InterviewQaModule chunk is lazy-loaded by the router on first visit.
+    void this.router.navigateByUrl('/interview-qa');
   }
 
   private closeSideMenu(): void {
@@ -393,11 +351,6 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private dashboardCodeInputs(): NodeListOf<HTMLInputElement> {
     return this.document.querySelectorAll<HTMLInputElement>('.dashboard-code-input');
-  }
-
-  closeOverlay(): void {
-    this.renderer.removeClass(document.body, 'scrollOff');
-    this.isOverlay = false;
   }
 
 }
