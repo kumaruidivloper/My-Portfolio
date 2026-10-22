@@ -857,25 +857,72 @@ body.night .ngx-charts-tooltip-content .chart-value-tooltip span {
     box-shadow: var(--box-shadow-inset);
 }
 
+/* Theme switch: the Font Awesome glyph (moon = light, sun = dark) is the sliding knob */
 #theme-toggler{
     position: fixed;
     top:1.5rem; right: 2rem;
     z-index: 1002;
-    height: 5rem;
-    width: 5rem;
-    line-height: 5rem;
-    border-radius: 50%;
-    font-size: 2rem;
+    height: 4.2rem;
+    width: 8rem;
+    border-radius: 2.1rem;
+    font-size: 1.6rem;
     cursor: pointer;
-    box-shadow: var(--box-shadow);
-    text-align: center;
+    box-shadow: var(--box-shadow-inset);
     color:var(--black);
     background: var(--bg-color);
+    transition: box-shadow .2s ease, color .2s ease;
+}
+
+#theme-toggler::before,
+#theme-toggler::after{
+    position: absolute;
+    top: .5rem;
+    height: 3.2rem;
+    width: 3.2rem;
+    line-height: 3.2rem;
+    border-radius: 50%;
+    text-align: center;
+}
+
+#theme-toggler::before{
+    left: .5rem;
+    z-index: 1;
+    background: var(--bg-color);
+    box-shadow: var(--box-shadow);
+    color: var(--green);
+    transition: transform .3s ease;
+}
+
+#theme-toggler.fa-sun::before{
+    transform: translateX(3.8rem);
+}
+
+/* Faint hint of the other mode on the empty side of the track */
+#theme-toggler::after{
+    content: "\f185";
+    right: .5rem;
+    opacity: .45;
+}
+
+#theme-toggler.fa-sun::after{
+    content: "\f186";
+    right: auto;
+    left: .5rem;
 }
 
 #theme-toggler:hover{
-    color:var(--green);
-    box-shadow: var(--box-shadow-inset);
+    color: var(--green);
+}
+
+#theme-toggler:focus-visible{
+    outline: .2rem solid var(--green);
+    outline-offset: .3rem;
+}
+
+@media (prefers-reduced-motion: reduce){
+    #theme-toggler::before{
+        transition: none;
+    }
 }
 
 html body app-responsive-table .responsive-grid-page-controls button {
@@ -911,6 +958,15 @@ html body app-responsive-table .responsive-grid-page-controls button svg {
     align-items: center;
     justify-content: center;
     text-align: center;
+    /* One uniform vertical gap between the intro, QR form and social links */
+    gap: 4rem;
+}
+
+.home .content{
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    gap: 1.5rem;
 }
 
 .home .content h3{
@@ -923,12 +979,14 @@ html body app-responsive-table .responsive-grid-page-controls button svg {
 .home .content p{
     font-size: 2rem;
     color:var(--green);
-    padding-bottom: .5rem;
+}
+
+.home .content .btn{
+    margin-top: 0;
 }
 
 .home .share{
     position: relative;
-    top: 10rem;
     border-radius: .5rem;
     box-shadow: var(--box-shadow);
     padding:1rem;

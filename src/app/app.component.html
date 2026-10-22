@@ -46,7 +46,17 @@
       <i class="fa-regular fa-circle-down"></i>
     </div>
   }
-  <div id="theme-toggler" #themeToggler  (click)="themeTogglerClick()" class="fas fa-moon">
+  <div
+    id="theme-toggler"
+    #themeToggler
+    class="fas fa-moon"
+    role="switch"
+    tabindex="0"
+    aria-label="Dark theme"
+    [attr.aria-checked]="themeToggler.classList.contains('fa-sun')"
+    (click)="themeTogglerClick()"
+    (keydown.enter)="themeTogglerClick()"
+    (keydown.space)="$event.preventDefault(); themeTogglerClick()">
   </div>
   <!-- home section starts  -->
   <section class="home" id="home">
@@ -57,7 +67,7 @@
     </div>
     <div class="content">
       <div class="Qr-form">
-        <span class="close" (click)="QrReset()">X</span>
+        <span class="close fas fa-times" role="button" tabindex="0" aria-label="Clear QR text" (click)="QrReset()" (keydown.enter)="QrReset()" (keydown.space)="$event.preventDefault(); QrReset()"></span>
         <input class="qr-input-box box" [(ngModel)]="inputValue" placeholder="Enter your text here to generate the QR code..." (keyup)="qrValueCheck()">
         <!-- <p>You entered: {{ inputValue }}</p> -->
       </div>
