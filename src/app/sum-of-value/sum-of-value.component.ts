@@ -4,6 +4,7 @@ import { forkJoin, Subscription } from 'rxjs';
 import {
   chartColorScheme, CHART_TYPE_OPTIONS, ChartDatum, ChartType, isChartType, toLineChartSeries, formatCompactAxisValue
 } from '../model/chart-type';
+import { PreviewViewOption } from '../widget-preview-chart/widget-preview-chart.component';
 import { PfApiDocument, PfRecord } from '../model/pf-record';
 import { PfDataService } from '../service/pf-data.service';
 
@@ -46,6 +47,11 @@ function formatMonth(key: string): string {
 })
 export class SumOfValueComponent implements OnInit, OnDestroy {
   isExpanded = false;
+  previewView = 'total';
+  readonly previewViews: readonly PreviewViewOption[] = [
+    { value: 'total', label: 'Total PF amount' },
+    { value: 'interest', label: 'Monthly interest' }
+  ];
   isLoading = false;
   errorMessage = '';
   selectedInterestChartType: ChartType = 'bar';

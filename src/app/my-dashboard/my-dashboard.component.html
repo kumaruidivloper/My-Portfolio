@@ -60,7 +60,15 @@
       }
 
       @if (!isTransferSectionExpanded) {
-        <app-widget-preview-chart [data]="chartData" [label]="selectedMetricOption.label" [loading]="isLoading" [formatValue]="formatPreviewValue" (click)="toggleTransferSection()"></app-widget-preview-chart>
+        <app-widget-preview-chart
+          [data]="chartData"
+          [label]="selectedMetricOption.label"
+          [loading]="isLoading"
+          [formatValue]="formatPreviewValue"
+          [views]="previewViews"
+          [view]="selectedMetric"
+          (viewChange)="selectMetric($any($event))"
+          (click)="toggleTransferSection()"></app-widget-preview-chart>
       }
 
       @if (isTransferSectionExpanded) {

@@ -15,6 +15,34 @@ describe('WidgetPreviewChartComponent', () => {
     return fixture;
   }
 
+  it('shows a view toggle that emits the chosen view without bubbling the click', () => {
+    const fixture = TestBed.createComponent(WidgetPreviewChartComponent);
+    fixture.componentRef.setInput('data', [{ name: 'Jan', value: 1 }, { name: 'Feb', value: 2 }]);
+    fixture.componentRef.setInput('views', [{ value: 'a', label: 'Balance' }, { value: 'b', label: 'Difference' }]);
+    fixture.componentRef.setInput('view', 'a');
+    fixture.detectChanges();
+    const element: HTMLElement = fixture.nativeElement;
+    const emitted: string[] = [];
+    fixture.componentInstance.viewChange.subscribe((value) => emitted.push(value));
+    const hostClick = jasmine.createSpy('hostClick');
+    element.addEventListener('click', hostClick);
+
+    const buttons = element.querySelectorAll<HTMLButtonElement>('.preview-view');
+    expect(buttons.length).toBe(2);
+    expect(buttons[0].getAttribute('aria-pressed')).toBe('true');
+
+    buttons[1].click();
+    buttons[0].click();
+
+    expect(emitted).toEqual(['b']);
+    expect(hostClick).not.toHaveBeenCalled();
+  });
+
+  it('hides the view toggle when fewer than two views are given', () => {
+    const fixture = render({ data: [{ name: 'Jan', value: 1 }, { name: 'Feb', value: 2 }] });
+    expect((fixture.nativeElement as HTMLElement).querySelector('.preview-views')).toBeNull();
+  });
+
   it('draws a trend line with the latest value and change', () => {
     const fixture = render({
       label: 'PF Balance',

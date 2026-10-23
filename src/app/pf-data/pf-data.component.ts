@@ -5,6 +5,7 @@ import { Subscription, timer } from 'rxjs';
 import {
   chartColorScheme, CHART_TYPE_OPTIONS, ChartDatum, ChartType, isChartType, toLineChartSeries, formatCompactAxisValue
 } from '../model/chart-type';
+import { PreviewViewOption } from '../widget-preview-chart/widget-preview-chart.component';
 import { PfDataService, PfResourceId } from '../service/pf-data.service';
 import { PfApiDocument, PfRecord } from '../model/pf-record';
 import { ConfirmationCodeService } from '../service/confirmation-code.service';
@@ -202,6 +203,11 @@ export class PfDataComponent implements OnInit, OnDestroy {
   get axisLabel(): string {
     return this.selectedMetric === 'pfAmount' ? 'PF balance (INR)' : 'Monthly difference (INR)';
   }
+
+  readonly previewViews: readonly PreviewViewOption[] = [
+    { value: 'pfAmount', label: 'PF balance' },
+    { value: 'difference', label: 'Monthly difference' }
+  ];
 
   selectMetric(metric: PfMetric): void {
     this.selectedMetric = metric;

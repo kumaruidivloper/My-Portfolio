@@ -5,6 +5,7 @@ import { Subscription, timer } from 'rxjs';
 import {
   chartColorScheme, CHART_TYPE_OPTIONS, ChartDatum, ChartType, isChartType, toLineChartSeries, formatCompactAxisValue
 } from '../model/chart-type';
+import { PreviewViewOption } from '../widget-preview-chart/widget-preview-chart.component';
 import { GratuityApiDocument, GratuityRecord } from '../model/gratuity-record';
 import { ConfirmationCodeService } from '../service/confirmation-code.service';
 import { GratuityDataService, GratuityResourceId } from '../service/gratuity-data.service';
@@ -141,6 +142,22 @@ export class KumarGratuityComponent implements OnInit, OnDestroy {
       name: this.formatMonth(record.date),
       value: record.gratuity
     }));
+  }
+
+  get differenceChartData(): ChartDatum[] {
+    return [...this.records].reverse().map((record) => ({
+      name: this.formatMonth(record.date),
+      value: record.difference
+    }));
+  }
+
+  previewView = 'value';
+
+  get previewViews(): PreviewViewOption[] {
+    return [
+      { value: 'value', label: this.recordTypeLabel },
+      { value: 'difference', label: 'Monthly difference' }
+    ];
   }
 
   get colorScheme() {

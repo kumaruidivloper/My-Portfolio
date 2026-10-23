@@ -4,6 +4,42 @@
   margin-top: 1.6rem;
 }
 
+.preview-views {
+  cursor: default;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.preview-view {
+  background: var(--bg-color);
+  border-radius: 2rem;
+  box-shadow: var(--box-shadow);
+  color: var(--light-color);
+  cursor: pointer;
+  font-size: 1.15rem;
+  font-weight: 600;
+  padding: 0.5rem 1.2rem;
+  text-transform: none;
+  transition: box-shadow 0.2s ease, color 0.2s ease;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--green);
+  }
+
+  &:focus-visible {
+    outline: 0.2rem solid var(--green);
+    outline-offset: 0.2rem;
+  }
+
+  &.selected {
+    box-shadow: var(--box-shadow-inset);
+    color: var(--green);
+  }
+}
+
 .preview {
   border-radius: 1rem;
   box-shadow: var(--box-shadow-inset);

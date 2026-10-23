@@ -1,3 +1,17 @@
+@if (views.length > 1) {
+  <div class="preview-views" role="group" [attr.aria-label]="'Preview view'" (click)="$event.stopPropagation()">
+    @for (option of views; track option.value) {
+      <button
+        type="button"
+        class="preview-view"
+        [class.selected]="option.value === view"
+        [attr.aria-pressed]="option.value === view"
+        (click)="selectView(option.value, $event)">
+        {{ option.label }}
+      </button>
+    }
+  </div>
+}
 @if (loading && !latest) {
   <div class="preview-skeleton" role="status" aria-label="Loading chart preview"></div>
 } @else if (latest) {

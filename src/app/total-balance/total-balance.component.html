@@ -21,7 +21,14 @@
   </header>
 
   @if (!isExpanded) {
-    <app-widget-preview-chart [data]="totalChartData" [label]="'Overall balance'" [loading]="isLoading" (click)="toggleExpanded()"></app-widget-preview-chart>
+    <app-widget-preview-chart
+      [data]="previewView === 'interest' ? interestChartData : totalChartData"
+      [label]="previewView === 'interest' ? 'Monthly interest' : 'Overall balance'"
+      [loading]="isLoading"
+      [views]="previewViews"
+      [view]="previewView"
+      (viewChange)="previewView = $event"
+      (click)="toggleExpanded()"></app-widget-preview-chart>
   }
 
   @if (isExpanded) {

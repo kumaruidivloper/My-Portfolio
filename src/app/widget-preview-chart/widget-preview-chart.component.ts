@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
 import { ChartDatum, formatCompactAxisValue } from '../model/chart-type';
 
 const WIDTH = 300;
@@ -8,6 +8,11 @@ const GRID_ROWS = 4;
 const MAX_GRID_COLUMNS = 12;
 
 let nextGradientId = 0;
+
+export interface PreviewViewOption {
+  value: string;
+  label: string;
+}
 
 /** Compact, dependency-free area chart shown on a collapsed dashboard widget card. */
 @Component({
@@ -21,6 +26,10 @@ export class WidgetPreviewChartComponent implements OnChanges {
   @Input() label = '';
   @Input() loading = false;
   @Input() formatValue: (value: number) => string = (value) => `₹ ${formatCompactAxisValue(value)}`;
+  /** Optional alternative views; when two or more are given a toggle is shown to switch between them. */
+  @Input() views: readonly PreviewViewOption[] = [];
+  @Input() view = '';
+  @Output() viewChange = new EventEmitter<string>();
 
   readonly width = WIDTH;
   readonly height = HEIGHT;
@@ -66,6 +75,14 @@ export class WidgetPreviewChartComponent implements OnChanges {
     // One vertical line per point like the full chart, thinned out for long series.
     const every = Math.ceil(points.length / MAX_GRID_COLUMNS);
     this.gridColumns = points.filter((_, index) => index % every === 0 || index === points.length - 1).map(({ x }) => x);
+  }
+
+  selectView(value: string, event: Event): void {
+    // The card preview expands its widget on click; switching views shouldn't.
+    event.stopPropagation();
+    if (value !== this.view) {
+      this.viewChange.emit(value);
+    }
   }
 
   get summary(): string {

@@ -4,6 +4,7 @@ import { Subscription } from 'rxjs';
 import {
   chartColorScheme, CHART_TYPE_OPTIONS, ChartDatum, ChartType, isChartType, toLineChartSeries, formatCompactAxisValue
 } from '../model/chart-type';
+import { PreviewViewOption } from '../widget-preview-chart/widget-preview-chart.component';
 import { ResponsiveGridColumn, ResponsiveGridRow } from '../responsive-table/responsive-table.component';
 import { TotalRecord } from '../model/total-record';
 import { TotalBalanceService } from '../service/total-balance.service';
@@ -16,6 +17,11 @@ import { TotalBalanceService } from '../service/total-balance.service';
 })
 export class TotalBalanceComponent implements OnInit, OnDestroy {
   isExpanded = false;
+  previewView = 'total';
+  readonly previewViews: readonly PreviewViewOption[] = [
+    { value: 'total', label: 'Overall balance' },
+    { value: 'interest', label: 'Monthly interest' }
+  ];
   isLoading = false;
   errorMessage = '';
   // Stored oldest-first so charts read left to right.

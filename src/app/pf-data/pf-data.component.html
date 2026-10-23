@@ -31,7 +31,14 @@
   </header>
 
   @if (!isExpanded) {
-    <app-widget-preview-chart [data]="chartData" [label]="metricLabel" [loading]="isLoading" (click)="toggleExpanded()"></app-widget-preview-chart>
+    <app-widget-preview-chart
+      [data]="chartData"
+      [label]="metricLabel"
+      [loading]="isLoading"
+      [views]="previewViews"
+      [view]="selectedMetric"
+      (viewChange)="selectMetric($any($event))"
+      (click)="toggleExpanded()"></app-widget-preview-chart>
   }
 
   @if (isExpanded) {

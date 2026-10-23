@@ -4,6 +4,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { forkJoin, merge, Subscription, timer } from 'rxjs';
 import { ColorHelper, ScaleType } from '@swimlane/ngx-charts';
 import { chartColorScheme, CHART_TYPE_OPTIONS, ChartType, isChartType, formatCompactAxisValue } from '../model/chart-type';
+import { PreviewViewOption } from '../widget-preview-chart/widget-preview-chart.component';
 import { TransferRecord } from '../model/transfer';
 import { TransferService } from '../service/transfer.service';
 import { ConfirmationCodeService } from '../service/confirmation-code.service';
@@ -200,6 +201,10 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   get metricOptions(): { label: string; value: string }[] {
     return this.metrics.map((metric) => ({ label: metric.label, value: metric.key }));
+  }
+
+  get previewViews(): PreviewViewOption[] {
+    return this.metrics.map(({ label, key }) => ({ label, value: key }));
   }
 
   get allDashboardMetricOptions(): { label: string; value: string }[] {

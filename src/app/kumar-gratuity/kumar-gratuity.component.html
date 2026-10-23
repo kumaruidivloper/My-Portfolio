@@ -28,7 +28,14 @@
   </header>
 
   @if (!isExpanded) {
-    <app-widget-preview-chart [data]="chartData" [label]="recordTypeLabel" [loading]="isLoading" (click)="toggleExpanded()"></app-widget-preview-chart>
+    <app-widget-preview-chart
+      [data]="previewView === 'difference' ? differenceChartData : chartData"
+      [label]="previewView === 'difference' ? 'Monthly difference' : recordTypeLabel"
+      [loading]="isLoading"
+      [views]="previewViews"
+      [view]="previewView"
+      (viewChange)="previewView = $event"
+      (click)="toggleExpanded()"></app-widget-preview-chart>
   }
 
   @if (isExpanded) {
