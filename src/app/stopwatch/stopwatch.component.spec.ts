@@ -1,7 +1,6 @@
 /// <reference types="jasmine" />
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { provideNoopAnimations } from '@angular/platform-browser/animations';
 
 import { StopwatchComponent } from './stopwatch.component';
 
@@ -11,8 +10,7 @@ describe('StopwatchComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [StopwatchComponent],
-      providers: [provideNoopAnimations()]
+      declarations: [StopwatchComponent]
     });
     fixture = TestBed.createComponent(StopwatchComponent);
     component = fixture.componentInstance;
@@ -33,13 +31,21 @@ describe('StopwatchComponent', () => {
     expect(component.formatTime()).toBe('01:01.23');
   });
 
-  it('starts and stops the timer', () => {
-    jasmine.clock().install();
-    component.start();
-    jasmine.clock().tick(25);
-    component.stop();
+  it('starts and stops the timer, updating once per animation frame', () => {
+    let frame: FrameRequestCallback | undefined;
+    spyOn(window, 'requestAnimationFrame').and.callFake((cb) => { frame = cb; return 1; });
+    const cancel = spyOn(window, 'cancelAnimationFrame');
+    let now = 1_000;
+    spyOn(Date, 'now').and.callFake(() => now);
 
+    component.start();
+    expect(component.isRunning).toBeTrue();
+    now += 1_230;
+    frame!(0);
+    expect(fixture.nativeElement.querySelector('.time').textContent).toContain('00:01.23');
+
+    component.stop();
     expect(component.isRunning).toBeFalse();
-    jasmine.clock().uninstall();
+    expect(cancel).toHaveBeenCalled();
   });
 });

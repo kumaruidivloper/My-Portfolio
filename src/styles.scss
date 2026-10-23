@@ -1648,6 +1648,14 @@ body:has(.dashboard-page) {
   order: -1;
 }
 
+/* Reserves space for a deferred card until it scrolls into view */
+.dashboard-widget-grid > .widget-placeholder {
+  background: var(--bg-color);
+  border-radius: 1.2rem;
+  box-shadow: var(--box-shadow);
+  min-height: 24rem;
+}
+
 @media (max-width: 700px) {
   .dashboard-widget-grid {
     grid-template-columns: minmax(0, 1fr);

@@ -1,11 +1,10 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { provideHttpClient, withInterceptorsFromDi, withXhr } from  '@angular/common/http';
-import { QRCodeModule } from 'angularx-qrcode';
 import { FormsModule } from '@angular/forms';
 import { CounterComponent } from './counter/counter.component';
 import { StopwatchComponent } from './stopwatch/stopwatch.component';
@@ -27,7 +26,5 @@ import { PortfolioComponent } from './portfolio/portfolio.component';
     ],
     bootstrap: [AppComponent], imports: [BrowserModule,
         AppRoutingModule,
-        QRCodeModule,
-        FormsModule,
-        BrowserAnimationsModule], providers: [provideHttpClient(withXhr(), withInterceptorsFromDi())] })
+        FormsModule], providers: [provideHttpClient(withXhr(), withInterceptorsFromDi()), provideAnimationsAsync()] })
 export class AppModule { }

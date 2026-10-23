@@ -19,6 +19,7 @@ import { VasukiSuperComponent } from '../vasuki-super/vasuki-super.component';
 import { ResponsiveTableComponent } from '../responsive-table/responsive-table.component';
 import { WidgetPreviewChartComponent } from '../widget-preview-chart/widget-preview-chart.component';
 import { DashboardLoaderComponent } from '../dashboard-loader/dashboard-loader.component';
+import { RenderInViewDirective } from '../render-in-view/render-in-view.directive';
 
 @NgModule({
   declarations: [
@@ -34,7 +35,8 @@ import { DashboardLoaderComponent } from '../dashboard-loader/dashboard-loader.c
     VasukiSuperComponent,
     ResponsiveTableComponent,
     WidgetPreviewChartComponent,
-    DashboardLoaderComponent
+    DashboardLoaderComponent,
+    RenderInViewDirective
   ],
   imports: [
     CommonModule,

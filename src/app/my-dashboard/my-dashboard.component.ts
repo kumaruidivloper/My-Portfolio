@@ -4,6 +4,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { forkJoin, merge, Subscription, timer } from 'rxjs';
 import { ColorHelper, ScaleType } from '@swimlane/ngx-charts';
 import { chartColorScheme, CHART_TYPE_OPTIONS, ChartType, isChartType, formatCompactAxisValue } from '../model/chart-type';
+import { memoizeLast } from '../model/memoize';
 import { PreviewViewOption } from '../widget-preview-chart/widget-preview-chart.component';
 import { TransferRecord } from '../model/transfer';
 import { TransferService } from '../service/transfer.service';
@@ -200,16 +201,19 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly formatYAxisTick = formatCompactAxisValue;
 
   get metricOptions(): { label: string; value: string }[] {
-    return this.metrics.map((metric) => ({ label: metric.label, value: metric.key }));
+    return this.previewViews;
   }
 
   get previewViews(): PreviewViewOption[] {
-    return this.metrics.map(({ label, key }) => ({ label, value: key }));
+    return this.metricViewOptions ??= this.metrics.map(({ label, key }) => ({ label, value: key }));
   }
 
   get allDashboardMetricOptions(): { label: string; value: string }[] {
-    return this.allDashboardMetrics.map(({ label, key }) => ({ label, value: key }));
+    return this.allDashboardViewOptions ??= this.allDashboardMetrics.map(({ label, key }) => ({ label, value: key }));
   }
+
+  private metricViewOptions?: PreviewViewOption[];
+  private allDashboardViewOptions?: { label: string; value: string }[];
 
   readonly metrics: MetricOption[] = [
     {
@@ -682,17 +686,44 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     }];
   }
 
+  private readonly buildChartData = memoizeLast((transfers: TransferRecord[], metric: TransferMetric): ChartDatum[] =>
+    transfers.map((transfer) => ({
+      name: this.formatDate(transfer.dateOfTransfer),
+      value: transfer[metric]
+    })));
+  private readonly buildColorScheme = memoizeLast((data: ChartDatum[]) => chartColorScheme(data, 'transfers'));
+  private readonly buildLineChartData = memoizeLast((data: ChartDatum[], name: string) => [{ name, series: data }]);
+  private readonly buildSortedTransfers = memoizeLast(
+    (transfers: TransferRecord[], sortKey: TransferSortKey | null, direction: SortDirection): IndexedTransfer[] => {
+      const rows = transfers.map((transfer, index) => ({ transfer, index }));
+      if (sortKey === null) {
+        return rows;
+      }
+      return rows.sort((left, right) => {
+        const comparison = this.compareTransferValues(left.transfer, right.transfer, sortKey);
+        return comparison === 0
+          ? left.index - right.index
+          : direction === 'asc' ? comparison : -comparison;
+      });
+    });
+  private readonly buildTransferGridRows = memoizeLast((rows: IndexedTransfer[]): ResponsiveGridRow[] =>
+    rows.map(({ transfer }, actionIndex) => ({
+      actionIndex,
+      transferDate: this.formatDate(transfer.dateOfTransfer),
+      sent: this.formatTransferCurrency(transfer.amountTransferredAUD, 'AUD'),
+      rate: transfer.conversionRate.toFixed(2),
+      receivedDate: this.formatDate(transfer.receivedDate),
+      received: this.formatTransferCurrency(transfer.amountReceivedINR, 'INR')
+    })));
+
   get colorScheme() {
-    return chartColorScheme(this.chartData, 'transfers');
+    return this.buildColorScheme(this.chartData);
   }
 
   readonly formatPreviewValue = (value: number): string => this.formatChartValue(value);
 
   get chartData(): ChartDatum[] {
-    return this.transfers.map((transfer) => ({
-      name: this.formatDate(transfer.dateOfTransfer),
-      value: transfer[this.selectedMetric]
-    }));
+    return this.buildChartData(this.transfers, this.selectedMetric);
   }
 
   formatDate(value: string): string {
@@ -742,10 +773,7 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   get lineChartData(): { name: string; series: ChartDatum[] }[] {
-    return [{
-      name: this.selectedMetricOption.label,
-      series: this.chartData
-    }];
+    return this.buildLineChartData(this.chartData, this.selectedMetricOption.label);
   }
 
   get totalTransferredAUD(): number {
@@ -765,28 +793,11 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   get sortedTransfers(): IndexedTransfer[] {
-    const rows = this.transfers.map((transfer, index) => ({ transfer, index }));
-    const sortKey = this.sortKey;
-    if (sortKey === null) {
-      return rows;
-    }
-    return rows.sort((left, right) => {
-      const comparison = this.compareTransferValues(left.transfer, right.transfer, sortKey);
-      return comparison === 0
-        ? left.index - right.index
-        : this.sortDirection === 'asc' ? comparison : -comparison;
-    });
+    return this.buildSortedTransfers(this.transfers, this.sortKey, this.sortDirection);
   }
 
   get transferGridRows(): ResponsiveGridRow[] {
-    return this.sortedTransfers.map(({ transfer }, actionIndex) => ({
-      actionIndex,
-      transferDate: this.formatDate(transfer.dateOfTransfer),
-      sent: this.formatTransferCurrency(transfer.amountTransferredAUD, 'AUD'),
-      rate: transfer.conversionRate.toFixed(2),
-      receivedDate: this.formatDate(transfer.receivedDate),
-      received: this.formatTransferCurrency(transfer.amountReceivedINR, 'INR')
-    }));
+    return this.buildTransferGridRows(this.sortedTransfers);
   }
 
   sortGrid(key: string): void {

@@ -1,25 +1,19 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
-import { trigger, state, style, transition, animate } from '@angular/animations';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, NgZone, inject } from '@angular/core';
 
 @Component({
     selector: 'app-stopwatch',
     templateUrl: './stopwatch.component.html',
     styleUrls: ['./stopwatch.component.scss'],
-    animations: [
-      trigger('timeAnimation', [
-        state('running', style({ opacity: 1 })),
-        state('paused', style({ opacity: 0.5 })),
-        transition('running <=> paused', animate('300ms ease-out')),
-      ])
-    ],
-    changeDetection: ChangeDetectionStrategy.Eager,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: false
 })
 export class StopwatchComponent implements OnInit, OnDestroy {
   startTime!: number;
   elapsedTime!: number;
   isRunning!: boolean;
-  timer!: any;
+  private frameId: number | null = null;
+  private zone = inject(NgZone);
+  private cdr = inject(ChangeDetectorRef);
 
   ngOnInit() {
     this.reset();
@@ -31,27 +25,24 @@ export class StopwatchComponent implements OnInit, OnDestroy {
 
   start() {
     if (!this.isRunning) {
-      this.startTime = new Date().getTime() - this.elapsedTime;
-      this.timer = setInterval(() => {
-        this.elapsedTime = new Date().getTime() - this.startTime;
-      }, 10); // Update every 10 milliseconds
+      this.startTime = Date.now() - this.elapsedTime;
       this.isRunning = true;
+      // Tick once per frame outside Angular and refresh only this component, not the whole app.
+      this.zone.runOutsideAngular(() => this.tick());
     }
   }
 
   stop() {
     if (this.isRunning) {
-      clearInterval(this.timer);
+      this.cancelFrame();
+      this.elapsedTime = Date.now() - this.startTime;
       this.isRunning = false;
     }
   }
 
   reset() {
-    this.startTime = new Date().getTime();
+    this.startTime = Date.now();
     this.elapsedTime = 0;
-    if (!this.isRunning) {
-      clearInterval(this.timer);
-    }
   }
 
   formatTime(): string {
@@ -60,6 +51,19 @@ export class StopwatchComponent implements OnInit, OnDestroy {
     const milliseconds = Math.floor((this.elapsedTime % 1000) / 10);
 
     return `${this.padNumber(minutes)}:${this.padNumber(seconds)}.${this.padNumber(milliseconds)}`;
+  }
+
+  private tick = () => {
+    this.elapsedTime = Date.now() - this.startTime;
+    this.cdr.detectChanges();
+    this.frameId = requestAnimationFrame(this.tick);
+  };
+
+  private cancelFrame() {
+    if (this.frameId !== null) {
+      cancelAnimationFrame(this.frameId);
+      this.frameId = null;
+    }
   }
 
   private padNumber(value: number): string {

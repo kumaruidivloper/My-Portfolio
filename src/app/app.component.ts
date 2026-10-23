@@ -1,5 +1,5 @@
 
-import { Component, ViewChild, ElementRef, OnInit, OnDestroy, HostListener, Renderer2, Inject, DOCUMENT, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ViewChild, ElementRef, OnInit, OnDestroy, HostListener, Renderer2, Inject, DOCUMENT, ChangeDetectionStrategy, ChangeDetectorRef, Type, inject } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
 import { AppOptions } from './model/model';
@@ -37,6 +37,9 @@ export class AppComponent implements OnInit, OnDestroy {
   isThemeModeClicked: boolean = true;
   inputValue: string = '';
   isButtonDisabled: boolean = true;
+  qrCodeComponent: Type<unknown> | null = null;
+  private qrCodeLoading?: Promise<void>;
+  private cdr = inject(ChangeDetectorRef);
   private barAnimationTimeout?: ReturnType<typeof setTimeout>;
   private timeUpdateTimeout?: ReturnType<typeof setTimeout>;
   private timeUpdateInterval?: ReturnType<typeof setInterval>;
@@ -206,9 +209,24 @@ export class AppComponent implements OnInit, OnDestroy {
   qrValueCheck(): void {
     if(this.inputValue.length > 0) {
       this.isButtonDisabled = false;
+      this.loadQrCode();
     } else {
       this.isButtonDisabled = true;
     }
+  }
+
+  /** The QR library is only needed once the user types, so fetch it on demand. */
+  private loadQrCode(): void {
+    if (this.qrCodeComponent || this.qrCodeLoading) {
+      return;
+    }
+    this.qrCodeLoading = import('./qr-code-view/qr-code-view.component')
+      .then(({ QrCodeViewComponent }) => {
+        this.qrCodeComponent = QrCodeViewComponent;
+        this.cdr.markForCheck();
+      })
+      .catch((error) => console.error('Failed to load QR code', error))
+      .finally(() => this.qrCodeLoading = undefined);
   }
 
   QrReset() {

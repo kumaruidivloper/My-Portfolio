@@ -1,10 +1,16 @@
 /// <reference types="jasmine" />
 
-import { createInterviewMenus } from './interview-menus';
+import { Menu } from '../types';
+import { loadInterviewMenus } from './interview-menus';
 
-describe('createInterviewMenus', () => {
-  const menus = createInterviewMenus();
-  const topics = menus.flatMap(menu => menu.submenu);
+describe('loadInterviewMenus', () => {
+  let menus: Menu[];
+  let topics: Menu['submenu'];
+
+  beforeAll(async () => {
+    menus = await loadInterviewMenus();
+    topics = menus.flatMap(menu => menu.submenu);
+  });
 
   it('gives every topic several interview questions', () => {
     topics.forEach(topic => {

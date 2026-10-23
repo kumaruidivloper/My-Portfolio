@@ -1,16 +1,23 @@
 import { InterviewQuestion, Menu } from '../types';
-import { interviewQuestions } from './interview-questions';
-import { moreInterviewQuestions } from './interview-questions-more';
 
-function questionsFor(key: string): InterviewQuestion[] {
-  return [...(interviewQuestions[key] ?? []), ...(moreInterviewQuestions[key] ?? [])];
+type QuestionBank = Record<string, InterviewQuestion[]>;
+
+/** The question text lives in separate lazy chunks, so the dialog shell renders before it downloads. */
+export async function loadInterviewMenus(): Promise<Menu[]> {
+  const [{ interviewQuestions }, { moreInterviewQuestions }] = await Promise.all([
+    import('./interview-questions'),
+    import('./interview-questions-more')
+  ]);
+  return createInterviewMenus(interviewQuestions, moreInterviewQuestions);
 }
 
-function topic(name: string, key: string) {
-  return { name, url: '#', questions: questionsFor(key) };
-}
+export function createInterviewMenus(...banks: QuestionBank[]): Menu[] {
+  const topic = (name: string, key: string) => ({
+    name,
+    url: '#',
+    questions: banks.flatMap(bank => bank[key] ?? [])
+  });
 
-export function createInterviewMenus(): Menu[] {
   return [
     {
       name: 'Front-end',

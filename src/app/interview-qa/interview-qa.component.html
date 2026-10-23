@@ -10,5 +10,9 @@
   </div>
 </div>
 <div class="qa-body">
-  <app-accordion [options]="options" [menus]="menus"></app-accordion>
+  @if (menus(); as menus) {
+    <app-accordion [options]="options" [menus]="menus"></app-accordion>
+  } @else {
+    <p class="qa-loading" role="status"><i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Loading questions…</p>
+  }
 </div>

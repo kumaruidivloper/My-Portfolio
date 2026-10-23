@@ -1,4 +1,4 @@
-<div class="timer" [@timerAnimation]="timerState">
+<div class="timer" [class.running]="timerState === 'running'">
     <div>
       <label for="timerInput">Set Timer Duration (minutes): </label>
       <input type="number" id="timerInput" [(ngModel)]="userInputDuration" />
@@ -6,5 +6,5 @@
       <button (click)="stopTimer()">Stop</button>
       <button (click)="resetTimer()">Reset</button>
     </div>
-    {{ minutes | number: '2.0' }}:{{ seconds | number: '2.0' }}.<span [@millisecondsAnimation]="timerState">{{ milliseconds | number: '3.0-0' }}</span>
+    {{ minutes | number: '2.0' }}:{{ seconds | number: '2.0' }}.<span class="timer-ms">{{ milliseconds | number: '3.0-0' }}</span>
   </div>

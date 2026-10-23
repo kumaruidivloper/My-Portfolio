@@ -9,7 +9,7 @@
   }
   <header class="header" #header>
     <div class="user">
-      <a href="#"><img class="img-animation" src="{{data.intro[0].userImage}}" alt=""></a>
+      <a href="#"><img class="img-animation" [src]="data.intro[0].userImage" [alt]="data.intro[0].name" width="400" height="400" fetchpriority="high" decoding="async"></a>
       <h3>{{data.intro[0].name}}</h3>
       <p>{{data.intro[0].menuTitle}}</p>
     </div>
@@ -73,24 +73,9 @@
       </div>
       @if (!isButtonDisabled) {
         <div class="qrcodeImage">
-          <!--[imageSrc]="'assets/img/user-img.jpg'" we can add this prop to add image QR code center-->
-          <qrcode class="qr-code-placeholder"
-            [qrdata]="inputValue"
-            [allowEmptyString]="true"
-            [ariaLabel]="'QR Code image with the following content...'"
-            [cssClass]="'center'"
-            [colorDark]="'#000000ff'"
-            [colorLight]="'#ffffffff'"
-            [elementType]="'canvas'"
-            [imageSrc]="'assets/img/user-img.jpg'"
-            [errorCorrectionLevel]="'M'"
-            [imageHeight]="50"
-            [imageWidth]="50"
-            [margin]="1"
-            [scale]="1"
-            [title]="'QR Code For' + ' ' + '(' + inputValue + ')'"
-            [width]="200"
-          ></qrcode>
+          @if (qrCodeComponent) {
+            <ng-container *ngComponentOutlet="qrCodeComponent; inputs: { data: inputValue }"></ng-container>
+          }
         </div>
       }
     </div>

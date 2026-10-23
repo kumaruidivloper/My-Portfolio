@@ -4,6 +4,7 @@ import { forkJoin, Subscription } from 'rxjs';
 import {
   chartColorScheme, CHART_TYPE_OPTIONS, ChartDatum, ChartType, isChartType, toLineChartSeries, formatCompactAxisValue
 } from '../model/chart-type';
+import { memoizeLast } from '../model/memoize';
 import { PreviewViewOption } from '../widget-preview-chart/widget-preview-chart.component';
 import { PfApiDocument, PfRecord } from '../model/pf-record';
 import { PfDataService } from '../service/pf-data.service';
@@ -94,28 +95,37 @@ export class SumOfValueComponent implements OnInit, OnDestroy {
     }
   }
 
+  private readonly buildInterestChartData = memoizeLast((totals: MonthlyTotal[]): ChartDatum[] =>
+    totals.map(({ name, difference }) => ({ name, value: difference })));
+  private readonly buildTotalPfChartData = memoizeLast((totals: MonthlyTotal[]): ChartDatum[] =>
+    totals.map(({ name, pfAmount }) => ({ name, value: pfAmount })));
+  private readonly buildInterestColorScheme = memoizeLast((data: ChartDatum[]) => chartColorScheme(data, 'combined-pf-interest'));
+  private readonly buildTotalPfColorScheme = memoizeLast((data: ChartDatum[]) => chartColorScheme(data, 'combined-pf-totals'));
+  private readonly buildInterestLineChartData = memoizeLast((data: ChartDatum[]) => toLineChartSeries(data, 'Monthly interest'));
+  private readonly buildTotalPfLineChartData = memoizeLast((data: ChartDatum[]) => toLineChartSeries(data, 'Total PF amount'));
+
   get interestChartData(): ChartDatum[] {
-    return this.monthlyTotals.map(({ name, difference }) => ({ name, value: difference }));
+    return this.buildInterestChartData(this.monthlyTotals);
   }
 
   get totalPfChartData(): ChartDatum[] {
-    return this.monthlyTotals.map(({ name, pfAmount }) => ({ name, value: pfAmount }));
+    return this.buildTotalPfChartData(this.monthlyTotals);
   }
 
   get interestColorScheme() {
-    return chartColorScheme(this.interestChartData, 'combined-pf-interest');
+    return this.buildInterestColorScheme(this.interestChartData);
   }
 
   get totalPfColorScheme() {
-    return chartColorScheme(this.totalPfChartData, 'combined-pf-totals');
+    return this.buildTotalPfColorScheme(this.totalPfChartData);
   }
 
   get interestLineChartData() {
-    return toLineChartSeries(this.interestChartData, 'Monthly interest');
+    return this.buildInterestLineChartData(this.interestChartData);
   }
 
   get totalPfLineChartData() {
-    return toLineChartSeries(this.totalPfChartData, 'Total PF amount');
+    return this.buildTotalPfLineChartData(this.totalPfChartData);
   }
 
   selectInterestChartType(type: string): void {

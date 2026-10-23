@@ -274,13 +274,14 @@
     </section>
 
     @if (!isAllDetailsModalOpen) {
+      <!-- Cards below the first render (and fetch their data) only when scrolled near. -->
       <app-pf-data resourceId="2" ownerName="Kumar"></app-pf-data>
-      <app-pf-data resourceId="3" ownerName="Vasuki"></app-pf-data>
-      <app-sum-of-value></app-sum-of-value>
-      <app-kumar-gratuity></app-kumar-gratuity>
-      <app-vasuki-gratuity></app-vasuki-gratuity>
-      <app-vasuki-super></app-vasuki-super>
-      <app-total-balance></app-total-balance>
+      <app-pf-data resourceId="3" ownerName="Vasuki" *appRenderInView></app-pf-data>
+      <app-sum-of-value *appRenderInView></app-sum-of-value>
+      <app-kumar-gratuity *appRenderInView></app-kumar-gratuity>
+      <app-vasuki-gratuity *appRenderInView></app-vasuki-gratuity>
+      <app-vasuki-super *appRenderInView></app-vasuki-super>
+      <app-total-balance *appRenderInView></app-total-balance>
     }
     </div>
   </div>

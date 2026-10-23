@@ -4,6 +4,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CounterComponent } from './counter.component';
 
+// Typed via ReturnType so the spec compiles whether DOM or Node timer typings are in scope.
+const fakeIntervalId = 1 as unknown as ReturnType<typeof setInterval>;
+
 describe('CounterComponent', () => {
   let component: CounterComponent;
   let fixture: ComponentFixture<CounterComponent>;
@@ -23,7 +26,7 @@ describe('CounterComponent', () => {
   });
 
   it('increments until the requested value', () => {
-    component.counters = [{ value: 1, intervalId: 1, flip: false }];
+    component.counters = [{ value: 1, intervalId: fakeIntervalId, flip: false }];
 
     component.incrementCounter(3);
     component.incrementCounter(3);
@@ -54,7 +57,7 @@ describe('CounterComponent', () => {
   });
 
   it('counts back to zero when the counter leaves the viewport', () => {
-    component.counters = [{ value: 3, intervalId: 1, flip: false }];
+    component.counters = [{ value: 3, intervalId: fakeIntervalId, flip: false }];
 
     component.incrementCounter(3, false);
     component.incrementCounter(3, false);
@@ -64,7 +67,7 @@ describe('CounterComponent', () => {
   });
 
   it('clears counter intervals when destroyed', () => {
-    component.counters = [{ value: 1, intervalId: 1, flip: false }];
+    component.counters = [{ value: 1, intervalId: fakeIntervalId, flip: false }];
     spyOn(window, 'clearInterval');
 
     component.ngOnDestroy();

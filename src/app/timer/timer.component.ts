@@ -1,23 +1,10 @@
-import { Component, Input, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { trigger, state, style, transition, animate } from '@angular/animations';
+import { Component, Input, OnDestroy, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, NgZone, inject } from '@angular/core';
 
 @Component({
     selector: 'app-timer',
     templateUrl: './timer.component.html',
     styleUrls: ['./timer.component.scss'],
-    animations: [
-        trigger('timerAnimation', [
-            state('running', style({ opacity: 1 })),
-            state('paused', style({ opacity: 0.5 })),
-            transition('running <=> paused', animate('300ms ease-out')),
-        ]),
-        trigger('millisecondsAnimation', [
-            state('running', style({ transform: 'scale(1.2)' })),
-            state('paused', style({ transform: 'scale(1.0)' })),
-            transition('running <=> paused', animate('300ms ease-out')),
-        ]),
-    ],
-    changeDetection: ChangeDetectionStrategy.Eager,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: false
 })
 export class TimerComponent implements OnInit, OnDestroy {
@@ -27,14 +14,17 @@ export class TimerComponent implements OnInit, OnDestroy {
   minutes: number = 0;
   seconds: number = 0;
   milliseconds: number = 0;
-  private timerInterval: any;
+  private endTime = 0;
+  private frameId: number | null = null;
+  private zone = inject(NgZone);
+  private cdr = inject(ChangeDetectorRef);
 
   ngOnInit() {
     this.updateTimer();
   }
 
   ngOnDestroy() {
-    clearInterval(this.timerInterval);
+    this.cancelFrame();
   }
 
   setAndStartTimer() {
@@ -48,15 +38,11 @@ export class TimerComponent implements OnInit, OnDestroy {
   }
 
   startTimer() {
-    clearInterval(this.timerInterval);
+    this.cancelFrame();
     this.timerState = 'running';
-    this.timerInterval = setInterval(() => {
-      this.duration -= 10;
-      this.updateTimer();
-      if (this.duration <= 0) {
-        this.pauseTimer();
-      }
-    }, 10);
+    // Count down against a fixed end time so dropped frames don't drift the clock.
+    this.endTime = Date.now() + this.duration;
+    this.zone.runOutsideAngular(() => this.tick());
   }
 
   stopTimer() {
@@ -69,6 +55,17 @@ export class TimerComponent implements OnInit, OnDestroy {
     this.updateTimer();
   }
 
+  private tick = () => {
+    this.duration = Math.max(0, this.endTime - Date.now());
+    this.updateTimer();
+    if (this.duration <= 0) {
+      this.zone.run(() => this.pauseTimer());
+      return;
+    }
+    this.cdr.detectChanges();
+    this.frameId = requestAnimationFrame(this.tick);
+  };
+
   private updateTimer() {
     this.minutes = Math.floor(this.duration / 60000);
     this.seconds = Math.floor((this.duration % 60000) / 1000);
@@ -76,7 +73,15 @@ export class TimerComponent implements OnInit, OnDestroy {
   }
 
   private pauseTimer() {
-    clearInterval(this.timerInterval);
+    this.cancelFrame();
     this.timerState = 'paused';
+    this.cdr.markForCheck();
+  }
+
+  private cancelFrame() {
+    if (this.frameId !== null) {
+      cancelAnimationFrame(this.frameId);
+      this.frameId = null;
+    }
   }
 }

@@ -5,6 +5,7 @@ import { Subscription, timer } from 'rxjs';
 import {
   chartColorScheme, CHART_TYPE_OPTIONS, ChartDatum, ChartType, isChartType, toLineChartSeries, formatCompactAxisValue
 } from '../model/chart-type';
+import { memoizeLast } from '../model/memoize';
 import { PreviewViewOption } from '../widget-preview-chart/widget-preview-chart.component';
 import { PfDataService, PfResourceId } from '../service/pf-data.service';
 import { PfApiDocument, PfRecord } from '../model/pf-record';
@@ -12,6 +13,7 @@ import { ConfirmationCodeService } from '../service/confirmation-code.service';
 import { ResponsiveGridColumn, ResponsiveGridRow } from '../responsive-table/responsive-table.component';
 
 type PfMetric = 'pfAmount' | 'difference';
+const NO_RECORDS: PfRecord[] = [];
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -140,31 +142,38 @@ export class PfDataComponent implements OnInit, OnDestroy {
   }
 
   get records(): PfRecord[] {
-    return this.pfData?.pfRecords ?? [];
+    return this.pfData?.pfRecords ?? NO_RECORDS;
   }
 
-  get gridRows(): ResponsiveGridRow[] {
-    return this.records.map((record, actionIndex) => ({
+  private readonly buildGridRows = memoizeLast((records: PfRecord[]): ResponsiveGridRow[] =>
+    records.map((record, actionIndex) => ({
       actionIndex,
       month: this.formatMonth(record.date),
       balance: this.formatRupeesWithSpace(record.pfAmount),
       difference: this.formatRupeesWithSpace(record.difference)
-    }));
+    })));
+  private readonly buildChartData = memoizeLast((records: PfRecord[], metric: PfMetric): ChartDatum[] =>
+    [...records].reverse().map((record) => ({
+      name: this.formatMonth(record.date),
+      value: record[metric]
+    })));
+  private readonly buildColorScheme = memoizeLast((data: ChartDatum[]) => chartColorScheme(data, 'pf-balance'));
+  private readonly buildLineChartData = memoizeLast(toLineChartSeries);
+
+  get gridRows(): ResponsiveGridRow[] {
+    return this.buildGridRows(this.records);
   }
 
   get chartData(): ChartDatum[] {
-    return [...this.records].reverse().map((record) => ({
-      name: this.formatMonth(record.date),
-      value: record[this.selectedMetric]
-    }));
+    return this.buildChartData(this.records, this.selectedMetric);
   }
 
   get colorScheme() {
-    return chartColorScheme(this.chartData, 'pf-balance');
+    return this.buildColorScheme(this.chartData);
   }
 
   get lineChartData() {
-    return toLineChartSeries(this.chartData, this.metricLabel);
+    return this.buildLineChartData(this.chartData, this.metricLabel);
   }
 
   get latestBalance(): number | null {

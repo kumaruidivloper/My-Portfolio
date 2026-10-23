@@ -20,12 +20,21 @@ describe('InterviewQaComponent', () => {
     return fixture;
   }
 
-  it('renders the dialog with the interview accordion and locks body scroll', () => {
+  it('renders the dialog, then the interview accordion once the questions load, and locks body scroll', async () => {
     const fixture = render();
     const element: HTMLElement = fixture.nativeElement;
 
     expect(element.getAttribute('role')).toBe('dialog');
-    expect(element.querySelectorAll('app-accordion .widget').length).toBe(fixture.componentInstance.menus.length);
+    expect(element.querySelector('.qa-loading')).not.toBeNull();
+
+    const deadline = Date.now() + 3000;
+    while (!fixture.componentInstance.menus() && Date.now() < deadline) {
+      await new Promise(resolve => setTimeout(resolve, 10));
+    }
+    fixture.detectChanges();
+    expect(element.querySelector('.qa-loading')).toBeNull();
+    expect(element.querySelectorAll('app-accordion .widget').length).toBe(fixture.componentInstance.menus()?.length ?? -1);
+    expect(element.querySelectorAll('app-accordion .widget').length).toBeGreaterThan(0);
     expect(document.body.classList).toContain('scrollOff');
 
     fixture.destroy();

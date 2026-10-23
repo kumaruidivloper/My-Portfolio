@@ -9,6 +9,12 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     max-width: 300px;
     margin: 0 auto;
+    opacity: 0.5;
+    transition: opacity 300ms ease-out;
+  }
+
+  .timer.running {
+    opacity: 1;
   }
   
   div {
@@ -39,4 +45,8 @@
     margin-top: 5px;
     transform-origin: center;
     transition: transform 300ms ease-out;
+  }
+
+  .timer.running .timer-ms {
+    transform: scale(1.2);
   }

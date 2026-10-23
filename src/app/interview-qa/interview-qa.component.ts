@@ -1,8 +1,8 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, OnDestroy, OnInit, Renderer2, ViewChild, inject } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, OnDestroy, OnInit, Renderer2, ViewChild, inject, signal } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { Router } from '@angular/router';
 import { Config, Menu } from './types';
-import { createInterviewMenus } from './data/interview-menus';
+import { loadInterviewMenus } from './data/interview-menus';
 
 @Component({
   selector: 'app-interview-qa',
@@ -24,11 +24,12 @@ export class InterviewQaComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('closeButton') private closeButton?: ElementRef<HTMLButtonElement>;
 
   readonly options: Config = { multi: false };
-  readonly menus: Menu[] = createInterviewMenus();
+  readonly menus = signal<Menu[] | null>(null);
   readonly practiceUrl = 'https://interviewdepth.com';
 
   ngOnInit(): void {
     this.renderer.addClass(this.document.body, 'scrollOff');
+    void loadInterviewMenus().then(menus => this.menus.set(menus));
   }
 
   ngAfterViewInit(): void {

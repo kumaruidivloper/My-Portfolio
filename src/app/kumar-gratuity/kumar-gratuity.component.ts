@@ -5,6 +5,7 @@ import { Subscription, timer } from 'rxjs';
 import {
   chartColorScheme, CHART_TYPE_OPTIONS, ChartDatum, ChartType, isChartType, toLineChartSeries, formatCompactAxisValue
 } from '../model/chart-type';
+import { memoizeLast } from '../model/memoize';
 import { PreviewViewOption } from '../widget-preview-chart/widget-preview-chart.component';
 import { GratuityApiDocument, GratuityRecord } from '../model/gratuity-record';
 import { ConfirmationCodeService } from '../service/confirmation-code.service';
@@ -29,6 +30,8 @@ function monthParts(value: string): { year: string; monthIndex: number } | null 
     monthIndex
   };
 }
+
+const NO_RECORDS: GratuityRecord[] = [];
 
 @Component({
   selector: 'app-kumar-gratuity',
@@ -112,16 +115,36 @@ export class KumarGratuityComponent implements OnInit, OnDestroy {
   }
 
   get records(): GratuityRecord[] {
-    return this.gratuityData?.gratuityRecords ?? [];
+    return this.gratuityData?.gratuityRecords ?? NO_RECORDS;
   }
 
-  get gridRows(): ResponsiveGridRow[] {
-    return this.records.map((record, actionIndex) => ({
+  private readonly buildGridRows = memoizeLast((records: GratuityRecord[]): ResponsiveGridRow[] =>
+    records.map((record, actionIndex) => ({
       actionIndex,
       month: this.formatMonth(record.date),
       value: this.formatRupees(record.gratuity),
       difference: this.formatRupees(record.difference)
-    }));
+    })));
+  private readonly buildGridColumns = memoizeLast((label: string): readonly ResponsiveGridColumn[] => [
+    { key: 'month', label: 'Month', sortable: true },
+    { key: 'value', label, sortable: true, numeric: true },
+    { key: 'difference', label: 'Difference', sortable: true, numeric: true },
+    { key: 'actions', label: 'Actions', actions: true }
+  ]);
+  private readonly buildSeries = (field: 'gratuity' | 'difference') =>
+    memoizeLast((records: GratuityRecord[]): ChartDatum[] =>
+      [...records].reverse().map((record) => ({ name: this.formatMonth(record.date), value: record[field] })));
+  private readonly buildChartData = this.buildSeries('gratuity');
+  private readonly buildDifferenceChartData = this.buildSeries('difference');
+  private readonly buildPreviewViews = memoizeLast((label: string): PreviewViewOption[] => [
+    { value: 'value', label },
+    { value: 'difference', label: 'Monthly difference' }
+  ]);
+  private readonly buildColorScheme = memoizeLast((data: ChartDatum[]) => chartColorScheme(data, 'kumar-gratuity'));
+  private readonly buildLineChartData = memoizeLast(toLineChartSeries);
+
+  get gridRows(): ResponsiveGridRow[] {
+    return this.buildGridRows(this.records);
   }
 
   get recordTypeLabel(): string {
@@ -129,43 +152,29 @@ export class KumarGratuityComponent implements OnInit, OnDestroy {
   }
 
   get gridColumns(): readonly ResponsiveGridColumn[] {
-    return [
-      { key: 'month', label: 'Month', sortable: true },
-      { key: 'value', label: this.recordTypeLabel, sortable: true, numeric: true },
-      { key: 'difference', label: 'Difference', sortable: true, numeric: true },
-      { key: 'actions', label: 'Actions', actions: true }
-    ];
+    return this.buildGridColumns(this.recordTypeLabel);
   }
 
   get chartData(): ChartDatum[] {
-    return [...this.records].reverse().map((record) => ({
-      name: this.formatMonth(record.date),
-      value: record.gratuity
-    }));
+    return this.buildChartData(this.records);
   }
 
   get differenceChartData(): ChartDatum[] {
-    return [...this.records].reverse().map((record) => ({
-      name: this.formatMonth(record.date),
-      value: record.difference
-    }));
+    return this.buildDifferenceChartData(this.records);
   }
 
   previewView = 'value';
 
   get previewViews(): PreviewViewOption[] {
-    return [
-      { value: 'value', label: this.recordTypeLabel },
-      { value: 'difference', label: 'Monthly difference' }
-    ];
+    return this.buildPreviewViews(this.recordTypeLabel);
   }
 
   get colorScheme() {
-    return chartColorScheme(this.chartData, 'kumar-gratuity');
+    return this.buildColorScheme(this.chartData);
   }
 
   get lineChartData() {
-    return toLineChartSeries(this.chartData, this.recordTypeLabel);
+    return this.buildLineChartData(this.chartData, this.recordTypeLabel);
   }
 
   selectChartType(type: string): void {

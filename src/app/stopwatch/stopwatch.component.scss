@@ -49,6 +49,7 @@
   .stopwatch .time {
     display: inline-block;
     transform-origin: center center;
+    transition: opacity 300ms ease-out;
   }
   
   .stopwatch .time.running {
@@ -57,4 +58,5 @@
   
   .stopwatch .time.paused {
     animation: timePaused 1s infinite;
+    opacity: 0.5;
   }
