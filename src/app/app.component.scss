@@ -10,41 +10,52 @@
     transition-delay: 0.5s linear;
 }
 
+/* Horizontal hint under the theme switch (top 1.5rem, right 2rem, 8rem × 4.2rem), caret aimed at its centre */
 .wrapper {
-    background: var(--bg-color);
-    display: table;
-    height: 0px;
     position: fixed;
-    right: -22px;
-    top: 130px;
-    width: 136px;
+    top: 7.2rem;
+    right: 2rem;
+    z-index: 1001;
     color: var(--black);
-    transform: rotate(90deg);
     opacity: 0;
+    pointer-events: none;
     transition-delay: 0.5s linear;
 
-    .innerwrapper {
-        display:table-cell;
-        vertical-align:middle;
-    }
-
     .bar.move {
-        box-shadow: var(--box-shadow);
+        position: relative;
+        display: inline-block;
+        white-space: nowrap;
+        font-size: 1.3rem;
+        line-height: 1;
+        padding: 0.8rem 1.4rem;
         border-radius: 5rem;
-        height: 2.5rem;
-        padding: 0.8rem;
-        margin: 1rem 0;
-        position:relative;
-        -webkit-animation: backandforth 3s ease 0s;
-        -webkit-animation-iteration-count:infinite;
-        animation: backandforth 3s ease 0s;
-        animation-iteration-count:infinite;
+        background: var(--bg-color);
+        box-shadow: var(--box-shadow);
         cursor: default;
+        animation: nudge-to-toggle 1.6s ease-in-out infinite;
     }
 
-    @-webkit-keyframes backandforth {0%{left:0;} 50%{left:58%;} 100%{left:0;}}
+    /* Caret shares the pill's body colour; a soft upward shadow keeps it visible on the page */
+    .bar.move::before {
+        content: "";
+        position: absolute;
+        top: -0.6rem;
+        right: 4rem;
+        width: 1.2rem;
+        height: 1.2rem;
+        background: var(--bg-color);
+        transform: translateX(50%) rotate(45deg);
+        box-shadow: -0.2rem -0.2rem 0.4rem rgba(0, 0, 0, 0.1);
+        border-radius: 0.2rem 0 0 0;
+    }
 
-    @keyframes backandforth {0%{left:0;} 50%{left:100%;} 100%{left:0;}}
+    @keyframes nudge-to-toggle {0%, 100% {transform: translateY(0);} 50% {transform: translateY(-0.5rem);}}
+
+    @media (prefers-reduced-motion: reduce) {
+        .bar.move {
+            animation: none;
+        }
+    }
 }
 .auto-scroll
 {
