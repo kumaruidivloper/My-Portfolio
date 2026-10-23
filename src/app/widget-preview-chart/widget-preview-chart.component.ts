@@ -26,7 +26,7 @@ export class WidgetPreviewChartComponent implements OnChanges {
   @Input() label = '';
   @Input() loading = false;
   @Input() formatValue: (value: number) => string = (value) => `₹ ${formatCompactAxisValue(value)}`;
-  /** Optional alternative views; when two or more are given a toggle is shown to switch between them. */
+  /** Optional alternative views; with two or more, arrows (and swipe) cycle through them. */
   @Input() views: readonly PreviewViewOption[] = [];
   @Input() view = '';
   @Output() viewChange = new EventEmitter<string>();
@@ -77,11 +77,66 @@ export class WidgetPreviewChartComponent implements OnChanges {
     this.gridColumns = points.filter((_, index) => index % every === 0 || index === points.length - 1).map(({ x }) => x);
   }
 
-  selectView(value: string, event: Event): void {
-    // The card preview expands its widget on click; switching views shouldn't.
-    event.stopPropagation();
-    if (value !== this.view) {
-      this.viewChange.emit(value);
+  private swipeStart: { x: number; y: number } | null = null;
+  private suppressClick = false;
+
+  get hasViews(): boolean {
+    return this.views.length > 1;
+  }
+
+  private get viewIndex(): number {
+    return Math.max(0, this.views.findIndex(({ value }) => value === this.view));
+  }
+
+  get currentViewLabel(): string {
+    return this.views[this.viewIndex]?.label ?? this.label;
+  }
+
+  adjacentView(step: number): PreviewViewOption {
+    const count = this.views.length;
+    return this.views[(this.viewIndex + step + count) % count];
+  }
+
+  /** Cycles through the views; stops the click so the card doesn't also expand. */
+  stepView(step: number, event?: Event): void {
+    event?.stopPropagation();
+    if (this.hasViews) {
+      this.viewChange.emit(this.adjacentView(step).value);
+    }
+  }
+
+  onSwitcherKeydown(event: KeyboardEvent): void {
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+      event.preventDefault();
+      this.stepView(event.key === 'ArrowLeft' ? -1 : 1, event);
+    }
+  }
+
+  onTouchStart(event: TouchEvent): void {
+    const touch = event.touches[0];
+    this.swipeStart = this.hasViews && touch ? { x: touch.clientX, y: touch.clientY } : null;
+  }
+
+  onTouchEnd(event: TouchEvent): void {
+    const touch = event.changedTouches[0];
+    const start = this.swipeStart;
+    this.swipeStart = null;
+    if (!start || !touch) {
+      return;
+    }
+    const dx = touch.clientX - start.x;
+    const dy = touch.clientY - start.y;
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      this.suppressClick = true;
+      this.stepView(dx < 0 ? 1 : -1);
+    }
+  }
+
+  /** Swallows the click that some browsers fire after a swipe so the card stays collapsed. */
+  onClickCapture(event: Event): void {
+    if (this.suppressClick) {
+      this.suppressClick = false;
+      event.stopPropagation();
     }
   }
 

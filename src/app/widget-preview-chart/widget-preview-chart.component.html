@@ -1,23 +1,35 @@
-@if (views.length > 1) {
-  <div class="preview-views" role="group" [attr.aria-label]="'Preview view'" (click)="$event.stopPropagation()">
-    @for (option of views; track option.value) {
-      <button
-        type="button"
-        class="preview-view"
-        [class.selected]="option.value === view"
-        [attr.aria-pressed]="option.value === view"
-        (click)="selectView(option.value, $event)">
-        {{ option.label }}
-      </button>
-    }
-  </div>
-}
 @if (loading && !latest) {
   <div class="preview-skeleton" role="status" aria-label="Loading chart preview"></div>
 } @else if (latest) {
-  <figure class="preview" role="img" [attr.aria-label]="summary">
-    <figcaption class="preview-meta" aria-hidden="true">
-      <span class="preview-label">{{ label }}</span>
+  <figure
+    class="preview"
+    [attr.role]="hasViews ? null : 'img'"
+    [attr.aria-label]="summary"
+    (touchstart)="onTouchStart($event)"
+    (touchend)="onTouchEnd($event)"
+    (click)="onClickCapture($event)">
+    <figcaption class="preview-meta" [attr.aria-hidden]="hasViews ? null : 'true'">
+      @if (hasViews) {
+        <span class="preview-switcher" role="group" aria-label="Preview view" (keydown)="onSwitcherKeydown($event)">
+          <button
+            type="button"
+            class="preview-arrow"
+            [attr.aria-label]="'Previous view: ' + adjacentView(-1).label"
+            (click)="stepView(-1, $event)">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"></path></svg>
+          </button>
+          <span class="preview-label" aria-live="polite">{{ currentViewLabel }}</span>
+          <button
+            type="button"
+            class="preview-arrow"
+            [attr.aria-label]="'Next view: ' + adjacentView(1).label"
+            (click)="stepView(1, $event)">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"></path></svg>
+          </button>
+        </span>
+      } @else {
+        <span class="preview-label">{{ label }}</span>
+      }
       <span class="preview-value">{{ formatValue(latest.value) }}</span>
       @if (change !== null) {
         <span class="preview-change" [class.down]="change < 0" [class.flat]="change === 0">

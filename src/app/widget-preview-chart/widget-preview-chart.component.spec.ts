@@ -15,32 +15,56 @@ describe('WidgetPreviewChartComponent', () => {
     return fixture;
   }
 
-  it('shows a view toggle that emits the chosen view without bubbling the click', () => {
+  function renderWithViews() {
     const fixture = TestBed.createComponent(WidgetPreviewChartComponent);
     fixture.componentRef.setInput('data', [{ name: 'Jan', value: 1 }, { name: 'Feb', value: 2 }]);
-    fixture.componentRef.setInput('views', [{ value: 'a', label: 'Balance' }, { value: 'b', label: 'Difference' }]);
+    fixture.componentRef.setInput('views', [
+      { value: 'a', label: 'Balance' }, { value: 'b', label: 'Difference' }, { value: 'c', label: 'Rate' }
+    ]);
     fixture.componentRef.setInput('view', 'a');
     fixture.detectChanges();
-    const element: HTMLElement = fixture.nativeElement;
     const emitted: string[] = [];
     fixture.componentInstance.viewChange.subscribe((value) => emitted.push(value));
     const hostClick = jasmine.createSpy('hostClick');
-    element.addEventListener('click', hostClick);
+    (fixture.nativeElement as HTMLElement).addEventListener('click', hostClick);
+    return { fixture, element: fixture.nativeElement as HTMLElement, emitted, hostClick };
+  }
 
-    const buttons = element.querySelectorAll<HTMLButtonElement>('.preview-view');
-    expect(buttons.length).toBe(2);
-    expect(buttons[0].getAttribute('aria-pressed')).toBe('true');
+  it('cycles views with the arrows without bubbling the click to the card', () => {
+    const { element, emitted, hostClick } = renderWithViews();
+    const [prev, next] = Array.from(element.querySelectorAll<HTMLButtonElement>('.preview-arrow'));
 
-    buttons[1].click();
-    buttons[0].click();
+    expect(element.querySelector('.preview-label')?.textContent?.trim()).toBe('Balance');
+    expect(prev.getAttribute('aria-label')).toBe('Previous view: Rate');
+    expect(next.getAttribute('aria-label')).toBe('Next view: Difference');
 
-    expect(emitted).toEqual(['b']);
+    next.click();
+    prev.click();
+
+    expect(emitted).toEqual(['b', 'c']);
+    expect(hostClick).not.toHaveBeenCalled();
+  });
+
+  it('switches views with arrow keys and horizontal swipes', () => {
+    const { fixture, element, emitted, hostClick } = renderWithViews();
+    element.querySelector('.preview-switcher')!.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+
+    const preview = element.querySelector('.preview')!;
+    const touch = (x: number, y: number) => ({ clientX: x, clientY: y } as Touch);
+    fixture.componentInstance.onTouchStart({ touches: [touch(200, 10)] } as unknown as TouchEvent);
+    fixture.componentInstance.onTouchEnd({ changedTouches: [touch(100, 15)] } as unknown as TouchEvent);
+    preview.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+    fixture.componentInstance.onTouchStart({ touches: [touch(100, 10)] } as unknown as TouchEvent);
+    fixture.componentInstance.onTouchEnd({ changedTouches: [touch(110, 200)] } as unknown as TouchEvent);
+
+    expect(emitted).toEqual(['b', 'b']);
     expect(hostClick).not.toHaveBeenCalled();
   });
 
   it('hides the view toggle when fewer than two views are given', () => {
     const fixture = render({ data: [{ name: 'Jan', value: 1 }, { name: 'Feb', value: 2 }] });
-    expect((fixture.nativeElement as HTMLElement).querySelector('.preview-views')).toBeNull();
+    expect((fixture.nativeElement as HTMLElement).querySelector('.preview-switcher')).toBeNull();
   });
 
   it('draws a trend line with the latest value and change', () => {
