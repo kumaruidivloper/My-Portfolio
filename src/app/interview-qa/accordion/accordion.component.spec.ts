@@ -103,6 +103,58 @@ describe('AccordionComponent', () => {
     widgetFixture.destroy();
   });
 
+  it('scrolls the opened widget into view in multi mode', () => {
+    const widgetFixture = renderWidgets([
+      { name: 'One', iconClass: '', active: false, submenu: [] },
+      { name: 'Two', iconClass: '', active: false, submenu: [] }
+    ], { multi: true });
+    const element: HTMLElement = widgetFixture.nativeElement;
+    const target = element.querySelectorAll('.widget')[1] as HTMLElement;
+    const scrollSpy = spyOn(target, 'scrollIntoView');
+
+    (element.querySelectorAll('.widget-header')[1] as HTMLButtonElement).click();
+    widgetFixture.detectChanges();
+
+    expect(scrollSpy).toHaveBeenCalled();
+    expect(scrollSpy.calls.mostRecent().args[0]).toEqual(jasmine.objectContaining({ block: 'start' }));
+
+    scrollSpy.calls.reset();
+    (element.querySelectorAll('.widget-header')[1] as HTMLButtonElement).click();
+    widgetFixture.detectChanges();
+
+    expect(scrollSpy).not.toHaveBeenCalled();
+    widgetFixture.destroy();
+  });
+
+  it('scrolls the container to the top each time a widget opens in single mode', () => {
+    const scroller = document.createElement('div');
+    scroller.style.height = '100px';
+    scroller.style.overflowY = 'auto';
+    document.body.appendChild(scroller);
+    const widgetFixture = renderWidgets([
+      { name: 'One', iconClass: '', active: false, submenu: [{ name: 'A', url: '#', questions: [{ question: 'q', answer: 'a'.repeat(2000) }] }] },
+      { name: 'Two', iconClass: '', active: false, submenu: [{ name: 'B', url: '#', questions: [{ question: 'q', answer: 'b'.repeat(2000) }] }] }
+    ]);
+    const element: HTMLElement = widgetFixture.nativeElement;
+    scroller.appendChild(element);
+
+    for (const i of [1, 0]) {
+      scroller.scrollTop = 200;
+      expect(scroller.scrollTop).toBeGreaterThan(0);
+      (element.querySelectorAll('.widget-header')[i] as HTMLButtonElement).click();
+      widgetFixture.detectChanges();
+      expect(scroller.scrollTop).toBe(0);
+    }
+
+    scroller.scrollTop = 200;
+    (element.querySelectorAll('.widget')[0].querySelector('.topic') as HTMLButtonElement).click();
+    widgetFixture.detectChanges();
+    expect(scroller.scrollTop).toBe(0);
+
+    widgetFixture.destroy();
+    scroller.remove();
+  });
+
   it('counts questions across topics', () => {
     const menu = { name: 'One', iconClass: '', active: false, submenu: [
       { name: 'A', url: '#', questions: [{ question: 'q1', answer: 'a1' }, { question: 'q2', answer: 'a2' }] },
