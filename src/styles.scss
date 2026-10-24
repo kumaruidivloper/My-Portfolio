@@ -1636,7 +1636,8 @@ body:has(.dashboard-page) {
 }
 
 .dashboard-widget-grid > * {
-  scroll-margin-top: 2rem;
+  /* Clears the fixed theme toggle (1.5rem from the top, 4.2rem tall) so the card header stays fully visible */
+  scroll-margin-top: 7.5rem;
   /* The global "transition: all" would animate order and delay the move to the top */
   transition: none;
 }

@@ -87,53 +87,64 @@ describe('MyDashboardComponent', () => {
     await Promise.resolve();
   }
 
-  it('pins the card to the top once it re-renders after its main toggle or preview is clicked', async () => {
-    const grid = document.createElement('div');
-    grid.className = 'dashboard-widget-grid';
-    grid.innerHTML = `
-      <section>
-        <button class="accordion-toggle main" aria-expanded="false"></button>
-        <app-widget-preview-chart><span class="inside"></span></app-widget-preview-chart>
-        <button class="accordion-toggle inner" aria-expanded="false"></button>
-      </section>`;
-    document.body.appendChild(grid);
+  it('scrolls to the dashboard top when a card opens and back to the card when it closes', async () => {
+    const page = document.createElement('main');
+    page.style.cssText = 'height: 100px; overflow-y: auto;';
+    page.innerHTML = `
+      <div class="dashboard-widget-grid">
+        <section style="height: 400px;">
+          <button class="accordion-toggle main" aria-expanded="false"></button>
+          <app-widget-preview-chart><span class="inside"></span></app-widget-preview-chart>
+          <button class="accordion-toggle inner" aria-expanded="false"></button>
+        </section>
+      </div>`;
+    document.body.appendChild(page);
+    const grid = page.querySelector('.dashboard-widget-grid') as HTMLElement;
     const widget = grid.querySelector('section') as HTMLElement;
     const mainToggle = grid.querySelector('.main') as HTMLElement;
-    const scrollSpy = spyOn(widget, 'scrollIntoView');
+    const toTopSpy = spyOn(page, 'scrollTo') as jasmine.Spy;
+    const toCardSpy = spyOn(widget, 'scrollIntoView');
+    const resetSpies = () => {
+      toTopSpy.calls.reset();
+      toCardSpy.calls.reset();
+    };
     const clickAndToggle = async (selector: string) => {
       component.onWidgetGridClick({ target: grid.querySelector(selector) } as unknown as Event);
-      expect(scrollSpy).not.toHaveBeenCalled();
+      expect(toTopSpy).not.toHaveBeenCalled();
+      expect(toCardSpy).not.toHaveBeenCalled();
       mainToggle.setAttribute('aria-expanded', String(mainToggle.getAttribute('aria-expanded') !== 'true'));
       await new Promise((resolve) => setTimeout(resolve));
     };
-
     const stopPinning = async () => {
       window.dispatchEvent(new WheelEvent('wheel'));
-      scrollSpy.calls.reset();
-      widget.style.height = '50px';
+      resetSpies();
+      widget.style.height = '500px';
       await new Promise((resolve) => setTimeout(resolve, 50));
-      expect(scrollSpy).withContext('stops pinning once the user scrolls').not.toHaveBeenCalled();
-      widget.style.height = '';
+      expect(toTopSpy).withContext('stops pinning once the user scrolls').not.toHaveBeenCalled();
+      expect(toCardSpy).withContext('stops pinning once the user scrolls').not.toHaveBeenCalled();
+      widget.style.height = '400px';
     };
 
     await clickAndToggle('.main');
-    expect(scrollSpy).toHaveBeenCalled();
-    scrollSpy.calls.reset();
-    widget.style.height = '200px';
+    expect(toTopSpy).toHaveBeenCalledWith({ top: 0 });
+    expect(toCardSpy).not.toHaveBeenCalled();
+    resetSpies();
+    widget.style.height = '450px';
     await new Promise((resolve) => setTimeout(resolve, 50));
-    expect(scrollSpy).withContext('re-aligns while the layout settles').toHaveBeenCalled();
+    expect(toTopSpy).withContext('re-aligns while the layout settles').toHaveBeenCalled();
     await stopPinning();
 
     await clickAndToggle('.inside');
-    expect(scrollSpy).toHaveBeenCalled();
-    expect(scrollSpy.calls.mostRecent().args[0]).toEqual(jasmine.objectContaining({ block: 'start' }));
+    expect(toCardSpy).toHaveBeenCalledWith(jasmine.objectContaining({ block: 'start' }));
+    expect(toTopSpy).not.toHaveBeenCalled();
     await stopPinning();
 
     component.onWidgetGridClick({ target: grid.querySelector('.inner') } as unknown as Event);
     mainToggle.setAttribute('aria-expanded', 'true');
     await new Promise((resolve) => setTimeout(resolve));
-    expect(scrollSpy).not.toHaveBeenCalled();
-    grid.remove();
+    expect(toTopSpy).not.toHaveBeenCalled();
+    expect(toCardSpy).not.toHaveBeenCalled();
+    page.remove();
   });
 
   it('changes chart type without changing loaded transfers', () => {

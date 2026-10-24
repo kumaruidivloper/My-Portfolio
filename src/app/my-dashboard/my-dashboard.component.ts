@@ -354,7 +354,7 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     const scrollToWidget = () => {
       observer.disconnect();
       clearTimeout(fallback);
-      this.pinWidgetToTop(widget);
+      this.pinWidgetToTop(widget, mainToggle.getAttribute('aria-expanded') === 'true');
     };
     const observer = new MutationObserver(scrollToWidget);
     const fallback = setTimeout(() => observer.disconnect(), 1000);
@@ -362,12 +362,15 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   };
 
   /**
-   * Jumps the card to the top of the scroll area, then keeps it there while its charts render and the
-   * previously open card collapses. A smooth scroll gets cancelled by those layout shifts and stops short.
+   * An opened card moves to the first grid slot, so jumping to the very top shows it together with the
+   * dashboard actions (back, all details) instead of hiding them under the fixed theme toggle. A closed
+   * card is brought back into view in its own slot. The position is held while charts render and the
+   * previously open card collapses; a smooth scroll gets cancelled by those layout shifts and stops short.
    */
-  private pinWidgetToTop(widget: HTMLElement): void {
+  private pinWidgetToTop(widget: HTMLElement, opened: boolean): void {
     this.stopPinningWidget();
-    const align = () => widget.scrollIntoView({ block: 'start' });
+    const scroller = opened ? this.findScrollContainer(widget) : null;
+    const align = () => (scroller ? scroller.scrollTo({ top: 0 }) : widget.scrollIntoView({ block: 'start' }));
     align();
 
     const grid = widget.parentElement;
@@ -390,6 +393,15 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private stopPinningWidget: () => void = () => {};
+
+  private findScrollContainer(element: HTMLElement): Element {
+    for (let node = element.parentElement; node; node = node.parentElement) {
+      if (/(auto|scroll)/.test(getComputedStyle(node).overflowY) && node.scrollHeight > node.clientHeight) {
+        return node;
+      }
+    }
+    return document.scrollingElement ?? document.documentElement;
+  }
 
   dismissToast(): void {
     this.toastTimeout?.unsubscribe();
