@@ -37,6 +37,7 @@ describe('AboutSkillsComponent', () => {
       level: [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 25, 45]
     };
     component.transition = ['width 1s', 'width 2s', 'width 3s', 'width 4s', 'width 5s', 'width 6s', 'width 7s'];
+    component.speedFactor = 1;
     fixture.detectChanges();
   });
 
@@ -84,6 +85,12 @@ describe('AboutSkillsComponent', () => {
     expect(firstCounter().getAttribute('aria-label')).toBe('10');
     discardPeriodicTasks();
   }));
+
+  it('slows the bar, counter and digit wheel together by the speed factor', () => {
+    component.speedFactor = 1.5;
+    expect(component.animationDuration('width 2s')).toBe(3000);
+    expect(component.stepMs(0)).toBe(150);
+  });
 
   it('drains an individual bar with its counter when it leaves the view', fakeAsync(() => {
     showBar(0, true);

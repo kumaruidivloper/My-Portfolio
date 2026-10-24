@@ -54,15 +54,18 @@ export class AboutSkillsComponent implements AfterViewInit, OnDestroy {
     return this.visibleBars.has(index);
   }
 
+  /** Slows the bar, counter and digit wheel together (1 = original speed). */
+  speedFactor = 1.5;
+
   animationDuration(transitionValue = ''): number {
     const durationMatch = transitionValue.match(/(\d+(?:\.\d+)?)\s*(ms|s)/);
 
     if (!durationMatch) {
-      return 3000;
+      return 3000 * this.speedFactor;
     }
 
     const duration = Number(durationMatch[1]);
-    return durationMatch[2] === 's' ? duration * 1000 : duration;
+    return (durationMatch[2] === 's' ? duration * 1000 : duration) * this.speedFactor;
   }
 
   /** Matches the counter's step time so each 1% width change glides into the next. */
