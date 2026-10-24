@@ -368,9 +368,8 @@ html body .dashboard-page button.control-button.add-button:not(:disabled):hover 
 }
 
 html body .dashboard-page button.control-button.accordion-toggle:not(:disabled):hover {
-    background: var(--bg-color);
-    box-shadow: var(--box-shadow-inset);
-    color: var(--green);
+    background: transparent;
+    box-shadow: none;
 }
 
 html body .dashboard-page button.control-button.save-action {
@@ -1663,17 +1662,66 @@ body:has(.dashboard-page) {
   }
 }
 
-/* Expand/collapse chevrons: down when collapsed, up when expanded */
-.toggle-chevron {
-  transition: transform 0.25s ease;
+/* Expand/collapse toggles: an on/off switch whose thumb slides right while the section is open */
+html body button.control-button.accordion-toggle {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 99rem;
+  box-shadow: none;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 4rem;
+  justify-content: center;
+  margin: 0;
+  padding: 0 0.4rem;
+  width: auto;
 }
 
-[aria-expanded="true"] > .toggle-chevron {
-  transform: rotate(180deg);
+html body button.control-button.accordion-toggle:focus-visible {
+  outline: 0.2rem solid var(--green);
+  outline-offset: 0.2rem;
+}
+
+.toggle-switch {
+  background: var(--bg-color);
+  border-radius: 99rem;
+  box-shadow: var(--box-shadow-inset);
+  display: block;
+  height: 2.6rem;
+  position: relative;
+  transition: background-color 0.25s ease, box-shadow 0.25s ease;
+  width: 4.8rem;
+}
+
+.toggle-switch-thumb {
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 0.1rem 0.4rem rgb(0 0 0 / 35%);
+  height: 2rem;
+  left: 0.3rem;
+  position: absolute;
+  top: 0.3rem;
+  transition: transform 0.25s ease;
+  width: 2rem;
+}
+
+.accordion-toggle:hover .toggle-switch-thumb {
+  box-shadow: 0 0 0 0.3rem rgb(255 103 31 / 25%), 0 0.1rem 0.4rem rgb(0 0 0 / 35%);
+}
+
+[aria-expanded="true"] > .toggle-switch {
+  background: var(--green);
+  box-shadow: none;
+}
+
+[aria-expanded="true"] > .toggle-switch > .toggle-switch-thumb {
+  transform: translateX(2.2rem);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .toggle-chevron {
+  .toggle-switch,
+  .toggle-switch-thumb {
     transition: none;
   }
 }

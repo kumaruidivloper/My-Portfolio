@@ -71,32 +71,6 @@
   padding: 0.8rem 1.6rem;
 }
 
-.accordion-toggle {
-  align-items: center;
-  display: inline-flex;
-  flex: 0 0 4rem;
-  height: 4rem;
-  justify-content: center;
-  margin: 0;
-  padding: 1rem;
-  width: 4rem;
-}
-
-.accordion-toggle {
-  border-radius: 50%;
-}
-
-.accordion-toggle svg {
-  display: block;
-  fill: none;
-  height: 1.8rem;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 2;
-  width: 1.8rem;
-}
-
 .control-button:hover:not(:disabled) {
   box-shadow: var(--box-shadow-inset);
   color: var(--green);

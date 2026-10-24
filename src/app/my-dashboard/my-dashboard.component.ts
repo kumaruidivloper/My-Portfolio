@@ -336,6 +336,7 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.amountCalculation?.unsubscribe();
     this.allDashboardChartsSubscription?.unsubscribe();
     this.accordionSubscription.unsubscribe();
+    this.stopPinningWidget();
   }
 
   readonly onWidgetGridClick = (event: Event): void => {
@@ -353,13 +354,42 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     const scrollToWidget = () => {
       observer.disconnect();
       clearTimeout(fallback);
-      const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-      widget.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'start' });
+      this.pinWidgetToTop(widget);
     };
     const observer = new MutationObserver(scrollToWidget);
     const fallback = setTimeout(() => observer.disconnect(), 1000);
     observer.observe(mainToggle, { attributes: true, attributeFilter: ['aria-expanded'] });
   };
+
+  /**
+   * Jumps the card to the top of the scroll area, then keeps it there while its charts render and the
+   * previously open card collapses. A smooth scroll gets cancelled by those layout shifts and stops short.
+   */
+  private pinWidgetToTop(widget: HTMLElement): void {
+    this.stopPinningWidget();
+    const align = () => widget.scrollIntoView({ block: 'start' });
+    align();
+
+    const grid = widget.parentElement;
+    if (!grid || typeof ResizeObserver === 'undefined') {
+      return;
+    }
+    const resizeObserver = new ResizeObserver(align);
+    resizeObserver.observe(grid);
+    const settleTimer = setTimeout(() => this.stopPinningWidget(), 800);
+    const userEvents = ['wheel', 'touchstart', 'keydown', 'pointerdown'];
+    const stop = () => this.stopPinningWidget();
+    userEvents.forEach((type) => window.addEventListener(type, stop, { capture: true, passive: true }));
+
+    this.stopPinningWidget = () => {
+      resizeObserver.disconnect();
+      clearTimeout(settleTimer);
+      userEvents.forEach((type) => window.removeEventListener(type, stop, { capture: true }));
+      this.stopPinningWidget = () => {};
+    };
+  }
+
+  private stopPinningWidget: () => void = () => {};
 
   dismissToast(): void {
     this.toastTimeout?.unsubscribe();

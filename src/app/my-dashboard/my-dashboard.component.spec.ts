@@ -87,7 +87,7 @@ describe('MyDashboardComponent', () => {
     await Promise.resolve();
   }
 
-  it('scrolls the card into view once it re-renders after its main toggle or preview is clicked', async () => {
+  it('pins the card to the top once it re-renders after its main toggle or preview is clicked', async () => {
     const grid = document.createElement('div');
     grid.className = 'dashboard-widget-grid';
     grid.innerHTML = `
@@ -107,14 +107,27 @@ describe('MyDashboardComponent', () => {
       await new Promise((resolve) => setTimeout(resolve));
     };
 
+    const stopPinning = async () => {
+      window.dispatchEvent(new WheelEvent('wheel'));
+      scrollSpy.calls.reset();
+      widget.style.height = '50px';
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(scrollSpy).withContext('stops pinning once the user scrolls').not.toHaveBeenCalled();
+      widget.style.height = '';
+    };
+
     await clickAndToggle('.main');
-    expect(scrollSpy).toHaveBeenCalledTimes(1);
+    expect(scrollSpy).toHaveBeenCalled();
     scrollSpy.calls.reset();
+    widget.style.height = '200px';
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(scrollSpy).withContext('re-aligns while the layout settles').toHaveBeenCalled();
+    await stopPinning();
 
     await clickAndToggle('.inside');
-    expect(scrollSpy).toHaveBeenCalledTimes(1);
+    expect(scrollSpy).toHaveBeenCalled();
     expect(scrollSpy.calls.mostRecent().args[0]).toEqual(jasmine.objectContaining({ block: 'start' }));
-    scrollSpy.calls.reset();
+    await stopPinning();
 
     component.onWidgetGridClick({ target: grid.querySelector('.inner') } as unknown as Event);
     mainToggle.setAttribute('aria-expanded', 'true');
