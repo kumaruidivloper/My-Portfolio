@@ -33,7 +33,7 @@
             <span aria-hidden="true">Transfers</span>
           </h2>
           <p class="records-description">
-            {{ !isLoading && !errorMessage ? transfers.length + ' transfer records' : 'Transfer amounts and exchange rates.' }}
+            {{ !isLoading && !errorMessage ? (previewRangeCount !== null ? previewRangeCount + ' of ' : '') + transfers.length + ' transfer records' : 'Transfer amounts and exchange rates.' }}
           </p>
         </div>
         <div class="records-actions">
@@ -66,6 +66,7 @@
           [views]="previewViews"
           [view]="selectedMetric"
           (viewChange)="selectMetric($any($event))"
+          (rangeCountChange)="previewRangeCount = $event"
           (click)="toggleTransferSection()"></app-widget-preview-chart>
       }
 

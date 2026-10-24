@@ -973,8 +973,12 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.areRecordsExpanded = !this.areRecordsExpanded;
   }
 
+  /** Records inside the collapsed preview's time slider; null when it shows everything. */
+  previewRangeCount: number | null = null;
+
   toggleTransferSection(): void {
     this.isTransferSectionExpanded = !this.isTransferSectionExpanded;
+    this.previewRangeCount = null;
     if (this.isTransferSectionExpanded) {
       announceAccordionOpened('transfer');
     }

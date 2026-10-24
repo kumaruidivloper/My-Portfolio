@@ -9,7 +9,7 @@
   <header class="gratuity-heading">
     <div class="gratuity-heading-copy">
       <h2 [id]="'gratuity-title-' + resourceId">{{ ownerName }} - {{ recordTypeLabel }}</h2>
-      <p>{{ recordTypeLabel }} history - {{ gratuityData ? records.length + ' monthly records' : 'Expand to view records.' }}</p>
+      <p>{{ recordTypeLabel }} history - {{ gratuityData ? (previewRangeCount !== null ? previewRangeCount + ' of ' : '') + records.length + ' monthly records' : 'Expand to view records.' }}</p>
     </div>
     <div class="gratuity-heading-actions">
       <button
@@ -33,6 +33,7 @@
       [views]="previewViews"
       [view]="previewView"
       (viewChange)="previewView = $event"
+      (rangeCountChange)="previewRangeCount = $event"
       (click)="toggleExpanded()"></app-widget-preview-chart>
   }
 

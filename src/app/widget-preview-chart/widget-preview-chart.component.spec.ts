@@ -196,6 +196,23 @@ describe('WidgetPreviewChartComponent', () => {
       expect([component.rangeFrom, component.rangeTo]).toEqual([2, 3]);
     });
 
+    it('reports how many points the slider window covers for the widget count label', async () => {
+      const fixture = render({ data: series });
+      const component = fixture.componentInstance;
+      const counts: (number | null)[] = [];
+      component.rangeCountChange.subscribe((count) => counts.push(count));
+
+      component.setRange('from', 1);
+      component.setRange('to', 3);
+      component.resetRange();
+      component.setRange('from', 2);
+      fixture.componentRef.setInput('data', series.slice(0, 4));
+      fixture.detectChanges();
+      await Promise.resolve();
+
+      expect(counts).toEqual([4, 3, null, 3, null]);
+    });
+
     it('hides the slider when there are too few points to filter', () => {
       const fixture = render({ data: series.slice(0, 2) });
       expect((fixture.nativeElement as HTMLElement).querySelector('.preview-slider')).toBeNull();

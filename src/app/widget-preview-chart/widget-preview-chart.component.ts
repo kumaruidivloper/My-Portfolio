@@ -30,6 +30,8 @@ export class WidgetPreviewChartComponent implements OnChanges {
   @Input() views: readonly PreviewViewOption[] = [];
   @Input() view = '';
   @Output() viewChange = new EventEmitter<string>();
+  /** Number of points inside the slider window, or null when the full series is shown. */
+  @Output() rangeCountChange = new EventEmitter<number | null>();
 
   readonly width = WIDTH;
   readonly height = HEIGHT;
@@ -56,6 +58,10 @@ export class WidgetPreviewChartComponent implements OnChanges {
     const allData = this.data.filter(({ value }) => Number.isFinite(value));
     const key = `${this.view}|${allData.length}`;
     if (key !== this.rangeKey) {
+      if (this.isRangeFiltered) {
+        // Deferred so the host's count label isn't changed mid change-detection.
+        Promise.resolve().then(() => this.rangeCountChange.emit(null));
+      }
       this.rangeKey = key;
       this.rangeFrom = 0;
       this.rangeTo = Math.max(0, allData.length - 1);
@@ -88,6 +94,7 @@ export class WidgetPreviewChartComponent implements OnChanges {
       this.rangeTo = Math.min(this.rangeMax, Math.max(value, this.rangeFrom + 1));
     }
     this.render(this.data.filter(({ value: v }) => Number.isFinite(v)).slice(this.rangeFrom, this.rangeTo + 1));
+    this.rangeCountChange.emit(this.isRangeFiltered ? this.rangeTo - this.rangeFrom + 1 : null);
   }
 
   private trackDrag: { pointerId: number; endpoint: 'from' | 'to'; left: number; width: number } | null = null;
@@ -132,6 +139,7 @@ export class WidgetPreviewChartComponent implements OnChanges {
     this.rangeFrom = 0;
     this.rangeTo = this.rangeMax;
     this.render(this.data.filter(({ value }) => Number.isFinite(value)));
+    this.rangeCountChange.emit(null);
   }
 
   /** Keeps slider gestures from expanding the card or switching the preview view. */

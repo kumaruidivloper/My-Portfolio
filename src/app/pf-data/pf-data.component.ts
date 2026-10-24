@@ -98,8 +98,12 @@ export class PfDataComponent implements OnInit, OnDestroy {
     this.toastTimeout?.unsubscribe();
   }
 
+  /** Records inside the collapsed preview's time slider; null when it shows everything. */
+  previewRangeCount: number | null = null;
+
   toggleExpanded(): void {
     this.isExpanded = !this.isExpanded;
+    this.previewRangeCount = null;
     if (this.isExpanded) {
       announceAccordionOpened(`pf-${this.resourceId}`);
     }

@@ -11,7 +11,7 @@
       <h2 class="records-title" [id]="'pf-data-title-' + resourceId">{{ pfData?.name || ownerName }} - PF DATA</h2>
       <p class="records-description">
         Provident Fund Overview -
-        {{ pfData ? records.length + ' monthly records' : 'Expand to view PF balance history.' }}
+        {{ pfData ? (previewRangeCount !== null ? previewRangeCount + ' of ' : '') + records.length + ' monthly records' : 'Expand to view PF balance history.' }}
       </p>
     </div>
     <div class="records-actions">
@@ -36,6 +36,7 @@
       [views]="previewViews"
       [view]="selectedMetric"
       (viewChange)="selectMetric($any($event))"
+      (rangeCountChange)="previewRangeCount = $event"
       (click)="toggleExpanded()"></app-widget-preview-chart>
   }
 
