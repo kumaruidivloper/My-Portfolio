@@ -100,6 +100,33 @@ describe('WidgetPreviewChartComponent', () => {
     expect(fixture.nativeElement.querySelector('.preview-change').textContent.trim()).toBe('0%');
   });
 
+  it('shows a tooltip for the point nearest the mouse and hides it on leave', () => {
+    const fixture = render({ data: [{ name: 'Jan', value: 100 }, { name: 'Feb', value: 150 }, { name: 'Mar', value: 165 }] });
+    const element: HTMLElement = fixture.nativeElement;
+    const plot = element.querySelector<HTMLElement>('.preview-plot')!;
+    plot.style.width = '300px';
+    const { left } = plot.getBoundingClientRect();
+    const move = (x: number, pointerType = 'mouse') =>
+      plot.dispatchEvent(new PointerEvent('pointermove', { clientX: left + x, pointerType, bubbles: true }));
+
+    move(160);
+    fixture.detectChanges();
+    expect(element.querySelector('.preview-tooltip')?.textContent).toContain('Feb');
+    expect(element.querySelector('.preview-tooltip')?.textContent).toContain('150');
+
+    move(295);
+    fixture.detectChanges();
+    expect(element.querySelector('.preview-tooltip')?.textContent).toContain('Mar');
+
+    plot.dispatchEvent(new PointerEvent('pointerleave'));
+    fixture.detectChanges();
+    expect(element.querySelector('.preview-tooltip')).toBeNull();
+
+    move(10, 'touch');
+    fixture.detectChanges();
+    expect(element.querySelector('.preview-tooltip')).toBeNull();
+  });
+
   it('shows a loading skeleton until data arrives', () => {
     const fixture = render({ loading: true, data: [] });
 

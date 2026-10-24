@@ -38,7 +38,7 @@
       }
     </figcaption>
     @if (linePath) {
-      <div class="preview-plot">
+      <div class="preview-plot" (pointermove)="onPlotPointerMove($event)" (pointerleave)="clearHover()">
       <svg class="preview-chart" [attr.viewBox]="'0 0 ' + width + ' ' + height" preserveAspectRatio="none" aria-hidden="true">
         <defs>
           <linearGradient [attr.id]="gradientId" x1="0" x2="0" y1="0" y2="1">
@@ -63,6 +63,25 @@
           aria-hidden="true"
           [style.left.%]="(lastPoint.x / width) * 100"
           [style.top.%]="(lastPoint.y / height) * 100"></span>
+      }
+      @if (hovered) {
+        <span class="preview-guide" aria-hidden="true" [style.left.%]="(hovered.x / width) * 100"></span>
+        <span
+          class="preview-dot hover"
+          aria-hidden="true"
+          [style.left.%]="(hovered.x / width) * 100"
+          [style.top.%]="(hovered.y / height) * 100"></span>
+        <span
+          class="preview-tooltip"
+          role="tooltip"
+          [class.start]="hovered.x < width * 0.2"
+          [class.end]="hovered.x > width * 0.8"
+          [class.below]="hovered.y < height * 0.45"
+          [style.left.%]="(hovered.x / width) * 100"
+          [style.top.%]="(hovered.y / height) * 100">
+          <span class="preview-tooltip-name">{{ hovered.datum.name }}</span>
+          <strong>{{ formatValue(hovered.datum.value) }}</strong>
+        </span>
       }
       </div>
     }

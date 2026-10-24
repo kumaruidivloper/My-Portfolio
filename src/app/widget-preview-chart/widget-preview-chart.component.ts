@@ -42,12 +42,16 @@ export class WidgetPreviewChartComponent implements OnChanges {
   latest: ChartDatum | null = null;
   first: ChartDatum | null = null;
   change: number | null = null;
+  hovered: { datum: ChartDatum; x: number; y: number } | null = null;
+  private points: { x: number; y: number }[] = [];
+  private plotData: ChartDatum[] = [];
 
   ngOnChanges(): void {
     const values = this.data.map(({ value }) => value).filter(Number.isFinite);
     const data = this.data.filter(({ value }) => Number.isFinite(value));
     this.first = data[0] ?? null;
     this.latest = data[data.length - 1] ?? null;
+    this.hovered = null;
     const previous = data[data.length - 2];
     this.change = previous && previous.value !== 0 && this.latest
       ? ((this.latest.value - previous.value) / Math.abs(previous.value)) * 100
@@ -58,6 +62,8 @@ export class WidgetPreviewChartComponent implements OnChanges {
       this.areaPath = '';
       this.lastPoint = null;
       this.gridColumns = [];
+      this.points = [];
+      this.plotData = [];
       return;
     }
 
@@ -72,6 +78,8 @@ export class WidgetPreviewChartComponent implements OnChanges {
     this.linePath = points.map(({ x, y }, index) => `${index ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join(' ');
     this.areaPath = `${this.linePath} L${points[points.length - 1].x.toFixed(1)} ${HEIGHT} L${PADDING} ${HEIGHT} Z`;
     this.lastPoint = points[points.length - 1];
+    this.points = points;
+    this.plotData = data;
     // One vertical line per point like the full chart, thinned out for long series.
     const every = Math.ceil(points.length / MAX_GRID_COLUMNS);
     this.gridColumns = points.filter((_, index) => index % every === 0 || index === points.length - 1).map(({ x }) => x);
@@ -138,6 +146,24 @@ export class WidgetPreviewChartComponent implements OnChanges {
       this.suppressClick = false;
       event.stopPropagation();
     }
+  }
+
+  /** Tracks the data point nearest the pointer so the tooltip can show its period and value. */
+  onPlotPointerMove(event: PointerEvent): void {
+    if (event.pointerType === 'touch' || !this.points.length) {
+      return;
+    }
+    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+    const x = rect.width ? ((event.clientX - rect.left) / rect.width) * WIDTH : 0;
+    const step = this.points.length > 1 ? this.points[1].x - this.points[0].x : 1;
+    const index = Math.min(this.points.length - 1, Math.max(0, Math.round((x - PADDING) / step)));
+    if (this.hovered?.datum !== this.plotData[index]) {
+      this.hovered = { datum: this.plotData[index], ...this.points[index] };
+    }
+  }
+
+  clearHover(): void {
+    this.hovered = null;
   }
 
   get summary(): string {

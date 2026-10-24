@@ -149,6 +149,60 @@
   width: 1rem;
 }
 
+// Follow the pointer instantly instead of the global .2s transition.
+.preview-dot.hover,
+.preview-guide,
+.preview-tooltip {
+  transition: none;
+}
+
+.preview-dot.hover {
+  height: 1.2rem;
+  width: 1.2rem;
+}
+
+.preview-guide {
+  border-left: 0.1rem dashed currentColor;
+  height: 100%;
+  opacity: 0.6;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+}
+
+.preview-tooltip {
+  background: var(--bg-color);
+  border: 0.1rem solid color-mix(in srgb, var(--green) 45%, transparent);
+  border-radius: 0.6rem;
+  box-shadow: 0 0.4rem 1.2rem rgb(0 0 0 / 25%);
+  color: var(--black);
+  display: flex;
+  flex-direction: column;
+  font-size: 1.15rem;
+  line-height: 1.3;
+  padding: 0.4rem 0.8rem;
+  pointer-events: none;
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 0.9rem));
+  white-space: nowrap;
+  z-index: 2;
+
+  &.start { transform: translate(-0.6rem, calc(-100% - 0.9rem)); }
+  &.end { transform: translate(calc(-100% + 0.6rem), calc(-100% - 0.9rem)); }
+  &.below { --dy: 0.9rem; transform: translate(-50%, var(--dy)); }
+  &.below.start { transform: translate(-0.6rem, var(--dy)); }
+  &.below.end { transform: translate(calc(-100% + 0.6rem), var(--dy)); }
+
+  strong {
+    color: var(--green);
+    font-size: 1.3rem;
+  }
+}
+
+.preview-tooltip-name {
+  color: var(--light-color);
+}
+
 .preview-range {
   color: var(--light-color);
   display: flex;
