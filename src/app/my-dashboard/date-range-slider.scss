@@ -83,10 +83,10 @@
     border: .15rem solid transparent;
     border-radius: 1rem;
     background:
-        linear-gradient(rgb(255 255 255 / 35%), transparent 60%) padding-box,
+        linear-gradient(rgb(255 255 255 / 25%), transparent 60%) padding-box,
         linear-gradient(to right, transparent var(--range-from), var(--green) 0 var(--range-to), transparent 0) padding-box,
-        linear-gradient(#c9cdd2, #eef0f2) padding-box,
-        linear-gradient(#fff, #c3c7cc 60%, #f4f5f7) border-box;
+        var(--metal-track) padding-box,
+        var(--metal-rim) border-box;
     box-shadow: inset 0 .1rem .25rem rgb(0 0 0 / 18%), 0 0 0 .05rem rgb(0 0 0 / 12%);
 }
 
@@ -103,7 +103,7 @@
 }
 
 input.date-range-input {
-    --knob: radial-gradient(circle at 35% 28%, #fff 0 18%, rgb(255 255 255 / 0%) 50%), conic-gradient(from 200deg, #fafbfc, #d5d9dd, #fff, #c8ccd1, #f7f8f9);
+    --knob: var(--metal-knob);
     --knob-shadow: 0 0 0 .05rem rgb(0 0 0 / 15%), 0 .15rem .35rem rgb(0 0 0 / 28%), inset 0 -.1rem .2rem rgb(0 0 0 / 10%);
     appearance: none;
     background: transparent;
