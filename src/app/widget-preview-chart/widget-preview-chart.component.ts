@@ -18,7 +18,7 @@ export interface PreviewViewOption {
 @Component({
   selector: 'app-widget-preview-chart',
   templateUrl: './widget-preview-chart.component.html',
-  styleUrls: ['./widget-preview-chart.component.scss'],
+  styleUrls: ['./widget-preview-chart.component.scss', './widget-preview-slider.scss'],
   standalone: false
 })
 export class WidgetPreviewChartComponent implements OnChanges {
@@ -46,9 +46,101 @@ export class WidgetPreviewChartComponent implements OnChanges {
   private points: { x: number; y: number }[] = [];
   private plotData: ChartDatum[] = [];
 
+  /** Selected time window (indexes into the finite data points); the full series by default. */
+  rangeFrom = 0;
+  rangeTo = 0;
+  totalPoints = 0;
+  private rangeKey = '';
+
   ngOnChanges(): void {
-    const values = this.data.map(({ value }) => value).filter(Number.isFinite);
-    const data = this.data.filter(({ value }) => Number.isFinite(value));
+    const allData = this.data.filter(({ value }) => Number.isFinite(value));
+    const key = `${this.view}|${allData.length}`;
+    if (key !== this.rangeKey) {
+      this.rangeKey = key;
+      this.rangeFrom = 0;
+      this.rangeTo = Math.max(0, allData.length - 1);
+    }
+    this.totalPoints = allData.length;
+    this.render(allData.slice(this.rangeFrom, this.rangeTo + 1));
+  }
+
+  get hasRangeSlider(): boolean {
+    return this.totalPoints > 2;
+  }
+
+  get rangeMax(): number {
+    return Math.max(0, this.totalPoints - 1);
+  }
+
+  get isRangeFiltered(): boolean {
+    return this.rangeFrom > 0 || this.rangeTo < this.rangeMax;
+  }
+
+  /** Moves one end of the time window, keeping at least two points so a trend line can be drawn. */
+  setRange(endpoint: 'from' | 'to', position: number): void {
+    const value = Math.round(position);
+    if (!Number.isFinite(value)) {
+      return;
+    }
+    if (endpoint === 'from') {
+      this.rangeFrom = Math.max(0, Math.min(value, this.rangeTo - 1));
+    } else {
+      this.rangeTo = Math.min(this.rangeMax, Math.max(value, this.rangeFrom + 1));
+    }
+    this.render(this.data.filter(({ value: v }) => Number.isFinite(v)).slice(this.rangeFrom, this.rangeTo + 1));
+  }
+
+  private trackDrag: { pointerId: number; endpoint: 'from' | 'to'; left: number; width: number } | null = null;
+
+  /** Clicking the bar jumps the nearest knob there; keep holding to drag it. */
+  startTrackDrag(event: PointerEvent): void {
+    if (event.button !== 0 || !this.rangeMax || !(event.currentTarget instanceof HTMLElement)) {
+      return;
+    }
+    const target = event.currentTarget;
+    const { left, width } = target.getBoundingClientRect();
+    if (!width) {
+      return;
+    }
+    const position = this.trackPosition(event.clientX, left, width);
+    const endpoint = Math.abs(position - this.rangeFrom) <= Math.abs(position - this.rangeTo) &&
+      !(position > this.rangeTo) ? 'from' : 'to';
+    this.setRange(endpoint, position);
+    target.setPointerCapture?.(event.pointerId);
+    this.trackDrag = { pointerId: event.pointerId, endpoint, left, width };
+  }
+
+  moveTrackDrag(event: PointerEvent): void {
+    const drag = this.trackDrag;
+    if (drag && drag.pointerId === event.pointerId) {
+      this.setRange(drag.endpoint, this.trackPosition(event.clientX, drag.left, drag.width));
+    }
+  }
+
+  endTrackDrag(event: PointerEvent): void {
+    if (this.trackDrag?.pointerId === event.pointerId) {
+      this.trackDrag = null;
+    }
+  }
+
+  private trackPosition(clientX: number, left: number, width: number): number {
+    return Math.max(0, Math.min(this.rangeMax, Math.round((clientX - left) / width * this.rangeMax)));
+  }
+
+  resetRange(event?: Event): void {
+    event?.stopPropagation();
+    this.rangeFrom = 0;
+    this.rangeTo = this.rangeMax;
+    this.render(this.data.filter(({ value }) => Number.isFinite(value)));
+  }
+
+  /** Keeps slider gestures from expanding the card or switching the preview view. */
+  stopEvent(event: Event): void {
+    event.stopPropagation();
+  }
+
+  private render(data: ChartDatum[]): void {
+    const values = data.map(({ value }) => value);
     this.first = data[0] ?? null;
     this.latest = data[data.length - 1] ?? null;
     this.hovered = null;
@@ -171,6 +263,6 @@ export class WidgetPreviewChartComponent implements OnChanges {
       return `${this.label}: no data`;
     }
     const trend = this.change === null ? '' : `, ${this.change > 0 ? 'up' : this.change < 0 ? 'down' : 'unchanged'} ${Math.abs(this.change).toFixed(1)}% from previous`;
-    return `${this.label} trend, ${this.data.length} points. Latest ${this.latest.name}: ${this.formatValue(this.latest.value)}${trend}`;
+    return `${this.label} trend, ${this.rangeTo - this.rangeFrom + 1} points. Latest ${this.latest.name}: ${this.formatValue(this.latest.value)}${trend}`;
   }
 }

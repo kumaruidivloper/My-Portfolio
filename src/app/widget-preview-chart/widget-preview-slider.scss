@@ -1,0 +1,115 @@
+/* Compact metal time-range slider under each widget preview (matches the "View all details" slider) */
+/* Sits below the chart card, at the bottom of the widget */
+.preview-footer {
+  cursor: default;
+  margin-top: 1rem;
+}
+
+.preview-slider {
+  margin: 0 0.9rem;
+}
+
+.preview-slider-track {
+  height: 2rem;
+  position: relative;
+}
+
+.preview-slider-track::before {
+  background:
+    linear-gradient(rgb(255 255 255 / 25%), transparent 60%) padding-box,
+    linear-gradient(to right, transparent var(--range-from), var(--green) 0 var(--range-to), transparent 0) padding-box,
+    var(--metal-track) padding-box,
+    var(--metal-rim) border-box;
+  border: 0.12rem solid transparent;
+  border-radius: 1rem;
+  box-shadow: inset 0 0.1rem 0.2rem rgb(0 0 0 / 18%), 0 0 0 0.05rem rgb(0 0 0 / 12%);
+  content: '';
+  inset: calc(50% - 0.35rem) 0;
+  position: absolute;
+}
+
+.preview-slider-hit-area {
+  cursor: pointer;
+  inset: 0;
+  position: absolute;
+  touch-action: none;
+}
+
+input.preview-slider-input {
+  --knob-shadow: 0 0 0 0.05rem rgb(0 0 0 / 15%), 0 0.12rem 0.3rem rgb(0 0 0 / 28%), inset 0 -0.1rem 0.2rem rgb(0 0 0 / 10%);
+  appearance: none;
+  background: transparent;
+  height: 2rem;
+  inset: 0 -0.9rem;
+  margin: 0;
+  pointer-events: none;
+  position: absolute;
+  transition: none;
+  width: calc(100% + 1.8rem);
+}
+
+.preview-slider-input:last-child {
+  z-index: 2;
+}
+
+.preview-slider-input::-webkit-slider-thumb {
+  appearance: none;
+  background: var(--metal-knob);
+  border-radius: 50%;
+  box-shadow: var(--knob-shadow);
+  cursor: ew-resize;
+  height: 1.8rem;
+  pointer-events: auto;
+  width: 1.8rem;
+}
+
+.preview-slider-input::-moz-range-thumb {
+  background: var(--metal-knob);
+  border: 0;
+  border-radius: 50%;
+  box-shadow: var(--knob-shadow);
+  cursor: ew-resize;
+  height: 1.8rem;
+  pointer-events: auto;
+  width: 1.8rem;
+}
+
+.preview-slider-input:hover::-webkit-slider-thumb {
+  outline: 0.25rem solid color-mix(in srgb, var(--green) 35%, transparent);
+}
+
+.preview-slider-input:focus-visible {
+  border-radius: 1rem;
+  outline: 0.2rem solid var(--green);
+}
+
+.preview-range {
+  align-items: center;
+}
+
+.preview-range-reset {
+  align-items: center;
+  background: var(--metal-knob);
+  border-radius: 50%;
+  box-shadow: 0 0 0 0.05rem rgb(0 0 0 / 15%), 0 0.1rem 0.25rem rgb(0 0 0 / 25%);
+  color: #1f2328;
+  cursor: pointer;
+  display: inline-flex;
+  height: 2.4rem;
+  justify-content: center;
+  padding: 0;
+  width: 2.4rem;
+
+  svg {
+    height: 1.4rem;
+    width: 1.4rem;
+  }
+}
+
+.preview-range-reset:hover {
+  outline: 0.25rem solid color-mix(in srgb, var(--green) 35%, transparent);
+}
+
+.preview-range-reset:focus-visible {
+  outline: 0.2rem solid var(--green);
+}

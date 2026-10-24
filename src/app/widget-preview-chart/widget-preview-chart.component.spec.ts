@@ -133,4 +133,72 @@ describe('WidgetPreviewChartComponent', () => {
     expect(fixture.nativeElement.querySelector('.preview-skeleton')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('.preview')).toBeNull();
   });
+
+  describe('time range slider', () => {
+    const series = ['Jan', 'Feb', 'Mar', 'Apr', 'May'].map((name, index) => ({ name, value: (index + 1) * 10 }));
+
+    it('narrows the preview to the chosen window without expanding the card', () => {
+      const fixture = render({ data: series, label: 'Balance' });
+      const element = fixture.nativeElement as HTMLElement;
+      const hostClick = jasmine.createSpy('hostClick');
+      element.addEventListener('click', hostClick);
+      expect(element.querySelector('figure .preview-slider')).toBeNull();
+      expect(element.querySelector('figure + .preview-footer .preview-slider')).not.toBeNull();
+      const [from, to] = Array.from(element.querySelectorAll<HTMLInputElement>('.preview-slider-input'));
+
+      from.value = '1';
+      from.dispatchEvent(new Event('input'));
+      to.value = '3';
+      to.dispatchEvent(new Event('input'));
+      from.click();
+      fixture.detectChanges();
+
+      const labels = Array.from(element.querySelectorAll('.preview-range span')).map((el) => el.textContent?.trim());
+      expect(labels).toEqual(['Feb', 'Apr']);
+      expect(element.querySelector('.preview-value')?.textContent).toContain('40');
+      expect(hostClick).not.toHaveBeenCalled();
+
+      (element.querySelector('.preview-range-reset') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      expect(Array.from(element.querySelectorAll('.preview-range span')).map((el) => el.textContent?.trim())).toEqual(['Jan', 'May']);
+      expect(element.querySelector('.preview-range-reset')).toBeNull();
+      expect(hostClick).not.toHaveBeenCalled();
+    });
+
+    it('keeps at least two points and resets when the series changes', () => {
+      const fixture = render({ data: series });
+      const component = fixture.componentInstance;
+      component.setRange('to', 3);
+      component.setRange('from', 4);
+      expect([component.rangeFrom, component.rangeTo]).toEqual([2, 3]);
+
+      fixture.componentRef.setInput('data', series.slice(0, 4));
+      fixture.detectChanges();
+      expect([component.rangeFrom, component.rangeTo]).toEqual([0, 3]);
+    });
+
+    it('moves the nearest knob to a click on the bar and drags it', () => {
+      const fixture = render({ data: series });
+      const component = fixture.componentInstance;
+      const hitArea = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>('.preview-slider-hit-area')!;
+      spyOn(hitArea, 'getBoundingClientRect').and.returnValue({ left: 0, width: 400 } as DOMRect);
+      const pointer = (type: string, clientX: number) =>
+        hitArea.dispatchEvent(new PointerEvent(type, { clientX, button: 0, pointerId: 1, bubbles: true }));
+
+      pointer('pointerdown', 110);
+      expect([component.rangeFrom, component.rangeTo]).toEqual([1, 4]);
+      pointer('pointermove', 200);
+      expect(component.rangeFrom).toBe(2);
+      pointer('pointerup', 200);
+
+      pointer('pointerdown', 390);
+      pointer('pointermove', 300);
+      expect([component.rangeFrom, component.rangeTo]).toEqual([2, 3]);
+    });
+
+    it('hides the slider when there are too few points to filter', () => {
+      const fixture = render({ data: series.slice(0, 2) });
+      expect((fixture.nativeElement as HTMLElement).querySelector('.preview-slider')).toBeNull();
+    });
+  });
 });

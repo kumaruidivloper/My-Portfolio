@@ -85,9 +85,43 @@
       }
       </div>
     }
-    <div class="preview-range" aria-hidden="true">
+  </figure>
+  <div
+    class="preview-footer"
+    (click)="stopEvent($event)"
+    (pointerdown)="stopEvent($event)"
+    (touchstart)="stopEvent($event)"
+    (touchend)="stopEvent($event)">
+    @if (hasRangeSlider) {
+      <div class="preview-slider" role="group" [attr.aria-label]="label + ' time range'">
+        <div
+          class="preview-slider-track"
+          [style.--range-from]="rangeFrom / rangeMax * 100 + '%'"
+          [style.--range-to]="rangeTo / rangeMax * 100 + '%'">
+          <div class="preview-slider-hit-area" aria-hidden="true"
+            (pointerdown)="startTrackDrag($event)" (pointermove)="moveTrackDrag($event)"
+            (pointerup)="endTrackDrag($event)" (pointercancel)="endTrackDrag($event)"
+            (lostpointercapture)="endTrackDrag($event)"></div>
+          <input #fromInput type="range" class="preview-slider-input" min="0" [max]="rangeMax" step="1"
+            [value]="rangeFrom" aria-label="Preview range from" [attr.aria-valuetext]="first?.name"
+            [style.z-index]="rangeFrom >= rangeMax - 1 ? 3 : 1"
+            (input)="setRange('from', fromInput.valueAsNumber); fromInput.value = '' + rangeFrom">
+          <input #toInput type="range" class="preview-slider-input" min="0" [max]="rangeMax" step="1"
+            [value]="rangeTo" aria-label="Preview range to" [attr.aria-valuetext]="latest.name"
+            (input)="setRange('to', toInput.valueAsNumber); toInput.value = '' + rangeTo">
+        </div>
+      </div>
+    }
+    <div class="preview-range">
       <span>{{ first?.name }}</span>
+      @if (isRangeFiltered) {
+        <button type="button" class="preview-range-reset" aria-label="Reset time range" title="Reset time range" (click)="resetRange($event)">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+            <path d="M3 10a9 9 0 1 1 2.6 8.4M3 4v6h6" />
+          </svg>
+        </button>
+      }
       <span>{{ latest.name }}</span>
     </div>
-  </figure>
+  </div>
 }
