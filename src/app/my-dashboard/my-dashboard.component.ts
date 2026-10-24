@@ -173,7 +173,7 @@ function monthDetails(value: string): { key: string; label: string } | null {
 @Component({
   selector: 'app-my-dashboard',
   templateUrl: './my-dashboard.component.html',
-  styleUrls: ['./my-dashboard.component.scss'],
+  styleUrls: ['./my-dashboard.component.scss', './date-range-slider.scss'],
   standalone: false
 })
 export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
