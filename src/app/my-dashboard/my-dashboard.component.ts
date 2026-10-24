@@ -337,6 +337,7 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.allDashboardChartsSubscription?.unsubscribe();
     this.accordionSubscription.unsubscribe();
     this.stopPinningWidget();
+    clearTimeout(this.highlightTimer);
   }
 
   readonly onWidgetGridClick = (event: Event): void => {
@@ -372,6 +373,7 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     const scroller = opened ? this.findScrollContainer(widget) : null;
     const align = () => (scroller ? scroller.scrollTo({ top: 0 }) : widget.scrollIntoView({ block: 'start' }));
     align();
+    this.highlightWidget(widget);
 
     const grid = widget.parentElement;
     if (!grid || typeof ResizeObserver === 'undefined') {
@@ -393,6 +395,23 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private stopPinningWidget: () => void = () => {};
+
+  /** Briefly outlines the card that was just opened or closed so it's easy to spot after the jump. */
+  private highlightWidget(widget: HTMLElement): void {
+    this.highlightedWidget?.classList.remove('widget-highlight');
+    clearTimeout(this.highlightTimer);
+    // Restart the animation when the same card is toggled again before it finishes.
+    void widget.offsetWidth;
+    widget.classList.add('widget-highlight');
+    this.highlightedWidget = widget;
+    this.highlightTimer = setTimeout(() => {
+      widget.classList.remove('widget-highlight');
+      this.highlightedWidget = undefined;
+    }, 1600);
+  }
+
+  private highlightedWidget?: HTMLElement;
+  private highlightTimer?: ReturnType<typeof setTimeout>;
 
   private findScrollContainer(element: HTMLElement): Element {
     for (let node = element.parentElement; node; node = node.parentElement) {

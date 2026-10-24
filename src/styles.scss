@@ -1648,6 +1648,32 @@ body:has(.dashboard-page) {
   order: -1;
 }
 
+/* Brief glow on the card that was just opened or closed, so it's easy to find after the scroll */
+.dashboard-widget-grid > .widget-highlight {
+  animation: widget-highlight 1.6s ease-out;
+  border-radius: 1.2rem;
+  outline: 0.3rem solid transparent;
+  outline-offset: 0.3rem;
+}
+
+@keyframes widget-highlight {
+  0%,
+  40% {
+    outline-color: var(--green);
+  }
+
+  100% {
+    outline-color: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-widget-grid > .widget-highlight {
+    animation: none;
+    outline-color: var(--green);
+  }
+}
+
 /* Reserves space for a deferred card until it scrolls into view */
 .dashboard-widget-grid > .widget-placeholder {
   background: var(--bg-color);
@@ -1684,44 +1710,68 @@ html body button.control-button.accordion-toggle:focus-visible {
   outline-offset: 0.2rem;
 }
 
+/* Light satin-chrome finish: a soft silver rim and track with a brushed-silver knob */
 .toggle-switch {
-  background: var(--bg-color);
+  background:
+    linear-gradient(#c9cdd2, #eef0f2) padding-box,
+    linear-gradient(#fff, #c3c7cc 60%, #f4f5f7) border-box;
+  border: 0.15rem solid transparent;
   border-radius: 99rem;
-  box-shadow: var(--box-shadow-inset);
+  box-shadow:
+    inset 0 0.1rem 0.25rem rgb(0 0 0 / 18%),
+    0 0 0 0.05rem rgb(0 0 0 / 12%),
+    0 0.1rem 0.2rem rgb(0 0 0 / 12%);
   display: block;
   height: 2.6rem;
   position: relative;
-  transition: background-color 0.25s ease, box-shadow 0.25s ease;
   width: 4.8rem;
 }
 
-.toggle-switch-thumb {
-  background: #fff;
-  border-radius: 50%;
-  box-shadow: 0 0.1rem 0.4rem rgb(0 0 0 / 35%);
-  height: 2rem;
-  left: 0.3rem;
+/* Soft satin fill in the theme accent (orange at night, green by day), faded in when the section is open */
+.toggle-switch::before {
+  background:
+    linear-gradient(rgb(255 255 255 / 25%), rgb(255 255 255 / 45%) 50%, rgb(0 0 0 / 5%)),
+    var(--green);
+  border-radius: inherit;
+  box-shadow: inset 0 0.1rem 0.2rem rgb(0 0 0 / 15%);
+  content: "";
+  inset: 0;
+  opacity: 0;
   position: absolute;
-  top: 0.3rem;
+  transition: opacity 0.25s ease;
+}
+
+.toggle-switch-thumb {
+  background:
+    radial-gradient(circle at 35% 28%, #fff 0 18%, rgb(255 255 255 / 0%) 50%),
+    conic-gradient(from 200deg, #fafbfc, #d5d9dd, #fff, #c8ccd1, #f7f8f9);
+  border-radius: 50%;
+  box-shadow:
+    0 0.1rem 0.25rem rgb(0 0 0 / 22%),
+    inset 0 -0.1rem 0.2rem rgb(0 0 0 / 10%);
+  height: 2rem;
+  left: 0.15rem;
+  position: absolute;
+  top: 0.15rem;
   transition: transform 0.25s ease;
   width: 2rem;
+  z-index: 1;
 }
 
 .accordion-toggle:hover .toggle-switch-thumb {
-  box-shadow: 0 0 0 0.3rem rgb(255 103 31 / 25%), 0 0.1rem 0.4rem rgb(0 0 0 / 35%);
+  outline: 0.25rem solid color-mix(in srgb, var(--green) 35%, transparent);
 }
 
-[aria-expanded="true"] > .toggle-switch {
-  background: var(--green);
-  box-shadow: none;
+[aria-expanded="true"] > .toggle-switch::before {
+  opacity: 1;
 }
 
 [aria-expanded="true"] > .toggle-switch > .toggle-switch-thumb {
-  transform: translateX(2.2rem);
+  transform: translateX(2.35rem);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .toggle-switch,
+  .toggle-switch::before,
   .toggle-switch-thumb {
     transition: none;
   }

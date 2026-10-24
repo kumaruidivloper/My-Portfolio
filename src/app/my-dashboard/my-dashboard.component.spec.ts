@@ -126,6 +126,7 @@ describe('MyDashboardComponent', () => {
     };
 
     await clickAndToggle('.main');
+    expect(widget.classList).withContext('highlights the opened card').toContain('widget-highlight');
     expect(toTopSpy).toHaveBeenCalledWith({ top: 0 });
     expect(toCardSpy).not.toHaveBeenCalled();
     resetSpies();
@@ -134,7 +135,9 @@ describe('MyDashboardComponent', () => {
     expect(toTopSpy).withContext('re-aligns while the layout settles').toHaveBeenCalled();
     await stopPinning();
 
+    widget.classList.remove('widget-highlight');
     await clickAndToggle('.inside');
+    expect(widget.classList).withContext('highlights the closed card').toContain('widget-highlight');
     expect(toCardSpy).toHaveBeenCalledWith(jasmine.objectContaining({ block: 'start' }));
     expect(toTopSpy).not.toHaveBeenCalled();
     await stopPinning();
@@ -144,6 +147,7 @@ describe('MyDashboardComponent', () => {
     await new Promise((resolve) => setTimeout(resolve));
     expect(toTopSpy).not.toHaveBeenCalled();
     expect(toCardSpy).not.toHaveBeenCalled();
+    component.ngOnDestroy();
     page.remove();
   });
 
