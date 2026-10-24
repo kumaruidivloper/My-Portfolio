@@ -56,6 +56,21 @@ describe('CounterComponent', () => {
     counterFixture.destroy();
   });
 
+  it('emits each step and rolls the drums for exactly one step', () => {
+    const emitted: number[] = [];
+    component.valueChange.subscribe((value) => emitted.push(value));
+    component.stopRange = [2];
+    component.durationMs = 1000;
+    component.counters = [{ value: 0, intervalId: fakeIntervalId, flip: false }];
+
+    component.incrementCounter(2);
+    component.incrementCounter(2);
+    component.incrementCounter(2);
+
+    expect(emitted).toEqual([1, 2]);
+    expect(component.stepMs(0)).toBe(500);
+  });
+
   it('counts back to zero when the counter leaves the viewport', () => {
     component.counters = [{ value: 3, intervalId: fakeIntervalId, flip: false }];
 

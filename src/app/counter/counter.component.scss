@@ -44,7 +44,8 @@
   display: block;
   height: 1.35em;
   line-height: 1.35em;
-  transition: transform 180ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  /* Rolls for exactly one count step at a constant speed, so the drums turn in time with the count */
+  transition: transform var(--roll-ms, 180ms) linear;
   transform-style: preserve-3d;
   width: 100%;
   will-change: transform;

@@ -1,5 +1,5 @@
 @for (counter of counters; track counter; let i = $index) {
-  <div class="counter-element" [attr.aria-label]="counter.value">
+  <div class="counter-element" [attr.aria-label]="counter.value" [style.--roll-ms]="stepMs(i) + 'ms'">
     @for (digit of formatCounter(counter.value); track $index; let digitIndex = $index) {
       <span class="digit-window">
         <span class="digit-strip" aria-hidden="true" [style.transform]="'translateZ(-2.077em) rotateX(' + wheelRotation(counter.value, digitIndex) + 'deg)'">

@@ -12,6 +12,8 @@ export class AboutSkillsComponent implements AfterViewInit, OnDestroy {
   @Input() barAnimation = false;
   @Input() transition: string[] = [];
   @Input() barRange: (value: number) => string = (value: number) => `${value}%`;
+  /** Current counter value per skill; the bar width follows it so bar and digits stay in sync. */
+  barValues: number[] = [];
   private visibleBars = new Set<number>();
   private visibilityObserver?: IntersectionObserver;
   private barChangesSubscription?: Subscription;
@@ -61,6 +63,12 @@ export class AboutSkillsComponent implements AfterViewInit, OnDestroy {
 
     const duration = Number(durationMatch[1]);
     return durationMatch[2] === 's' ? duration * 1000 : duration;
+  }
+
+  /** Matches the counter's step time so each 1% width change glides into the next. */
+  stepMs(index: number): number {
+    const level = this.technology?.level?.[index];
+    return level > 0 ? Math.max(1, Math.round(this.animationDuration(this.transition[index]) / level)) : 0;
   }
 
   private observeBars(): void {

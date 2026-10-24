@@ -1,6 +1,6 @@
 /// <reference types="jasmine" />
 
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, discardPeriodicTasks, fakeAsync, tick } from '@angular/core/testing';
 
 import { CounterComponent } from '../counter/counter.component';
 import { AboutSkillsComponent } from './about-skills.component';
@@ -59,32 +59,55 @@ describe('AboutSkillsComponent', () => {
     expect(component.barRange(40)).toBe('40%');
   });
 
-  it('starts bars and counters while the skills section is in view', () => {
-    observerCallback([{ target: observedBars[0], isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver);
+  const showBar = (index: number, isIntersecting: boolean) => {
+    observerCallback([{ target: observedBars[index], isIntersecting } as IntersectionObserverEntry], {} as IntersectionObserver);
+    fixture.detectChanges();
+  };
+  const firstBar = () => fixture.nativeElement.querySelector('.progress > .bar > span') as HTMLElement;
+  const firstCounter = () => fixture.nativeElement.querySelector('app-counter .counter-element') as HTMLElement;
+
+  it('fills each bar in lockstep with its counter while the skills section is in view', fakeAsync(() => {
+    showBar(0, true);
+    expect(fixture.nativeElement.querySelectorAll('app-counter').length).toBe(12);
+
+    // Level 10 over 1s: one 1% step every 100ms, at constant speed.
+    tick(500);
+    fixture.detectChanges();
+    expect(firstBar().style.width).toBe('5%');
+    expect(firstCounter().getAttribute('aria-label')).toBe('5');
+    expect(firstBar().style.transition).toMatch(/^width (100ms|0.1s) linear$/);
+    expect(firstCounter().style.getPropertyValue('--roll-ms')).toBe('100ms');
+
+    tick(1000);
+    fixture.detectChanges();
+    expect(firstBar().style.width).toBe('10%');
+    expect(firstCounter().getAttribute('aria-label')).toBe('10');
+    discardPeriodicTasks();
+  }));
+
+  it('drains an individual bar with its counter when it leaves the view', fakeAsync(() => {
+    showBar(0, true);
+    tick(1100);
+    showBar(0, false);
+    tick(300);
+    fixture.detectChanges();
+    expect(firstBar().style.width).toBe('7%');
+    expect(firstCounter().getAttribute('aria-label')).toBe('7');
+
+    tick(1000);
+    fixture.detectChanges();
+    expect(firstBar().style.width).toBe('0%');
+    discardPeriodicTasks();
+  }));
+
+  it('starts a bar in the desktop second column independently', fakeAsync(() => {
+    showBar(6, true);
+    tick(7100);
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelectorAll('app-counter').length).toBe(12);
-    expect((compiled.querySelector('.progress > .bar > span') as HTMLElement).style.width).toBe('10%');
-  });
-
-  it('resets an individual bar and counter when it leaves the view', () => {
-    observerCallback([{ target: observedBars[0], isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver);
-    fixture.detectChanges();
-    observerCallback([{ target: observedBars[0], isIntersecting: false } as IntersectionObserverEntry], {} as IntersectionObserver);
-    fixture.detectChanges();
-
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelectorAll('app-counter').length).toBe(12);
-    expect((compiled.querySelector('.progress > .bar > span') as HTMLElement).style.width).toBe('0%');
-  });
-
-  it('starts a bar in the desktop second column independently', () => {
-    observerCallback([{ target: observedBars[6], isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver);
-    fixture.detectChanges();
-
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelectorAll('app-counter').length).toBe(12);
     expect((compiled.querySelector('.progress:nth-child(2) > .bar > span') as HTMLElement).style.width).toBe('70%');
-  });
+    expect(firstBar().style.width).toBe('0%');
+    discardPeriodicTasks();
+  }));
 });

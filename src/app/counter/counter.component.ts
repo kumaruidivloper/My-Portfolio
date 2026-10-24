@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges } from '@angular/core';
 
 @Component({
     selector: 'app-counter',
@@ -12,6 +12,8 @@ export class CounterComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() durationMs = 3000;
   @Input() active = false;
   @Input() observeViewport = true;
+  /** Emits the first counter's value on every step, so linked visuals (e.g. a skill bar) move in lockstep. */
+  @Output() valueChange = new EventEmitter<number>();
 
   counters: { value: number, intervalId: ReturnType<typeof setInterval> | null, flip: boolean }[] = [];
   digitWheel = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -65,9 +67,14 @@ export class CounterComponent implements AfterViewInit, OnChanges, OnDestroy {
 
     this.counters.forEach((counter, index) => {
       const stopRange = this.stopRange[index];
-      const intervalMs = stopRange > 0 ? Math.max(1, Math.round(this.durationMs / stopRange)) : this.durationMs;
-      counter.intervalId = setInterval(() => this.incrementCounter(stopRange, countUp), intervalMs);
+      counter.intervalId = setInterval(() => this.incrementCounter(stopRange, countUp), this.stepMs(index));
     });
+  }
+
+  /** Time per count step; also used as the drum roll duration so the digits roll at the counting speed. */
+  stepMs(index: number): number {
+    const stopRange = this.stopRange[index];
+    return stopRange > 0 ? Math.max(1, Math.round(this.durationMs / stopRange)) : this.durationMs;
   }
 
   private stopCounters(): void {
@@ -80,6 +87,7 @@ export class CounterComponent implements AfterViewInit, OnChanges, OnDestroy {
   }
 
   incrementCounter(stopRange: number, countUp = true): void {
+    const previous = this.counters[0]?.value;
     for (let counter of this.counters) {
       if (countUp && counter.value < stopRange) {
         counter.value++;
@@ -93,6 +101,9 @@ export class CounterComponent implements AfterViewInit, OnChanges, OnDestroy {
       }
     }
     this.changeDetectorRef.detectChanges();
+    if (this.counters[0] && this.counters[0].value !== previous) {
+      this.valueChange.emit(this.counters[0].value);
+    }
   }
 
   private resetCounters(): void {
