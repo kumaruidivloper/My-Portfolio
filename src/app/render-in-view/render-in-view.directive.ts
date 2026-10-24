@@ -1,4 +1,4 @@
-import { DestroyRef, Directive, ElementRef, NgZone, OnInit, Renderer2, TemplateRef, ViewContainerRef, inject } from '@angular/core';
+import { DestroyRef, Directive, ElementRef, Input, NgZone, OnInit, Renderer2, TemplateRef, ViewContainerRef, inject } from '@angular/core';
 
 /**
  * Renders its template (creating its components and starting their data fetches) only once a
@@ -10,6 +10,8 @@ import { DestroyRef, Directive, ElementRef, NgZone, OnInit, Renderer2, TemplateR
   standalone: false
 })
 export class RenderInViewDirective implements OnInit {
+  /** Optional extra class for the placeholder, so it reserves the same grid space as the card. */
+  @Input('appRenderInView') placeholderClass = '';
   private readonly template = inject(TemplateRef<unknown>);
   private readonly viewContainer = inject(ViewContainerRef);
   private readonly renderer = inject(Renderer2);
@@ -26,6 +28,9 @@ export class RenderInViewDirective implements OnInit {
     const anchor: Comment = this.anchor.nativeElement;
     const placeholder: HTMLElement = this.renderer.createElement('div');
     this.renderer.addClass(placeholder, 'widget-placeholder');
+    if (this.placeholderClass) {
+      this.renderer.addClass(placeholder, this.placeholderClass);
+    }
     this.renderer.setAttribute(placeholder, 'aria-hidden', 'true');
     this.renderer.insertBefore(this.renderer.parentNode(anchor), placeholder, anchor);
 

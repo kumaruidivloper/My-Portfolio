@@ -23,7 +23,7 @@
     </div>
 
     <div class="dashboard-widget-grid" #widgetGrid>
-    <section class="transfer-data-accordion" aria-labelledby="transfer-data-title">
+    <section class="transfer-data-accordion widget-full" aria-labelledby="transfer-data-title">
       <header class="records-heading transfer-accordion-header">
         <div class="records-toggle-copy transfer-accordion-copy">
           <h2 class="records-title transfer-flag-title" id="transfer-data-title" aria-label="Australia to India Transfers">
@@ -273,11 +273,11 @@
       <!-- Cards below the first render (and fetch their data) only when scrolled near. -->
       <app-pf-data resourceId="2" ownerName="Kumar"></app-pf-data>
       <app-pf-data resourceId="3" ownerName="Vasuki" *appRenderInView></app-pf-data>
-      <app-sum-of-value *appRenderInView></app-sum-of-value>
+      <app-sum-of-value class="widget-full" *appRenderInView="'widget-full'"></app-sum-of-value>
       <app-kumar-gratuity *appRenderInView></app-kumar-gratuity>
       <app-vasuki-gratuity *appRenderInView></app-vasuki-gratuity>
-      <app-vasuki-super *appRenderInView></app-vasuki-super>
-      <app-total-balance *appRenderInView></app-total-balance>
+      <app-vasuki-super class="widget-full" *appRenderInView="'widget-full'"></app-vasuki-super>
+      <app-total-balance class="widget-full" *appRenderInView="'widget-full'"></app-total-balance>
     }
     </div>
   </div>

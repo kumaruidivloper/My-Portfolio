@@ -11,6 +11,12 @@ import { RenderInViewDirective } from './render-in-view.directive';
 })
 class HostComponent {}
 
+@Component({
+  template: `<div class="host"><span class="card" *appRenderInView="'widget-full'">Card</span></div>`,
+  standalone: false
+})
+class WideHostComponent {}
+
 describe('RenderInViewDirective', () => {
   let callback: IntersectionObserverCallback;
   let observe: jasmine.Spy;
@@ -28,7 +34,7 @@ describe('RenderInViewDirective', () => {
       observe = observe;
       disconnect = disconnect;
     } as unknown as typeof IntersectionObserver;
-    TestBed.configureTestingModule({ declarations: [HostComponent, RenderInViewDirective] });
+    TestBed.configureTestingModule({ declarations: [HostComponent, WideHostComponent, RenderInViewDirective] });
   });
 
   afterEach(() => {
@@ -37,6 +43,12 @@ describe('RenderInViewDirective', () => {
 
   const intersect = (isIntersecting: boolean) =>
     callback([{ isIntersecting } as IntersectionObserverEntry], {} as IntersectionObserver);
+
+  it('adds the given class to the placeholder so it reserves the card\'s grid space', () => {
+    const fixture = TestBed.createComponent(WideHostComponent);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.widget-placeholder').classList).toContain('widget-full');
+  });
 
   it('shows a placeholder until it scrolls into view, then renders the template once', () => {
     const fixture = TestBed.createComponent(HostComponent);

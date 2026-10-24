@@ -1490,6 +1490,11 @@ body:has(.dashboard-page) {
   transition: none;
 }
 
+/* Summary-style cards span the full row on desktop */
+.dashboard-widget-grid > .widget-full {
+  grid-column: 1 / -1;
+}
+
 /* The opened card moves to the top; closing it returns it to its original slot */
 .dashboard-widget-grid > :has(.accordion-toggle[aria-expanded="true"]) {
   grid-column: 1 / -1;
