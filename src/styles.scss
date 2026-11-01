@@ -334,6 +334,22 @@ html body .dashboard-page button.control-button:hover {
     box-shadow: var(--box-shadow);
 }
 
+html body .dashboard-page app-form-stepper .stepper-actions button.control-button {
+    background: var(--bg-color);
+    box-shadow: var(--box-shadow);
+    color: var(--black);
+}
+
+html body .dashboard-page app-form-stepper .stepper-actions button.control-button:is(.primary-action, .save-action) {
+    color: var(--green);
+}
+
+html body .dashboard-page app-form-stepper .stepper-actions button.control-button:not(:disabled):is(:hover, :focus-visible, :active) {
+    background: var(--bg-color);
+    box-shadow: var(--box-shadow-inset);
+    color: var(--green);
+}
+
 body.active .dashboard-page .chart-container svg text,
 body.active .dashboard-page .transfer-chart-visual svg text {
     fill: #fff !important;

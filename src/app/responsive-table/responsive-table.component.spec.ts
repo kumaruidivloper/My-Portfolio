@@ -65,6 +65,56 @@ describe('ResponsiveTableComponent', () => {
     expect(host.querySelector('tbody tr td:nth-child(2)')?.classList.contains('numeric-column')).toBeTrue();
   });
 
+  it('uses theme-appropriate delete colors in both dark modes without changing the light theme', () => {
+    const host = fixture.nativeElement as HTMLElement;
+    host.classList.add('dashboard-page');
+    const button = host.querySelector('tbody button') as HTMLButtonElement;
+    button.className = 'control-button transfer-action delete-action';
+    button.parentElement!.classList.add('responsive-grid-action-buttons');
+    button.style.transition = 'none';
+    const originalClass = document.body.className;
+    try {
+      document.body.classList.remove('active', 'night');
+      expect(getComputedStyle(button).color).toBe('rgb(192, 57, 43)');
+      expect(getComputedStyle(button).backgroundColor).toBe('rgb(253, 236, 234)');
+      for (const theme of ['active', 'night']) {
+        document.body.classList.remove('active', 'night');
+        document.body.classList.add(theme);
+        expect(getComputedStyle(button).color).toBe('rgb(255, 138, 128)');
+        expect(getComputedStyle(button).backgroundColor).not.toBe('rgb(253, 236, 234)');
+      }
+    } finally {
+      document.body.className = originalClass;
+    }
+  });
+
+  it('shades even rows differently using the current theme colors after pagination and sorting', () => {
+    const host = fixture.nativeElement as HTMLElement;
+    host.style.setProperty('--bg-color', '#eeeeee');
+    host.style.setProperty('--black', '#444444');
+    const expectAlternatingRows = () => {
+      const rows = Array.from(host.querySelectorAll<HTMLElement>('tbody tr'));
+      rows.forEach((row) => row.style.transition = 'none');
+      const colors = rows.map((row) => getComputedStyle(row).backgroundColor);
+      expect(colors[0]).not.toBe(colors[1]);
+      expect(colors[0]).toBe(colors[2]);
+      expect(colors[1]).toBe(colors[3]);
+      return colors;
+    };
+    const lightColors = expectAlternatingRows();
+    host.style.setProperty('--bg-color', '#222222');
+    host.style.setProperty('--black', '#ffffff');
+    const darkColors = expectAlternatingRows();
+    expect(darkColors[0]).not.toBe(lightColors[0]);
+    expect(darkColors[1]).not.toBe(lightColors[1]);
+    (host.querySelector('button[aria-label="Next page"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expectAlternatingRows();
+    (host.querySelector('thead button') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expectAlternatingRows();
+  });
+
   it('defaults to descending dates across years without changing rows or action indexes', () => {
     fixture.destroy();
     fixture = TestBed.createComponent(ResponsiveTableHostComponent);

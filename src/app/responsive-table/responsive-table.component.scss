@@ -77,7 +77,12 @@ app-responsive-table {
 }
 
 .responsive-grid-table tbody tr {
+  background-color: var(--bg-color);
   transition: background-color 0.18s ease;
+}
+
+.responsive-grid-table tbody tr:nth-child(even) {
+  background-color: color-mix(in srgb, var(--black) 4%, var(--bg-color));
 }
 
 .responsive-grid-table tbody tr:hover {
@@ -159,14 +164,19 @@ html body .dashboard-page app-responsive-table .responsive-grid-action-buttons b
 }
 
 html body .dashboard-page app-responsive-table .responsive-grid-action-buttons button.control-button.transfer-action.delete-action {
-  background: #fdecea;
-  color: #c0392b;
+  background: var(--table-delete-background, #fdecea);
+  color: var(--table-delete-color, #c0392b);
 }
 
 html body .dashboard-page app-responsive-table .responsive-grid-action-buttons button.control-button.transfer-action.delete-action:not(:disabled):hover {
-  background: #fdecea;
+  background: var(--table-delete-background, #fdecea);
   box-shadow: var(--box-shadow-inset);
-  color: #c0392b;
+  color: var(--table-delete-color, #c0392b);
+}
+
+body:is(.active, .night) .dashboard-page app-responsive-table {
+  --table-delete-background: color-mix(in srgb, #ff8a80 10%, var(--bg-color));
+  --table-delete-color: #ff8a80;
 }
 
 html body .dashboard-page app-responsive-table .responsive-grid-action-buttons button.control-button.transfer-action:focus-visible {
@@ -237,7 +247,6 @@ html body .dashboard-page app-responsive-table .responsive-grid-action-buttons b
   }
 
   .responsive-grid-table tbody tr {
-    background: var(--bg-color);
     border-radius: 1rem;
     box-shadow: var(--box-shadow);
     margin-bottom: 1.2rem;

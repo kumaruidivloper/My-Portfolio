@@ -42,4 +42,30 @@ describe('FormStepperComponent', () => {
     f.detectChanges();
     expect(f.componentInstance.step).toBe(2);
   });
+
+  it('uses theme surfaces for Next and both submit variants in light and dark themes', () => {
+    for (const background of ['#eeeeee', '#222222']) {
+      for (const variant of ['next', 'primary-action', 'save-action']) {
+        const form = TestBed.createComponent(FormStepperComponent);
+        form.componentInstance.labels = ['A', 'B', 'C'];
+        form.componentInstance.startStep = variant === 'next' ? 0 : 2;
+        form.componentInstance.submitClass = variant;
+        form.componentInstance.submitDisabled = variant !== 'next';
+        const host = form.nativeElement as HTMLElement;
+        host.style.setProperty('--bg-color', background);
+        host.style.setProperty('--green', '#ff671f');
+        form.detectChanges();
+        const button = host.querySelector('.stepper-actions button:last-child') as HTMLButtonElement;
+        button.style.transition = 'none';
+        expect(getComputedStyle(button).backgroundColor)
+          .toBe(background === '#eeeeee' ? 'rgb(238, 238, 238)' : 'rgb(34, 34, 34)');
+        expect(getComputedStyle(button).color).toBe('rgb(255, 103, 31)');
+        if (variant !== 'next') {
+          expect(button.disabled).toBeTrue();
+          expect(getComputedStyle(button).opacity).toBe('0.55');
+        }
+        form.destroy();
+      }
+    }
+  });
 });

@@ -145,19 +145,16 @@
   }
 
   &.primary-action {
-    background: var(--green);
-    color: var(--white);
-
-    &:hover:not(:disabled) {
-      background: var(--green);
-      box-shadow: var(--box-shadow);
-      color: var(--white);
-      filter: brightness(1.08);
-    }
+    color: var(--green);
   }
 
   &.save-action {
-    background: transparent;
+    color: var(--green);
+  }
+
+  &:focus-visible {
+    outline: 0.2rem solid var(--green);
+    outline-offset: 0.3rem;
   }
 }
 
