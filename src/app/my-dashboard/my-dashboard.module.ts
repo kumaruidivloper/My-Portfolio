@@ -5,6 +5,7 @@ import { TotalBalanceComponent } from '../total-balance/total-balance.component'
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { OverlayModule } from '@angular/cdk/overlay';
+import { A11yModule } from '@angular/cdk/a11y';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { RouterModule } from '@angular/router';
@@ -41,6 +42,7 @@ import { RenderInViewDirective } from '../render-in-view/render-in-view.directiv
   imports: [
     CommonModule,
     OverlayModule,
+    A11yModule,
     ScrollingModule,
     NgxChartsModule,
     ReactiveFormsModule,

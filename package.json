@@ -24,6 +24,7 @@
     "@swimlane/ngx-charts": "^25.0.2",
     "@techiediaries/ngx-qrcode": "^9.1.0",
     "angularx-qrcode": "^16.0.2",
+    "exceljs": "^4.4.0",
     "ngx-qrcode2": "^9.0.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",

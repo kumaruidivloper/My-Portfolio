@@ -83,7 +83,91 @@ body:not(.active):not(.night) .dashboard-page .ngx-charts .line-series .line {
 }
 
 .dashboard-top-actions .btn.back-button {
-    margin: 0;
+    margin: 0 auto 0 0;
+}
+
+.dashboard-options {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: .2rem;
+    background: var(--bg-color);
+    border: var(--border);
+    border-radius: 1.2rem;
+    box-shadow: var(--box-shadow);
+    padding: .7rem;
+    width: min(calc(100vw - 24px), 32rem);
+    color: var(--black);
+    transition: none;
+}
+
+.dashboard-options-heading {
+    color: var(--light-color);
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+    padding: .7rem 1rem .4rem;
+    text-transform: uppercase;
+}
+
+.dashboard-options-divider {
+    border-top: var(--border);
+    margin: .5rem .5rem .2rem;
+}
+
+.dashboard-option {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    border-radius: .7rem;
+    color: var(--black);
+    cursor: pointer;
+    display: flex;
+    font-size: 1.4rem;
+    gap: 1rem;
+    min-height: 44px;
+    padding: .9rem 1rem;
+    text-align: left;
+    transition: background-color .15s, color .15s;
+    width: 100%;
+
+    span {
+        text-transform: none;
+    }
+
+    svg {
+        flex: 0 0 1.9rem;
+        height: 1.9rem;
+        width: 1.9rem;
+        color: var(--green);
+    }
+
+    &:hover:not(:disabled),
+    &:focus-visible {
+        background: var(--green);
+        color: var(--bg-color);
+
+        svg,
+        .dashboard-option-format {
+            color: inherit;
+        }
+    }
+
+    &:focus-visible {
+        outline: .2rem solid var(--black);
+        outline-offset: -.2rem;
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+        opacity: .5;
+    }
+}
+
+.dashboard-option-format {
+    color: var(--light-color);
+    font-size: 1.1rem;
+    margin-left: auto;
 }
 
 html body .dashboard-page .dashboard-top-actions a.back-button.icon-action,
@@ -235,6 +319,12 @@ html body .dashboard-page button.control-button.save-action {
 }
 
 html body .dashboard-page button.control-button.save-action:not(:disabled):hover {
+    background: transparent;
+    box-shadow: var(--box-shadow-inset);
+    color: var(--green);
+}
+
+html body .dashboard-page .dashboard-top-actions button.control-button[aria-expanded="true"] {
     background: transparent;
     box-shadow: var(--box-shadow-inset);
     color: var(--green);

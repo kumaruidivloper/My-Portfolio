@@ -33,7 +33,8 @@
             ],
             "scripts": [],
             "allowedCommonJsDependencies": [
-              "qrcode"
+              "qrcode",
+              "exceljs"
             ],
             "browser": "src/main.ts"
           },

@@ -1,7 +1,8 @@
 import { announceAccordionOpened, collapseWhenAnotherOpens } from '../service/accordion-group';
 import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { forkJoin, merge, Subscription, timer } from 'rxjs';
+import { ConnectedPosition } from '@angular/cdk/overlay';
+import { firstValueFrom, forkJoin, merge, Subscription, timer } from 'rxjs';
 import { ColorHelper, ScaleType } from '@swimlane/ngx-charts';
 import { chartColorScheme, CHART_TYPE_OPTIONS, ChartType, isChartType, formatCompactAxisValue } from '../model/chart-type';
 import { memoizeLast } from '../model/memoize';
@@ -15,6 +16,7 @@ import { GratuityDataService } from '../service/gratuity-data.service';
 import { TotalBalanceService } from '../service/total-balance.service';
 import { PfApiDocument } from '../model/pf-record';
 import { GratuityApiDocument } from '../model/gratuity-record';
+import { createDashboardExport, DashboardExportFormat, DashboardExportTable, downloadDashboardExport } from '../model/dashboard-export';
 
 type DashboardChartType = ChartType;
 type TransferMetric = 'amountTransferredAUD' | 'amountReceivedINR' | 'conversionRate';
@@ -275,6 +277,15 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   isTransferSectionExpanded = false;
   areRecordsExpanded = false;
   isSaving = false;
+  isExporting = false;
+  exportError = '';
+  exportMessage = '';
+  isDashboardOptionsOpen = false;
+  readonly dashboardOptionsPositions: ConnectedPosition[] = [
+    { originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top', offsetY: 8 },
+    { originX: 'end', originY: 'top', overlayX: 'end', overlayY: 'bottom', offsetY: -8 }
+  ];
+  private isDestroyed = false;
   pendingDeleteIndex: number | null = null;
   isDeleteCodeVerifying = false;
   isDeleteCodeVerified = false;
@@ -331,6 +342,7 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.isDestroyed = true;
     this.widgetGrid?.nativeElement.removeEventListener('click', this.onWidgetGridClick, true);
     this.toastTimeout?.unsubscribe();
     this.amountCalculation?.unsubscribe();
@@ -991,18 +1003,97 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  private loadAllDashboardCharts(): void {
-    this.allDashboardChartsSubscription?.unsubscribe();
-    this.isAllDashboardChartsLoading = true;
-    this.allDashboardChartsError = '';
-    this.allDashboardChartsSubscription = forkJoin({
+  closeDashboardOptionsOnOutsideClick(event: MouseEvent, button: HTMLElement): void {
+    if (!(event.target instanceof Node) || !button.contains(event.target)) {
+      this.isDashboardOptionsOpen = false;
+    }
+  }
+
+  private loadDashboardDocuments() {
+    return forkJoin({
       kumarPf: this.pfDataService.getPfData('2'),
       vasukiPf: this.pfDataService.getPfData('3'),
       kumarGratuity: this.gratuityDataService.getGratuityData('4'),
       vasukiGratuity: this.gratuityDataService.getGratuityData('5'),
       vasukiSuper: this.gratuityDataService.getGratuityData('6'),
       overallBalance: this.totalBalanceService.getTotals()
-    }).subscribe({
+    });
+  }
+
+  async exportDashboard(format: DashboardExportFormat): Promise<void> {
+    if (this.isExporting || this.isSaving) {
+      return;
+    }
+    this.isDashboardOptionsOpen = false;
+    this.isExporting = true;
+    this.exportError = '';
+    this.exportMessage = '';
+    try {
+      const { transfers, documents } = await firstValueFrom(forkJoin({
+        transfers: this.transferService.getTransfers(),
+        documents: this.loadDashboardDocuments()
+      }));
+      const tables: DashboardExportTable[] = [{
+        name: 'Transfers',
+        columns: ['Transfer date', 'Amount sent (AUD)', 'Conversion rate', 'Received date', 'Amount received (INR)'],
+        rows: transfers.map((record) => [
+          record.dateOfTransfer, record.amountTransferredAUD, record.conversionRate,
+          record.receivedDate, record.amountReceivedINR
+        ])
+      }];
+      for (const [name, owner, data] of [
+        ['Kumar PF', 'Kumar', documents.kumarPf],
+        ['Vasuki PF', 'Vasuki', documents.vasukiPf]
+      ] as const) {
+        tables.push({
+          name,
+          columns: ['Owner', 'Month', 'PF balance', 'PF difference'],
+          rows: data.pfRecords.map(({ date, pfAmount, difference }) => [owner, date, pfAmount, difference])
+        });
+      }
+      tables.push({
+        name: 'Combined PF',
+        columns: ['Month', 'PF balance', 'PF difference'],
+        rows: this.combinePfRecords([documents.kumarPf, documents.vasukiPf])
+          .map(({ name, pfAmount, difference }) => [name, pfAmount, difference])
+      });
+      for (const [name, owner, data, balanceColumn] of [
+        ['Kumar gratuity', 'Kumar', documents.kumarGratuity, 'Gratuity balance'],
+        ['Vasuki gratuity', 'Vasuki', documents.vasukiGratuity, 'Gratuity balance'],
+        ['Vasuki super', 'Vasuki', documents.vasukiSuper, 'Super balance']
+      ] as const) {
+        tables.push({
+          name,
+          columns: ['Owner', 'Month', balanceColumn, 'Difference'],
+          rows: data.gratuityRecords.map(({ date, gratuity, difference }) => [owner, date, gratuity, difference])
+        });
+      }
+      tables.push({
+        name: 'Overall totals',
+        columns: ['Month', 'Total balance', 'Monthly interest'],
+        rows: documents.overallBalance.totalRecords.map(({ date, total, difference }) => [date, total, difference])
+      });
+      const blob = await createDashboardExport(tables, format);
+      if (this.isDestroyed) {
+        return;
+      }
+      downloadDashboardExport(blob, format);
+      this.exportMessage = `${format === 'csv' ? 'CSV' : 'Excel'} download started. All dashboard records are included.`;
+    } catch (error: unknown) {
+      this.exportError = error instanceof Error ? error.message : 'Unable to export dashboard data. Please try again.';
+    } finally {
+      this.isExporting = false;
+      if (!this.isDestroyed) {
+        this.changeDetectorRef.detectChanges();
+      }
+    }
+  }
+
+  private loadAllDashboardCharts(): void {
+    this.allDashboardChartsSubscription?.unsubscribe();
+    this.isAllDashboardChartsLoading = true;
+    this.allDashboardChartsError = '';
+    this.allDashboardChartsSubscription = this.loadDashboardDocuments().subscribe({
       next: ({ kumarPf, vasukiPf, kumarGratuity, vasukiGratuity, vasukiSuper, overallBalance }) => {
         try {
           const combinedPf = this.combinePfRecords([kumarPf, vasukiPf]);

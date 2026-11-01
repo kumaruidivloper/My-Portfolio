@@ -10,17 +10,75 @@
       <button
         type="button"
         class="control-button save-action icon-action"
-        aria-label="View all details"
-        title="View all details"
-        aria-haspopup="dialog"
-        aria-controls="all-details-modal"
-        (click)="openAllDetailsModal()">
-        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8">
-          <rect x="3" y="3" width="18" height="18" rx="3"></rect>
-          <path d="M7 16v-3M12 16V8M17 16v-5"></path>
+        [attr.aria-expanded]="isDashboardOptionsOpen"
+        aria-controls="dashboard-options"
+        aria-label="More dashboard options"
+        title="More dashboard options"
+        #optionsButton
+        cdkOverlayOrigin
+        #optionsOrigin="cdkOverlayOrigin"
+        (keydown.escape)="isDashboardOptionsOpen = false"
+        (click)="isDashboardOptionsOpen = !isDashboardOptionsOpen">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="12" cy="5" r="2"></circle>
+          <circle cx="12" cy="12" r="2"></circle>
+          <circle cx="12" cy="19" r="2"></circle>
         </svg>
       </button>
     </div>
+
+    <ng-template
+      cdkConnectedOverlay
+      [cdkConnectedOverlayOrigin]="optionsOrigin"
+      [cdkConnectedOverlayOpen]="isDashboardOptionsOpen"
+      [cdkConnectedOverlayPositions]="dashboardOptionsPositions"
+      [cdkConnectedOverlayViewportMargin]="12"
+      [cdkConnectedOverlayPush]="true"
+      (overlayOutsideClick)="closeDashboardOptionsOnOutsideClick($event, optionsButton)"
+      (overlayKeydown)="$event.key === 'Escape' && (isDashboardOptionsOpen = false); $event.key === 'Escape' && optionsButton.focus()">
+      <div id="dashboard-options" class="dashboard-options" role="group" aria-label="Dashboard options"
+        cdkTrapFocus [cdkTrapFocusAutoCapture]="true"
+        (keydown.escape)="isDashboardOptionsOpen = false; optionsButton.focus()">
+        <p class="dashboard-options-heading">Dashboard</p>
+        <button type="button" class="dashboard-option" aria-haspopup="dialog" aria-controls="all-details-modal"
+          (click)="isDashboardOptionsOpen = false; openAllDetailsModal()">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8">
+            <rect x="3" y="3" width="18" height="18" rx="3"></rect>
+            <path d="M7 16v-3M12 16V8M17 16v-5"></path>
+          </svg>
+          <span>View dashboard details</span>
+        </button>
+        <div class="dashboard-options-divider" role="separator"></div>
+        <p class="dashboard-options-heading">Download all data</p>
+        <button type="button" class="dashboard-option" [disabled]="isExporting || isSaving"
+          (click)="exportDashboard('csv')">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8">
+            <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Z"></path>
+            <path d="M14 3v6h6M8 13h8M8 17h8"></path>
+          </svg>
+          <span>Download CSV</span>
+          <span class="dashboard-option-format" aria-hidden="true">.csv</span>
+        </button>
+        <button type="button" class="dashboard-option" [disabled]="isExporting || isSaving"
+          (click)="exportDashboard('xlsx')">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8">
+            <rect x="3" y="3" width="18" height="18" rx="3"></rect>
+            <path d="M3 9h18M3 15h18M9 9v12M15 9v12"></path>
+          </svg>
+          <span>Download Excel</span>
+          <span class="dashboard-option-format" aria-hidden="true">.xlsx</span>
+        </button>
+      </div>
+    </ng-template>
+    @if (isExporting) {
+      <p role="status" class="status-message">Preparing all dashboard records for download...</p>
+    }
+    @if (exportError) {
+      <p role="alert" class="status-message error-message">{{ exportError }}</p>
+    }
+    @if (exportMessage) {
+      <p role="status" class="status-message">{{ exportMessage }}</p>
+    }
 
     <div class="dashboard-widget-grid" #widgetGrid>
     <section class="transfer-data-accordion widget-full" aria-labelledby="transfer-data-title">

@@ -6,8 +6,9 @@ import { ConfirmationCodeService } from '../service/confirmation-code.service';
 import { PfDataService } from '../service/pf-data.service';
 import { GratuityDataService } from '../service/gratuity-data.service';
 import { TotalBalanceService } from '../service/total-balance.service';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { ColorHelper, ScaleType } from '@swimlane/ngx-charts';
+import ExcelJS from 'exceljs';
 
 describe('MyDashboardComponent', () => {
   let component: MyDashboardComponent;
@@ -86,6 +87,129 @@ describe('MyDashboardComponent', () => {
     component.validateDeleteConfirmationCode();
     await Promise.resolve();
   }
+
+  it('dismisses dashboard options on outside clicks but lets the trigger handle its own clicks', () => {
+    const button = document.createElement('button');
+    const icon = document.createElement('span');
+    button.appendChild(icon);
+    component.isDashboardOptionsOpen = true;
+    component.closeDashboardOptionsOnOutsideClick({ target: icon } as unknown as MouseEvent, button);
+    expect(component.isDashboardOptionsOpen).toBeTrue();
+    component.closeDashboardOptionsOnOutsideClick({ target: document.body } as unknown as MouseEvent, button);
+    expect(component.isDashboardOptionsOpen).toBeFalse();
+  });
+
+  it('downloads all sources without depending on rendered widgets, selections, or filters', async () => {
+    let downloaded: Blob | undefined;
+    spyOn(URL, 'createObjectURL').and.callFake((blob) => {
+      if (blob instanceof Blob) {
+        downloaded = blob;
+      }
+      return 'blob:dashboard-export';
+    });
+    spyOn(HTMLAnchorElement.prototype, 'click');
+    component.allDashboardFrom = '2026-10';
+    component.allDashboardTo = '2026-10';
+    component.isDashboardOptionsOpen = true;
+
+    await component.exportDashboard('csv');
+
+    expect(transferService.getTransfers).toHaveBeenCalledTimes(2);
+    expect(pfDataService.getPfData.calls.allArgs()).toEqual([['2'], ['3']]);
+    expect(gratuityDataService.getGratuityData.calls.allArgs()).toEqual([['4'], ['5'], ['6']]);
+    expect(totalBalanceService.getTotals).toHaveBeenCalled();
+    const csv = await downloaded!.text();
+    for (const name of ['Transfers', 'Kumar PF', 'Vasuki PF', 'Combined PF',
+      'Kumar gratuity', 'Vasuki gratuity', 'Vasuki super', 'Overall totals']) {
+      expect(csv).toContain(`"${name}"`);
+    }
+    expect(csv).toContain('"29-Sep-23","100","53.5","05-Oct-23","5350"');
+    expect(csv).toContain('"31-Oct-23","200","54","03-Nov-23","10800"');
+    expect(csv.split('\r\n').length).toBe(11); // Header, nine records and the trailing newline.
+    expect(component.allDashboardFrom).toBe('2026-10');
+    expect(component.isDashboardOptionsOpen).toBeFalse();
+    expect(component.isExporting).toBeFalse();
+    expect(component.exportError).toBe('');
+    expect(component.exportMessage).toContain('CSV download started');
+  });
+
+  it('does not download partial data when any source fails and allows a retry', async () => {
+    const createUrl = spyOn(URL, 'createObjectURL').and.returnValue('blob:dashboard-export');
+    spyOn(HTMLAnchorElement.prototype, 'click');
+    pfDataService.getPfData.and.returnValue(throwError(() => new Error('PF unavailable')));
+    await component.exportDashboard('csv');
+    expect(createUrl).not.toHaveBeenCalled();
+    expect(component.exportError).toBe('PF unavailable');
+    expect(component.exportMessage).toBe('');
+    expect(component.isExporting).toBeFalse();
+
+    pfDataService.getPfData.and.returnValue(of({
+      id: '2', name: 'Owner', description: '', pfRecords: []
+    }));
+    await component.exportDashboard('csv');
+    expect(createUrl).toHaveBeenCalled();
+    expect(component.exportError).toBe('');
+  });
+
+  it('exports all eight Excel sheets with all original numeric record fields', async () => {
+    let downloaded: Blob | undefined;
+    spyOn(URL, 'createObjectURL').and.callFake((blob) => {
+      if (blob instanceof Blob) {
+        downloaded = blob;
+      }
+      return 'blob:dashboard-excel';
+    });
+    spyOn(HTMLAnchorElement.prototype, 'click');
+    await component.exportDashboard('xlsx');
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(await downloaded!.arrayBuffer());
+    expect(workbook.worksheets.map((sheet) => sheet.name)).toEqual([
+      'Transfers', 'Kumar PF', 'Vasuki PF', 'Combined PF',
+      'Kumar gratuity', 'Vasuki gratuity', 'Vasuki super', 'Overall totals'
+    ]);
+    expect(workbook.getWorksheet('Transfers')!.rowCount).toBe(3);
+    expect(workbook.getWorksheet('Transfers')!.getRow(2).values)
+      .toEqual([undefined, '29-Sep-23', 100, 53.5, '05-Oct-23', 5350]);
+    expect(workbook.getWorksheet('Combined PF')!.getRow(2).values)
+      .toEqual([undefined, 'Sep 2026', 400, 20]);
+    expect(workbook.getWorksheet('Vasuki super')!.getRow(2).values)
+      .toEqual([undefined, 'Vasuki', "Sep'26", 200, 20]);
+    expect(workbook.getWorksheet('Overall totals')!.getRow(2).values)
+      .toEqual([undefined, "Sep'26", 1000, 30]);
+    expect(component.exportError).toBe('');
+  });
+
+  it('does not trigger a download after the dashboard is destroyed', async () => {
+    const records = new Subject<TransferRecord[]>();
+    transferService.getTransfers.and.returnValue(records);
+    const createUrl = spyOn(URL, 'createObjectURL');
+    const pending = component.exportDashboard('csv');
+    component.ngOnDestroy();
+    changeDetector.detectChanges.calls.reset();
+    records.next(transfers);
+    records.complete();
+    await pending;
+    expect(createUrl).not.toHaveBeenCalled();
+    expect(changeDetector.detectChanges).not.toHaveBeenCalled();
+  });
+
+  it('blocks duplicate exports while loading and exports while a save is in progress', async () => {
+    const records = new Subject<TransferRecord[]>();
+    transferService.getTransfers.and.returnValue(records);
+    spyOn(URL, 'createObjectURL').and.returnValue('blob:dashboard-export');
+    const click = spyOn(HTMLAnchorElement.prototype, 'click');
+    const pending = component.exportDashboard('csv');
+    expect(component.isExporting).toBeTrue();
+    await component.exportDashboard('xlsx');
+    expect(transferService.getTransfers).toHaveBeenCalledTimes(2);
+    records.next(transfers);
+    records.complete();
+    await pending;
+    expect(click).toHaveBeenCalledTimes(1);
+    component.isSaving = true;
+    await component.exportDashboard('csv');
+    expect(click).toHaveBeenCalledTimes(1);
+  });
 
   it('makes all cards full-width while a widget is open and restores normal widths on collapse', () => {
     const grid = document.createElement('div');

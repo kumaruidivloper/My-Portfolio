@@ -22,6 +22,8 @@ The dashboard owns page scrolling while open. Opening a dashboard dialog locks t
 
 Dashboard grids default to descending date/month order (newest first). Click a column header to change sorting; edit/delete actions continue to target the original record.
 
+Use the dashboard's right-aligned three-dot More dashboard options button to view dashboard details or download all records as CSV or Excel (.xlsx). The options float below the button without shifting the dashboard; clicking outside dismisses them. Tab through the three options; Escape closes the options and returns focus to the button. Exports fetch every data source, including widgets not yet rendered, and ignore chart selections/date filters. CSV contains one table with a Section column and labeled data columns; Excel has separate sheets for transfers, each owner's PF/gratuity, combined PF, super, and overall totals, with frozen headers and filters. All record fields are included without compact-number or currency formatting; dates/months retain their recorded labels, except combined PF months are normalized as in the dashboard. Text is protected against CSV spreadsheet-formula execution. Loading or export errors are shown on the dashboard; incomplete downloads are not generated. The Excel library loads only when exporting Excel.
+
 Expanding a dashboard widget moves it to the top at full width. All other widgets also span the full width for alignment, including cards still loading. Collapsing the widget restores the normal side-by-side layout, with summary cards retaining their full width. Mobile layouts remain single-column.
 
 ## 1. Install dependencies
