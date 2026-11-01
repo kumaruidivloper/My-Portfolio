@@ -1,0 +1,21 @@
+/* Shared widget title: theme accent text with a short glowing underline. */
+.records-title,
+.gratuity-heading h2 {
+  color: var(--green);
+  letter-spacing: 0.01em;
+  padding-bottom: 0.8rem;
+  position: relative;
+}
+
+.records-title::after,
+.gratuity-heading h2::after {
+  background: linear-gradient(90deg, var(--green), color-mix(in srgb, var(--green) 0%, transparent));
+  border-radius: 0.3rem;
+  bottom: 0;
+  box-shadow: 0 0 0.8rem color-mix(in srgb, var(--green) 55%, transparent);
+  content: '';
+  height: 0.3rem;
+  left: 0;
+  position: absolute;
+  width: 4.8rem;
+}
