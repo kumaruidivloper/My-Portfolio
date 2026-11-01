@@ -22,6 +22,8 @@ The dashboard owns page scrolling while open. Opening a dashboard dialog locks t
 
 Dashboard grids default to descending date/month order (newest first). Click a column header to change sorting; edit/delete actions continue to target the original record.
 
+Expanding a dashboard widget moves it to the top at full width. All other widgets also span the full width for alignment, including cards still loading. Collapsing the widget restores the normal side-by-side layout, with summary cards retaining their full width. Mobile layouts remain single-column.
+
 ## 1. Install dependencies
 
 Dashboard access and edit/delete confirmations require the configured 14-digit code. Dashboard entry automatically verifies after all 14 digits are entered; pasted codes also fill all 14 fields.

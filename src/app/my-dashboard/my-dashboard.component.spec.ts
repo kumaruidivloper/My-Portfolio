@@ -87,6 +87,53 @@ describe('MyDashboardComponent', () => {
     await Promise.resolve();
   }
 
+  it('makes all cards full-width while a widget is open and restores normal widths on collapse', () => {
+    const grid = document.createElement('div');
+    grid.className = 'dashboard-widget-grid';
+    grid.style.cssText = 'width: 1000px; grid-template-columns: repeat(2, minmax(0, 1fr));';
+    grid.innerHTML = `
+      <section class="widget-full"><button class="accordion-toggle" aria-expanded="false"></button></section>
+      <section><button class="accordion-toggle" aria-expanded="false"></button></section>
+      <section class="widget-full"><button class="accordion-toggle" aria-expanded="false"></button></section>
+      <div class="widget-full widget-placeholder"></div>
+      <div class="widget-placeholder"></div>`;
+    document.body.appendChild(grid);
+
+    try {
+      const [first, second, summary, placeholder, narrowPlaceholder] = Array.from(grid.children) as HTMLElement[];
+      const firstToggle = first.querySelector('button')!;
+      const secondToggle = second.querySelector('button')!;
+      const expectFullWidth = (card: HTMLElement) => {
+        expect(getComputedStyle(card).gridColumn).toBe('1 / -1');
+        expect(card.getBoundingClientRect().width).toBe(1000);
+      };
+      const expectSingleColumn = (card: HTMLElement) => {
+        expect(getComputedStyle(card).gridColumn).toBe('auto');
+        expect(card.getBoundingClientRect().width).toBeLessThan(500);
+      };
+
+      [first, summary, placeholder].forEach(expectFullWidth);
+      [second, narrowPlaceholder].forEach(expectSingleColumn);
+
+      firstToggle.setAttribute('aria-expanded', 'true');
+      expectFullWidth(first);
+      expect(getComputedStyle(first).order).toBe('-1');
+      [second, summary, placeholder, narrowPlaceholder].forEach(expectFullWidth);
+
+      firstToggle.setAttribute('aria-expanded', 'false');
+      secondToggle.setAttribute('aria-expanded', 'true');
+      expectFullWidth(second);
+      [first, summary, placeholder, narrowPlaceholder].forEach(expectFullWidth);
+
+      secondToggle.setAttribute('aria-expanded', 'false');
+      [first, summary, placeholder].forEach(expectFullWidth);
+      [second, narrowPlaceholder].forEach(expectSingleColumn);
+      expect(getComputedStyle(second).order).toBe('0');
+    } finally {
+      grid.remove();
+    }
+  });
+
   it('scrolls to the dashboard top when a card opens and back to the card when it closes', async () => {
     const page = document.createElement('main');
     page.style.cssText = 'height: 100px; overflow-y: auto;';
