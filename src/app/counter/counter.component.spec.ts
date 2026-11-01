@@ -56,6 +56,22 @@ describe('CounterComponent', () => {
     counterFixture.destroy();
   });
 
+  it('counts large totals in bigger steps so the drums still roll within the duration', () => {
+    component.stopRange = [40000];
+    component.durationMs = 3000;
+    component.counters = [{ value: 0, intervalId: fakeIntervalId, flip: false }];
+
+    expect(component.stepMs(0)).toBe(40);
+    expect(component.stepSize(0)).toBe(534);
+
+    component.incrementCounter(40000, true, component.stepSize(0));
+    expect(component.counters[0].value).toBe(534);
+
+    component.counters[0].value = 39900;
+    component.incrementCounter(40000, true, component.stepSize(0));
+    expect(component.counters[0].value).toBe(40000);
+  });
+
   it('emits each step and rolls the drums for exactly one step', () => {
     const emitted: number[] = [];
     component.valueChange.subscribe((value) => emitted.push(value));
@@ -79,6 +95,27 @@ describe('CounterComponent', () => {
     component.incrementCounter(3, false);
 
     expect(component.counters[0].value).toBe(0);
+  });
+
+  it('keeps counting after leaving the viewport when countDownOnLeave is false', () => {
+    let observerCallback!: IntersectionObserverCallback;
+    spyOn(window, 'IntersectionObserver').and.callFake(function (callback: IntersectionObserverCallback) {
+      observerCallback = callback;
+      return { observe: () => {}, disconnect: () => {} } as unknown as IntersectionObserver;
+    } as never);
+    const counterFixture = TestBed.createComponent(CounterComponent);
+    const counterComponent = counterFixture.componentInstance;
+    counterFixture.componentRef.setInput('stopRange', [100]);
+    counterFixture.componentRef.setInput('countDownOnLeave', false);
+    counterFixture.detectChanges();
+    const startSpy = spyOn(counterComponent, 'startCounters').and.callThrough();
+    const entry = (isIntersecting: boolean) => [{ isIntersecting } as IntersectionObserverEntry];
+
+    observerCallback(entry(true), {} as IntersectionObserver);
+    observerCallback(entry(false), {} as IntersectionObserver);
+
+    expect(startSpy.calls.allArgs()).toEqual([[true]]);
+    counterFixture.destroy();
   });
 
   it('clears counter intervals when destroyed', () => {

@@ -1,5 +1,8 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges } from '@angular/core';
 
+/** Shortest time per count step, so the digit drums visibly roll even for very large totals. */
+const MIN_STEP_MS = 40;
+
 @Component({
     selector: 'app-counter',
     templateUrl: './counter.component.html',
@@ -12,6 +15,8 @@ export class CounterComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() durationMs = 3000;
   @Input() active = false;
   @Input() observeViewport = true;
+  /** When false, the count keeps running after the counter scrolls out of view instead of rolling back to 0. */
+  @Input() countDownOnLeave = true;
   /** Emits the first counter's value on every step, so linked visuals (e.g. a skill bar) move in lockstep. */
   @Output() valueChange = new EventEmitter<number>();
 
@@ -34,6 +39,9 @@ export class CounterComponent implements AfterViewInit, OnChanges, OnDestroy {
     }
 
     this.visibilityObserver = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting && !this.countDownOnLeave) {
+        return;
+      }
       this.isInViewport = entry.isIntersecting;
       this.startCounters(this.isInViewport);
     }, { threshold: 0.15 });
@@ -44,7 +52,10 @@ export class CounterComponent implements AfterViewInit, OnChanges, OnDestroy {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['stopRange']) {
       this.stopCounters();
-      this.counters = this.stopRange.map(() => ({ value: 0, intervalId: null, flip: false }));
+      // Keep the current reading when the target moves (e.g. work hours ticking up) instead of restarting at 0.
+      const previous = this.counters;
+      this.counters = this.stopRange.map((stop, index) =>
+        ({ value: Math.min(previous[index]?.value ?? 0, Math.max(0, stop)), intervalId: null, flip: false }));
     }
 
     if (this.viewInitialized && changes['active']) {
@@ -67,14 +78,21 @@ export class CounterComponent implements AfterViewInit, OnChanges, OnDestroy {
 
     this.counters.forEach((counter, index) => {
       const stopRange = this.stopRange[index];
-      counter.intervalId = setInterval(() => this.incrementCounter(stopRange, countUp), this.stepMs(index));
+      const step = this.stepSize(index);
+      counter.intervalId = setInterval(() => this.incrementCounter(stopRange, countUp, step), this.stepMs(index));
     });
   }
 
   /** Time per count step; also used as the drum roll duration so the digits roll at the counting speed. */
   stepMs(index: number): number {
     const stopRange = this.stopRange[index];
-    return stopRange > 0 ? Math.max(1, Math.round(this.durationMs / stopRange)) : this.durationMs;
+    return stopRange > 0 ? Math.max(MIN_STEP_MS, Math.round(this.durationMs / stopRange)) : this.durationMs;
+  }
+
+  /** Large totals advance several units per step so they still finish within the duration. */
+  stepSize(index: number): number {
+    const stopRange = this.stopRange[index];
+    return stopRange > 0 ? Math.max(1, Math.ceil(stopRange * this.stepMs(index) / this.durationMs)) : 1;
   }
 
   private stopCounters(): void {
@@ -86,14 +104,14 @@ export class CounterComponent implements AfterViewInit, OnChanges, OnDestroy {
     });
   }
 
-  incrementCounter(stopRange: number, countUp = true): void {
+  incrementCounter(stopRange: number, countUp = true, step = 1): void {
     const previous = this.counters[0]?.value;
     for (let counter of this.counters) {
       if (countUp && counter.value < stopRange) {
-        counter.value++;
+        counter.value = Math.min(stopRange, counter.value + step);
         counter.flip = !counter.flip;
       } else if (!countUp && counter.value > 0) {
-        counter.value--;
+        counter.value = Math.max(0, counter.value - step);
         counter.flip = !counter.flip;
       } else if (counter.intervalId !== null) {
         clearInterval(counter.intervalId);

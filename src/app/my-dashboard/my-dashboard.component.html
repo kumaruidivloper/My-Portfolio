@@ -273,11 +273,11 @@
     @if (!isAllDetailsModalOpen) {
       <!-- Cards below the first render (and fetch their data) only when scrolled near. -->
       <app-pf-data resourceId="2" ownerName="Kumar"></app-pf-data>
-      <app-pf-data resourceId="3" ownerName="Vasuki" *appRenderInView></app-pf-data>
+      <app-pf-data class="owner-vasuki" resourceId="3" ownerName="Vasuki" *appRenderInView></app-pf-data>
       <app-sum-of-value class="widget-full" *appRenderInView="'widget-full'"></app-sum-of-value>
       <app-kumar-gratuity *appRenderInView></app-kumar-gratuity>
-      <app-vasuki-gratuity *appRenderInView></app-vasuki-gratuity>
-      <app-vasuki-super class="widget-full" *appRenderInView="'widget-full'"></app-vasuki-super>
+      <app-vasuki-gratuity class="owner-vasuki" *appRenderInView></app-vasuki-gratuity>
+      <app-vasuki-super class="widget-full owner-vasuki" *appRenderInView="'widget-full'"></app-vasuki-super>
       <app-total-balance class="widget-full" *appRenderInView="'widget-full'"></app-total-balance>
     }
     </div>
