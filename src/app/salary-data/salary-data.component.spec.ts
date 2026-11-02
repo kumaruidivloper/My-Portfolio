@@ -1,5 +1,6 @@
 import { ChangeDetectorRef } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { of, Subject, throwError } from 'rxjs';
 import { SalaryDataComponent } from './salary-data.component';
 import { SalaryApiDocument, salaryMonthKey } from '../model/salary-record';
@@ -38,6 +39,7 @@ describe('SalaryDataComponent', () => {
       TestBed.configureTestingModule({
         imports: [MyDashboardModule],
         providers: [
+          provideNoopAnimations(),
           { provide: SalaryDataService, useValue: {
             getSalaryData: (id: string) => of({
               id, name: 'Salary', title: '', description: '', type: 'Salary', salaryRecords: []
@@ -49,6 +51,42 @@ describe('SalaryDataComponent', () => {
     });
 
     afterEach(() => fixture?.destroy());
+
+    it('renders accessible period controls and disables them for an empty history', () => {
+      fixture = TestBed.createComponent(SalaryDataComponent);
+      fixture.detectChanges();
+      const host = fixture.nativeElement as HTMLElement;
+      (host.querySelector('.accordion-toggle') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      const filter = host.querySelector('.salary-range')!;
+      expect(filter.querySelector('h3')?.textContent).toBe('Salary period');
+      expect(filter.querySelectorAll('app-theme-date-picker button:disabled').length).toBe(2);
+      expect(filter.querySelectorAll('input[type="range"]:disabled').length).toBe(2);
+      expect(filter.querySelectorAll('.salary-range-presets button:disabled').length).toBe(4);
+      expect(filter.textContent).toContain('Add a salary record to start filtering.');
+    });
+
+    it('uses the themed month popup with inclusive limits and updates the salary totals', () => {
+      TestBed.overrideProvider(SalaryDataService, { useValue: service });
+      fixture = TestBed.createComponent(SalaryDataComponent);
+      fixture.detectChanges();
+      const host = fixture.nativeElement as HTMLElement;
+      (host.querySelector('.accordion-toggle') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      const from = host.querySelector('[aria-label="From salary month"]') as HTMLButtonElement;
+      expect(from.textContent).toContain('Aug 2026');
+      from.click();
+      fixture.detectChanges();
+      const popup = window.document.querySelector('.date-picker-popup')!;
+      const months = Array.from(popup.querySelectorAll<HTMLButtonElement>('.date-picker-cell'));
+      expect(months.find(button => button.textContent?.trim() === 'Jul')?.disabled).toBeTrue();
+      expect(months.find(button => button.textContent?.trim() === 'Oct')?.disabled).toBeTrue();
+      months.find(button => button.textContent?.trim() === 'Sep')!.click();
+      fixture.detectChanges();
+      expect(fixture.componentInstance.fromMonth).toBe('2026-09');
+      expect(fixture.componentInstance.totals.credited).toBe(1850);
+      expect(window.document.querySelector('.date-picker-popup')).toBeNull();
+    });
 
     it('renders the empty-state add flow with all six Kumar numeric fields and themed step buttons', () => {
       fixture = TestBed.createComponent(SalaryDataComponent);
@@ -90,10 +128,10 @@ describe('SalaryDataComponent', () => {
     await component.validateCode();
   }
 
-  it('loads the configured resource and charts oldest first while the summary uses the latest month', () => {
+  it('loads the configured resource and charts oldest first while totals include every month', () => {
     expect(service.getSalaryData).toHaveBeenCalledWith('8');
     expect(component.chartData.map(({ value }) => value)).toEqual([969, 1850]);
-    expect(component.latestRecord?.date).toBe('Sep 2026');
+    expect(component.totals).toEqual({ credited: 2819, gross: 3000, deductions: 130 });
     expect(component.gridRows.map(({ actionIndex }) => actionIndex)).toEqual([0, 1]);
     expect(component.fields.some(({ key }) => key === 'ausHealthInsurance')).toBeFalse();
     component.resourceId = '9';
@@ -234,5 +272,137 @@ describe('SalaryDataComponent', () => {
     expect(salaryMonthKey("Sep'26")).toBe('2026-09');
     expect(salaryMonthKey('2026-09')).toBe('2026-09');
     expect(() => salaryMonthKey('Bad')).toThrowError();
+  });
+
+  it('filters totals, chart and table inclusively and preserves original action indexes', () => {
+    component.toggleExpanded();
+    expect(component.fromLabel).toBe('Aug 2026');
+    expect(component.toLabel).toBe('Sep 2026');
+    component.setRange('from', 1);
+    expect(component.totals).toEqual({ credited: 1850, gross: 2000, deductions: 99 });
+    expect(component.chartData).toEqual([{ name: 'Sep 2026', value: 1850 }]);
+    expect(component.gridRows.map(({ actionIndex }) => actionIndex)).toEqual([1]);
+    component.editRecord(component.gridRows[0].actionIndex!);
+    expect(component.editingIndex).toBe(1);
+    expect(component.editForm.controls.ausSalary.value).toBe(1850);
+    component.closeDialog();
+    component.selectField('ausTax');
+    expect(component.chartData[0].value).toBe(20);
+    expect(component.totals).toEqual({ credited: 1850, gross: 2000, deductions: 99 });
+    component.resetRange();
+    expect(component.totals).toEqual({ credited: 2819, gross: 3000, deductions: 130 });
+    expect(component.gridRows.length).toBe(2);
+    expect(component.isRangeFiltered).toBeFalse();
+  });
+
+  it('supports gaps in calendar months, empty selections and unsorted histories across years', () => {
+    component.data = {
+      ...document,
+      salaryRecords: [
+        { ...document.salaryRecords[0], date: 'Feb 2027' },
+        { ...document.salaryRecords[1], date: 'Dec 2026' }
+      ]
+    };
+    component.toggleExpanded();
+    expect(component.rangeMax).toBe(2);
+    expect(component.fromLabel).toBe('Dec 2026');
+    expect(component.toLabel).toBe('Feb 2027');
+    component.setRange('from', 1);
+    component.setRange('to', 1);
+    expect(component.fromLabel).toBe('Jan 2027');
+    expect(component.filteredRecords).toEqual([]);
+    expect(component.chartData).toEqual([]);
+    expect(component.gridRows).toEqual([]);
+    expect(component.totals).toEqual({ credited: 0, gross: 0, deductions: 0 });
+    component.resetRange();
+    expect(component.gridRows.map(({ actionIndex }) => actionIndex)).toEqual([0, 1]);
+  });
+
+  it('prevents handles crossing and explicitly reports invalid range values', () => {
+    component.setRange('from', 1);
+    component.setRange('to', 0);
+    expect(component.toPosition).toBe(1);
+    component.resetRange();
+    component.setRange('to', 0);
+    component.setRange('from', 1);
+    expect(component.fromPosition).toBe(0);
+    for (const invalid of [-1, 2, NaN, 0.5]) {
+      component.setRange('from', invalid);
+      expect(component.rangeError).toContain('Choose a month');
+      expect(component.fromPosition).toBe(0);
+    }
+    component.resetRange();
+    expect(component.rangeError).toBe('');
+  });
+
+  it('selects trailing calendar months relative to the latest salary month', () => {
+    component.data = {
+      ...document,
+      salaryRecords: [
+        { ...document.salaryRecords[0], date: 'Jan 2025' },
+        { ...document.salaryRecords[1], date: 'Sep 2026' }
+      ]
+    };
+    for (const [months, from] of [[3, '2026-07'], [6, '2026-04'], [12, '2025-10']] as const) {
+      component.selectRecentMonths(months);
+      expect(component.fromMonth).toBe(from);
+      expect(component.toMonth).toBe('2026-09');
+      expect(component.isRecentMonths(months)).toBeTrue();
+      expect(component.totals.credited).toBe(1850);
+    }
+    component.setRangeMonth('to', '2026-08');
+    expect(component.isRecentMonths(12)).toBeFalse();
+    component.resetRange();
+    expect(component.isRangeFiltered).toBeFalse();
+  });
+
+  it('supports exact month entry and reports invalid or reversed dates without changing the range', () => {
+    component.setRangeMonth('from', '2026-09');
+    expect(component.fromPosition).toBe(1);
+    component.setRangeMonth('to', '2026-08');
+    expect(component.rangeError).toContain('on or before');
+    expect(component.toMonth).toBe('2026-09');
+    component.resetRange();
+    for (const invalid of ['', '2026-13', 'not-a-month', '2027-01']) {
+      component.setRangeMonth('to', invalid);
+      expect(component.rangeError).not.toBe('');
+      expect(component.toMonth).toBe('2026-09');
+    }
+    component.setRangeMonth('to', '2026-08');
+    expect(component.rangeError).toBe('');
+    expect(component.totals.credited).toBe(969);
+  });
+
+  it('handles empty and single-month histories with finite bounds and totals', () => {
+    component.data = { ...document, salaryRecords: [] };
+    expect(component.rangeMax).toBe(0);
+    expect(component.fromLabel).toBe('No data');
+    expect(component.toLabel).toBe('No data');
+    expect(component.totals).toEqual({ credited: 0, gross: 0, deductions: 0 });
+    component.data = { ...document, salaryRecords: [document.salaryRecords[0]] };
+    expect(component.rangeMax).toBe(0);
+    expect(component.fromLabel).toBe(component.toLabel);
+    expect(component.totals).toEqual({ credited: 969, gross: 1000, deductions: 31 });
+  });
+
+  it('resets the range after saving and includes a newly added month in the totals', () => {
+    component.setRange('from', 1);
+    component.addRecord();
+    component.editForm.patchValue({ date: '2026-10', ausSalary: 10, totalSalary: 20, totalDeduction: 5 });
+    component.saveRecord();
+    expect(component.isRangeFiltered).toBeFalse();
+    expect(component.toLabel).toBe('Oct 2026');
+    expect(component.totals).toEqual({ credited: 2829, gross: 3020, deductions: 135 });
+  });
+
+  it('applies the same range totals to Vasuki including unchanged manually entered deductions', () => {
+    component.resourceId = '9';
+    component.data = {
+      ...document, id: '9',
+      salaryRecords: document.salaryRecords.map((record) => ({ ...record, ausHealthInsurance: 100 }))
+    };
+    component.setRange('to', 0);
+    expect(component.totals).toEqual({ credited: 969, gross: 1000, deductions: 31 });
+    expect(component.filteredRecords[0].ausHealthInsurance).toBe(100);
   });
 });

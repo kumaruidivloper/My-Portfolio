@@ -16,7 +16,7 @@ const amountControl = () => new FormControl(0, { nonNullable: true, validators: 
 @Component({
   selector: 'app-salary-data',
   templateUrl: './salary-data.component.html',
-  styleUrls: ['../kumar-gratuity/kumar-gratuity.component.scss'],
+  styleUrls: ['../kumar-gratuity/kumar-gratuity.component.scss', '../widget-preview-chart/widget-preview-slider.scss', './salary-data.component.scss'],
   standalone: false
 })
 export class SalaryDataComponent implements OnInit, OnDestroy {
@@ -52,6 +52,9 @@ export class SalaryDataComponent implements OnInit, OnDestroy {
   selectedField: SalaryField = 'ausSalary';
   chartType: ChartType = 'bar';
   previewRangeCount: number | null = null;
+  rangeFrom: number | null = null;
+  rangeTo: number | null = null;
+  rangeError = '';
   isAdding = false;
   editingIndex: number | null = null;
   deletingIndex: number | null = null;
@@ -76,10 +79,27 @@ export class SalaryDataComponent implements OnInit, OnDestroy {
       .map((record) => ({ name: salaryMonthLabel(record.date), value: record[field] ?? 0 })));
   private readonly buildColors = memoizeLast(chartColorScheme);
   private readonly buildLine = memoizeLast(toLineChartSeries);
-  private readonly buildRows = memoizeLast((records: SalaryRecord[]): ResponsiveGridRow[] =>
+  private readonly buildRows = memoizeLast((records: SalaryRecord[], from: string, to: string): ResponsiveGridRow[] =>
     records.map((record, actionIndex) => ({
       ...record, date: salaryMonthLabel(record.date), actionIndex
-    })));
+    })).filter((row) => {
+      const month = salaryMonthKey(row.date);
+      return month >= from && month <= to;
+    }));
+  private readonly buildBounds = memoizeLast((records: SalaryRecord[]) => {
+    const months = records.map(({ date }) => salaryMonthKey(date)).sort();
+    return { min: months[0] ?? '', max: months[months.length - 1] ?? '' };
+  });
+  private readonly filterRecords = memoizeLast((records: SalaryRecord[], from: string, to: string) =>
+    records.filter(({ date }) => {
+      const month = salaryMonthKey(date);
+      return month >= from && month <= to;
+    }));
+  private readonly sumRecords = memoizeLast((records: SalaryRecord[]) => records.reduce((totals, record) => ({
+    credited: totals.credited + record.ausSalary,
+    gross: totals.gross + record.totalSalary,
+    deductions: totals.deductions + record.totalDeduction
+  }), { credited: 0, gross: 0, deductions: 0 }));
   private readonly buildFields = memoizeLast(salaryFields);
   private readonly buildViews = memoizeLast((resourceId: SalaryResourceId) =>
     salaryFields(resourceId).map(({ key, label }) => ({ value: key, label })));
@@ -109,16 +129,26 @@ export class SalaryDataComponent implements OnInit, OnDestroy {
   get records(): SalaryRecord[] { return this.data?.salaryRecords ?? this.emptyRecords; }
   get views() { return this.buildViews(this.resourceId); }
   get selectedLabel(): string { return SALARY_FIELDS.find(({ key }) => key === this.selectedField)!.label; }
-  get chartData() { return this.buildChart(this.records, this.selectedField); }
+  get chartData() { return this.buildChart(this.isExpanded ? this.filteredRecords : this.records, this.selectedField); }
   get colors() { return this.buildColors(this.chartData, `salary-${this.resourceId}`); }
   get lineData() { return this.buildLine(this.chartData, this.selectedLabel); }
-  get gridRows() { return this.buildRows(this.records); }
+  get gridRows() { return this.buildRows(this.records, this.fromMonth, this.toMonth); }
   get gridColumns(): ResponsiveGridColumn[] {
     return this.buildColumns(this.resourceId);
   }
-  get latestRecord(): SalaryRecord | undefined {
-    return [...this.records].sort((a, b) => salaryMonthKey(b.date).localeCompare(salaryMonthKey(a.date)))[0];
+  get dateBounds() { return this.buildBounds(this.records); }
+  get rangeMax(): number {
+    return this.dateBounds.min ? this.monthPosition(this.dateBounds.max) - this.monthPosition(this.dateBounds.min) : 0;
   }
+  get fromPosition(): number { return this.rangeFrom ?? 0; }
+  get toPosition(): number { return this.rangeTo ?? this.rangeMax; }
+  get fromMonth(): string { return this.rangeMonth(this.fromPosition); }
+  get toMonth(): string { return this.rangeMonth(this.toPosition); }
+  get fromLabel(): string { return this.fromMonth ? salaryMonthLabel(this.fromMonth) : 'No data'; }
+  get toLabel(): string { return this.toMonth ? salaryMonthLabel(this.toMonth) : 'No data'; }
+  get isRangeFiltered(): boolean { return this.fromPosition > 0 || this.toPosition < this.rangeMax; }
+  get filteredRecords(): SalaryRecord[] { return this.filterRecords(this.records, this.fromMonth, this.toMonth); }
+  get totals() { return this.sumRecords(this.filteredRecords); }
   get amountsValid(): boolean { return this.fields.every(({ key }) => this.editForm.controls[key].valid); }
   get confirmed(): boolean {
     return this.isCodeVerified && !this.isCodeVerifying && this.confirmationCode.valid &&
@@ -138,11 +168,70 @@ export class SalaryDataComponent implements OnInit, OnDestroy {
 
   selectChartType(value: string): void { if (isChartType(value)) { this.chartType = value; } }
 
+  setRange(endpoint: 'from' | 'to', value: number): void {
+    if (!Number.isInteger(value) || value < 0 || value > this.rangeMax) {
+      this.rangeError = 'Choose a month within the available salary history.';
+      return;
+    }
+    this.rangeError = '';
+    if (endpoint === 'from') { this.rangeFrom = Math.min(value, this.toPosition); }
+    else { this.rangeTo = Math.max(value, this.fromPosition); }
+  }
+
+  resetRange(): void {
+    this.rangeFrom = null;
+    this.rangeTo = null;
+    this.rangeError = '';
+  }
+
+  selectRecentMonths(months: number): void {
+    this.rangeTo = null;
+    this.setRange('from', Math.max(0, this.rangeMax - months + 1));
+  }
+
+  isRecentMonths(months: number): boolean {
+    return this.isRangeFiltered && this.toPosition === this.rangeMax &&
+      this.fromPosition === this.rangeMax - months + 1;
+  }
+
+  setRangeMonth(endpoint: 'from' | 'to', value: string): void {
+    if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(value) || !this.dateBounds.min) {
+      this.rangeError = 'Choose a valid salary month.';
+      return;
+    }
+    const position = this.monthPosition(value) - this.monthPosition(this.dateBounds.min);
+    if ((endpoint === 'from' && position > this.toPosition) ||
+        (endpoint === 'to' && position < this.fromPosition)) {
+      this.rangeError = 'From month must be on or before To month.';
+      return;
+    }
+    this.setRange(endpoint, position);
+  }
+
+  selectRangeOnTrack(event: PointerEvent): void {
+    if (event.button !== 0 || !this.rangeMax || !(event.currentTarget instanceof HTMLElement)) { return; }
+    const { left, width } = event.currentTarget.getBoundingClientRect();
+    if (!width) { return; }
+    const position = Math.max(0, Math.min(this.rangeMax, Math.round((event.clientX - left) / width * this.rangeMax)));
+    this.setRange(Math.abs(position - this.fromPosition) <= Math.abs(position - this.toPosition) ? 'from' : 'to', position);
+  }
+
+  private monthPosition(value: string): number {
+    const [year, month] = value.split('-').map(Number);
+    return year * 12 + month - 1;
+  }
+
+  private rangeMonth(position: number): string {
+    if (!this.dateBounds.min) { return ''; }
+    const month = this.monthPosition(this.dateBounds.min) + position;
+    return `${Math.floor(month / 12)}-${String(month % 12 + 1).padStart(2, '0')}`;
+  }
+
   loadData(): void {
     this.isLoading = true;
     this.errorMessage = '';
     this.subscriptions.add(this.salaryService.getSalaryData(this.resourceId).subscribe({
-      next: (data) => { this.data = data; this.isLoading = false; this.changeDetector.detectChanges(); },
+      next: (data) => { this.data = data; this.resetRange(); this.isLoading = false; this.changeDetector.detectChanges(); },
       error: (error: unknown) => {
         this.isLoading = false;
         this.errorMessage = error instanceof Error ? error.message : 'Unable to load salary records.';
@@ -254,6 +343,7 @@ export class SalaryDataComponent implements OnInit, OnDestroy {
     this.subscriptions.add(this.salaryService.updateSalaryData({ ...this.data, salaryRecords }, this.resourceId).subscribe({
       next: (data) => {
         this.data = data;
+        this.resetRange();
         this.finishSaving();
         this.closeDialog();
         this.areRecordsExpanded = true;

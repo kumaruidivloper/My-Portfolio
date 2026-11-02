@@ -30,6 +30,71 @@
     <div [id]="'salary-panel-' + resourceId">
       @if (isLoading) { <app-dashboard-loader label="Loading salary records"></app-dashboard-loader> }
       @if (data && !isLoading && !errorMessage) {
+        <div class="salary-range" role="group" [attr.aria-label]="ownerName + ' salary month range'">
+          <div class="salary-range-heading">
+            <div>
+              <h3>Salary period</h3>
+              <p>Choose the months to explore your salary totals.</p>
+            </div>
+            <button type="button" class="control-button salary-range-reset" [disabled]="!isRangeFiltered"
+              (click)="resetRange()" aria-label="Reset salary range">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3 11a9 9 0 1 1 2.6 7M3 4v7h7"></path></svg>
+              Reset
+            </button>
+          </div>
+          <div class="salary-range-presets" role="group" aria-label="Quick salary periods">
+            <button type="button" class="control-button" [attr.aria-pressed]="!isRangeFiltered"
+              [disabled]="!records.length" (click)="resetRange()">All time</button>
+            @for (months of [3, 6, 12]; track months) {
+              <button type="button" class="control-button" [attr.aria-pressed]="isRecentMonths(months)"
+                [disabled]="rangeMax < months" (click)="selectRecentMonths(months)">Last {{ months }} months</button>
+            }
+          </div>
+          <div class="salary-range-labels">
+            <div class="salary-range-field">
+              <span>From month</span>
+              <app-theme-date-picker mode="month" ariaLabel="From salary month" [value]="fromMonth"
+                [min]="dateBounds.min" [max]="toMonth" [allowClear]="false" [isDisabled]="!rangeMax"
+                (valueChange)="setRangeMonth('from', $event)"></app-theme-date-picker>
+            </div>
+            <span class="salary-range-arrow" aria-hidden="true">&rarr;</span>
+            <div class="salary-range-field">
+              <span>To month</span>
+              <app-theme-date-picker mode="month" ariaLabel="To salary month" [value]="toMonth"
+                [min]="fromMonth" [max]="dateBounds.max" [allowClear]="false" [isDisabled]="!rangeMax"
+                (valueChange)="setRangeMonth('to', $event)"></app-theme-date-picker>
+            </div>
+          </div>
+          <div class="preview-slider">
+            <div class="preview-slider-track"
+              [style.--range-from]="(rangeMax ? fromPosition / rangeMax * 100 : 0) + '%'"
+              [style.--range-to]="(rangeMax ? toPosition / rangeMax * 100 : 100) + '%'">
+              <div class="preview-slider-hit-area" aria-hidden="true" (pointerdown)="selectRangeOnTrack($event)"></div>
+              <input #fromSlider type="range" class="preview-slider-input" aria-label="Salary range from"
+                [style.z-index]="fromPosition === rangeMax ? 3 : 1"
+                min="0" [max]="rangeMax" step="1" [value]="fromPosition" [disabled]="!rangeMax"
+                [attr.aria-valuetext]="fromLabel" [attr.aria-valuemax]="toPosition"
+                (input)="setRange('from', fromSlider.valueAsNumber); fromSlider.value = fromPosition.toString()">
+              <input #toSlider type="range" class="preview-slider-input" aria-label="Salary range to"
+                min="0" [max]="rangeMax" step="1" [value]="toPosition" [disabled]="!rangeMax"
+                [attr.aria-valuetext]="toLabel" [attr.aria-valuemin]="fromPosition"
+                (input)="setRange('to', toSlider.valueAsNumber); toSlider.value = toPosition.toString()">
+            </div>
+          </div>
+          <div class="salary-range-axis" aria-hidden="true"><span>{{ dateBounds.min ? monthLabel(dateBounds.min) : 'No data' }}</span><span>{{ dateBounds.max ? monthLabel(dateBounds.max) : 'No data' }}</span></div>
+          <div class="salary-range-footer">
+            <span class="salary-range-count" role="status">{{ filteredRecords.length }} of {{ records.length }} records selected</span>
+            <p class="salary-range-description" [id]="'salary-range-help-' + resourceId">
+              {{ !records.length ? 'Add a salary record to start filtering.' : !rangeMax ? 'One month available. All records included.' : 'Drag either handle or choose exact months. Both months included.' }}
+            </p>
+          </div>
+          @if (rangeError) { <p class="gratuity-field-error" role="alert">{{ rangeError }}</p> }
+        </div>
+        <div class="gratuity-summary salary-totals" aria-label="Salary totals for selected range">
+          <article class="gratuity-summary-card"><h3>{{ formatAmount(totals.credited) }}</h3><p>Total salary credited</p></article>
+          <article class="gratuity-summary-card"><h3>{{ formatAmount(totals.gross) }}</h3><p>Total gross salary</p></article>
+          <article class="gratuity-summary-card"><h3>{{ formatAmount(totals.deductions) }}</h3><p>Total deductions</p></article>
+        </div>
         <article class="gratuity-records-card">
           <header class="gratuity-records-heading">
             <div><h3>Monthly salary records</h3><p>All amounts are entered manually.</p></div>
@@ -63,11 +128,7 @@
             </app-responsive-table>
           }
         </article>
-        @if (latestRecord; as latest) {
-          <div class="gratuity-summary">
-            <article class="gratuity-summary-card"><h3>{{ formatAmount(latest.ausSalary) }}</h3><p>Latest Australian salary · {{ monthLabel(latest.date) }}</p></article>
-            <article class="gratuity-summary-card"><h3>{{ formatAmount(latest.totalDeduction) }}</h3><p>Latest total deduction</p></article>
-          </div>
+        @if (filteredRecords.length) {
           <article class="gratuity-chart-card">
             <header>
               <h3>{{ selectedLabel }}</h3>
@@ -111,7 +172,9 @@
               }
             </div>
           </article>
-        } @else { <p class="gratuity-status" role="status">No salary records yet. Add the first month above.</p> }
+        } @else {
+          <p class="gratuity-status" role="status">{{ records.length ? 'No salary records in the selected month range.' : 'No salary records yet. Add the first month above.' }}</p>
+        }
       }
     </div>
   }
