@@ -44,6 +44,8 @@ Use the dashboard's right-aligned three-dot More dashboard options button to vie
 
 Expanding a dashboard widget moves it to the top at full width. All other widgets also span the full width for alignment, including cards still loading. Collapsing the widget restores the normal side-by-side layout, with summary cards retaining their full width. Mobile layouts remain single-column.
 
+The About skill bars supplement API-provided skills with Claude / Claude Code (83%), Prompt Engineering (76%), AI-Assisted Development (85%), Generative AI (72%), MCP (Model Context Protocol) (68%), and AI Agents (79%). These varied levels stay fixed across reloads. Existing matching labels keep their API-provided levels. All skills render in balanced columns using the same viewport-driven counter/bar animation; these additions do not modify the remote API.
+
 ## 1. Install dependencies
 
 Dashboard access and edit/delete confirmations require the configured 14-digit code. Dashboard entry automatically verifies after all 14 digits are entered; pasted codes also fill all 14 fields.
