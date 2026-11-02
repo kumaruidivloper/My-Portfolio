@@ -9,6 +9,7 @@ import { TotalBalanceService } from '../service/total-balance.service';
 import { of, Subject, throwError } from 'rxjs';
 import { ColorHelper, ScaleType } from '@swimlane/ngx-charts';
 import ExcelJS from 'exceljs';
+import { SalaryDataService } from '../service/salary-data.service';
 
 describe('MyDashboardComponent', () => {
   let component: MyDashboardComponent;
@@ -17,6 +18,8 @@ describe('MyDashboardComponent', () => {
   let pfDataService: jasmine.SpyObj<PfDataService>;
   let gratuityDataService: jasmine.SpyObj<GratuityDataService>;
   let totalBalanceService: jasmine.SpyObj<TotalBalanceService>;
+  let salaryDataService: jasmine.SpyObj<SalaryDataService>;
+  let salaryUpdates: Subject<void>;
   let changeDetector: jasmine.SpyObj<ChangeDetectorRef>;
   const transfers: TransferRecord[] = [
     {
@@ -70,6 +73,16 @@ describe('MyDashboardComponent', () => {
       type: 'Total',
       totalRecords: [{ date: "Sep'26", total: 1000, difference: 30 }]
     }));
+    salaryUpdates = new Subject<void>();
+    salaryDataService = jasmine.createSpyObj<SalaryDataService>('SalaryDataService', ['getSalaryData'], { salaryUpdated$: salaryUpdates });
+    salaryDataService.getSalaryData.and.callFake((id) => of({
+      id, name: `${id === '8' ? 'Kumar' : 'Vasuki'} Australia Salary`, title: '', description: '', type: 'Salary',
+      salaryRecords: [{
+        date: 'Sep 2026', initialAdvanceRepayment: 10, totalSalary: 1000, ausTax: 100,
+        indiaDeduction: 20, totalDeduction: 130, ausSalary: 870,
+        ...(id === '9' ? { ausHealthInsurance: 30 } : {})
+      }]
+    }));
     changeDetector = createChangeDetector();
     component = new MyDashboardComponent(
       transferService,
@@ -77,7 +90,8 @@ describe('MyDashboardComponent', () => {
       confirmationCodeService,
       pfDataService,
       gratuityDataService,
-      totalBalanceService
+      totalBalanceService,
+      salaryDataService
     );
     component.ngOnInit();
   });
@@ -120,12 +134,13 @@ describe('MyDashboardComponent', () => {
     expect(totalBalanceService.getTotals).toHaveBeenCalled();
     const csv = await downloaded!.text();
     for (const name of ['Transfers', 'Kumar PF', 'Vasuki PF', 'Combined PF',
-      'Kumar gratuity', 'Vasuki gratuity', 'Vasuki super', 'Overall totals']) {
+      'Kumar gratuity', 'Vasuki gratuity', 'Vasuki super', 'Overall totals',
+      'Kumar Australia Salary', 'Vasuki Australia Salary']) {
       expect(csv).toContain(`"${name}"`);
     }
     expect(csv).toContain('"29-Sep-23","100","53.5","05-Oct-23","5350"');
     expect(csv).toContain('"31-Oct-23","200","54","03-Nov-23","10800"');
-    expect(csv.split('\r\n').length).toBe(11); // Header, nine records and the trailing newline.
+    expect(csv.split('\r\n').length).toBe(13);
     expect(component.allDashboardFrom).toBe('2026-10');
     expect(component.isDashboardOptionsOpen).toBeFalse();
     expect(component.isExporting).toBeFalse();
@@ -151,7 +166,7 @@ describe('MyDashboardComponent', () => {
     expect(component.exportError).toBe('');
   });
 
-  it('exports all eight Excel sheets with all original numeric record fields', async () => {
+  it('exports all ten Excel sheets with all original numeric record fields', async () => {
     let downloaded: Blob | undefined;
     spyOn(URL, 'createObjectURL').and.callFake((blob) => {
       if (blob instanceof Blob) {
@@ -165,7 +180,8 @@ describe('MyDashboardComponent', () => {
     await workbook.xlsx.load(await downloaded!.arrayBuffer());
     expect(workbook.worksheets.map((sheet) => sheet.name)).toEqual([
       'Transfers', 'Kumar PF', 'Vasuki PF', 'Combined PF',
-      'Kumar gratuity', 'Vasuki gratuity', 'Vasuki super', 'Overall totals'
+      'Kumar gratuity', 'Vasuki gratuity', 'Vasuki super', 'Overall totals',
+      'Kumar Australia Salary', 'Vasuki Australia Salary'
     ]);
     expect(workbook.getWorksheet('Transfers')!.rowCount).toBe(3);
     expect(workbook.getWorksheet('Transfers')!.getRow(2).values)
@@ -176,6 +192,10 @@ describe('MyDashboardComponent', () => {
       .toEqual([undefined, 'Vasuki', "Sep'26", 200, 20]);
     expect(workbook.getWorksheet('Overall totals')!.getRow(2).values)
       .toEqual([undefined, "Sep'26", 1000, 30]);
+    expect(workbook.getWorksheet('Kumar Australia Salary')!.getRow(2).values)
+      .toEqual([undefined, 'Kumar', 'Sep 2026', 10, 1000, 100, 20, 130, 870]);
+    expect(workbook.getWorksheet('Vasuki Australia Salary')!.getRow(2).values)
+      .toEqual([undefined, 'Vasuki', 'Sep 2026', 10, 1000, 30, 100, 20, 130, 870]);
     expect(component.exportError).toBe('');
   });
 
@@ -338,7 +358,7 @@ describe('MyDashboardComponent', () => {
   });
 
   it('offers metrics from every dashboard section and loads selected chart data', () => {
-    expect(component.allDashboardMetricOptions.length).toBe(14);
+    expect(component.allDashboardMetricOptions.length).toBe(27);
     expect(component.allDashboardMetricOptions.map(({ value }) => value)).toContain('vasukiSuper');
     expect(component.allDashboardMetricOptions.map(({ value }) => value)).toContain('overallBalance');
     expect(component.allDashboardMetricOptions.map(({ label }) => label)).toContain('Kumar gratuity');
@@ -393,6 +413,43 @@ describe('MyDashboardComponent', () => {
 
     component.closeAllDetails();
     expect(component.isAllDetailsModalOpen).toBeFalse();
+  });
+
+  it('includes all salary metrics with AUD formatting and monthly filtering without changing overall totals', () => {
+    component.openAllDetailsModal();
+    component.selectAllDashboardMetric('kumarSalary_ausSalary');
+    expect(component.allDashboardChartData).toEqual([{ name: 'Sep 2026', value: 870 }]);
+    expect(component.allDashboardSummaryCards[0].value).toContain('870');
+    expect(component.allDashboardSummaryCards[0].value).not.toContain('₹');
+    expect(component.allDashboardDateBounds).toEqual({ min: '2026-09', max: '2026-09' });
+    component.selectAllDashboardMetric('vasukiSalary_ausHealthInsurance');
+    expect(component.allDashboardChartData).toEqual([{ name: 'Sep 2026', value: 30 }]);
+    component.selectAllDashboardMetric('overallBalance');
+    expect(component.allDashboardChartData).toEqual([{ name: 'Sep 2026', value: 1000 }]);
+    expect(component.allDashboardMetricOptions.some(({ value }) => value === 'kumarSalary_ausHealthInsurance')).toBeFalse();
+  });
+
+  it('refreshes cached dashboard salary charts after records are saved', () => {
+    component.openAllDetailsModal();
+    component.selectAllDashboardMetric('kumarSalary_ausSalary');
+    component.closeAllDetails();
+    salaryDataService.getSalaryData.and.callFake((id) => of({
+      id, name: 'Salary', title: '', description: '', type: 'Salary', salaryRecords: []
+    }));
+    salaryUpdates.next();
+    component.openAllDetailsModal();
+    component.selectAllDashboardMetric('kumarSalary_ausSalary');
+    expect(component.allDashboardChartData).toEqual([]);
+    component.ngOnDestroy();
+  });
+
+  it('does not export incomplete files when salary loading fails', async () => {
+    const createUrl = spyOn(URL, 'createObjectURL');
+    salaryDataService.getSalaryData.and.returnValue(throwError(() => new Error('Salary unavailable')));
+    await component.exportDashboard('csv');
+    expect(component.exportError).toBe('Salary unavailable');
+    expect(createUrl).not.toHaveBeenCalled();
+    expect(component.isExporting).toBeFalse();
   });
 
   it('uses the newest overall month for highlights rather than the oldest record', () => {
@@ -1266,7 +1323,8 @@ describe('MyDashboardComponent', () => {
       confirmationCodeService,
       pfDataService,
       gratuityDataService,
-      totalBalanceService
+      totalBalanceService,
+      salaryDataService
     );
 
     failedComponent.ngOnInit();

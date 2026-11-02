@@ -17,14 +17,18 @@ import { TotalBalanceService } from '../service/total-balance.service';
 import { PfApiDocument } from '../model/pf-record';
 import { GratuityApiDocument } from '../model/gratuity-record';
 import { createDashboardExport, DashboardExportFormat, DashboardExportTable, downloadDashboardExport } from '../model/dashboard-export';
+import { SalaryDataService } from '../service/salary-data.service';
+import { SalaryField, salaryFields, salaryMonthKey } from '../model/salary-record';
 
 type DashboardChartType = ChartType;
+type SalaryMetric = `${'kumar' | 'vasuki'}Salary_${SalaryField}`;
 type TransferMetric = 'amountTransferredAUD' | 'amountReceivedINR' | 'conversionRate';
 type DashboardMetric =
   | TransferMetric
   | 'kumarPfAmount' | 'kumarPfDifference' | 'vasukiPfAmount' | 'vasukiPfDifference'
   | 'combinedPfInterest' | 'combinedPfAmount'
   | 'kumarGratuity' | 'vasukiGratuity' | 'vasukiSuper'
+  | SalaryMetric
   | 'overallInterest' | 'overallBalance';
 type TransferSortKey = keyof TransferRecord;
 type SortDirection = 'asc' | 'desc';
@@ -140,6 +144,7 @@ function isTransferMetric(metric: DashboardMetric): metric is TransferMetric {
 }
 
 function isDashboardMetric(metric: string): metric is DashboardMetric {
+  if (salaryMetricOptions.some(({ key }) => key === metric)) { return true; }
   return [
     'amountTransferredAUD', 'amountReceivedINR', 'conversionRate',
     'kumarPfAmount', 'kumarPfDifference', 'vasukiPfAmount', 'vasukiPfDifference',
@@ -147,6 +152,14 @@ function isDashboardMetric(metric: string): metric is DashboardMetric {
     'vasukiSuper', 'overallInterest', 'overallBalance'
   ].includes(metric);
 }
+
+const salaryMetricOptions: DashboardMetricOption[] = (
+  [['8', 'kumar', 'Kumar'], ['9', 'vasuki', 'Vasuki']] as const
+).flatMap(([resourceId, owner, label]) => salaryFields(resourceId).map((field) => ({
+  label: `${label} salary - ${field.label}`,
+  key: `${owner}Salary_${field.key}` as SalaryMetric,
+  axisLabel: `${field.label} (AUD)`
+})));
 
 function monthDetails(value: string): { key: string; label: string } | null {
   const monthYear = /^([A-Za-z]+)(?:'|\s+)(\d{2}|\d{4})$/.exec(value.trim());
@@ -248,6 +261,7 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     { label: 'Kumar gratuity', key: 'kumarGratuity', axisLabel: 'Gratuity (INR)' },
     { label: 'Vasuki gratuity', key: 'vasukiGratuity', axisLabel: 'Gratuity (INR)' },
     { label: 'Vasuki super', key: 'vasukiSuper', axisLabel: 'Super (INR)' },
+    ...salaryMetricOptions,
     { label: 'Overall monthly interest', key: 'overallInterest', axisLabel: 'Monthly interest (INR)' },
     { label: 'Overall balance', key: 'overallBalance', axisLabel: 'Overall balance (INR)' }
   ];
@@ -297,6 +311,7 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private toastTimeout?: Subscription;
   private amountCalculation?: Subscription;
   private allDashboardChartsSubscription?: Subscription;
+  private salaryUpdatesSubscription?: Subscription;
   private allDashboardChartDataByMetric: Partial<Record<DashboardMetric, ChartDatum[]>> = {};
   private deleteCodeValidationAttempt = 0;
   private verifiedDeleteCode = '';
@@ -311,10 +326,16 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     private confirmationCodeService: ConfirmationCodeService,
     private pfDataService: PfDataService,
     private gratuityDataService: GratuityDataService,
-    private totalBalanceService: TotalBalanceService
+    private totalBalanceService: TotalBalanceService,
+    private salaryDataService: SalaryDataService
   ) {}
 
   ngOnInit(): void {
+    this.salaryUpdatesSubscription = this.salaryDataService.salaryUpdated$.subscribe(() => {
+      this.allDashboardChartDataByMetric = {};
+      this.resetAllDashboardDateRange();
+      if (this.isAllDetailsModalOpen) { this.loadAllDashboardCharts(); }
+    });
     this.amountCalculation = merge(
       this.editForm.controls.amountTransferredAUD.valueChanges,
       this.editForm.controls.conversionRate.valueChanges
@@ -347,6 +368,7 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.toastTimeout?.unsubscribe();
     this.amountCalculation?.unsubscribe();
     this.allDashboardChartsSubscription?.unsubscribe();
+    this.salaryUpdatesSubscription?.unsubscribe();
     this.accordionSubscription.unsubscribe();
     this.stopPinningWidget();
     clearTimeout(this.highlightTimer);
@@ -1016,6 +1038,8 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       kumarGratuity: this.gratuityDataService.getGratuityData('4'),
       vasukiGratuity: this.gratuityDataService.getGratuityData('5'),
       vasukiSuper: this.gratuityDataService.getGratuityData('6'),
+      kumarSalary: this.salaryDataService.getSalaryData('8'),
+      vasukiSalary: this.salaryDataService.getSalaryData('9'),
       overallBalance: this.totalBalanceService.getTotals()
     });
   }
@@ -1073,6 +1097,18 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         columns: ['Month', 'Total balance', 'Monthly interest'],
         rows: documents.overallBalance.totalRecords.map(({ date, total, difference }) => [date, total, difference])
       });
+      for (const [resourceId, owner, data] of [
+        ['8', 'Kumar', documents.kumarSalary], ['9', 'Vasuki', documents.vasukiSalary]
+      ] as const) {
+        const fields = salaryFields(resourceId);
+        tables.push({
+          name: `${owner} Australia Salary`,
+          columns: ['Owner', 'Month', ...fields.map(({ label }) => `${label} (AUD)`)],
+          rows: data.salaryRecords.map((record) => [
+            owner, record.date, ...fields.map(({ key }) => record[key]!)
+          ])
+        });
+      }
       const blob = await createDashboardExport(tables, format);
       if (this.isDestroyed) {
         return;
@@ -1094,7 +1130,7 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isAllDashboardChartsLoading = true;
     this.allDashboardChartsError = '';
     this.allDashboardChartsSubscription = this.loadDashboardDocuments().subscribe({
-      next: ({ kumarPf, vasukiPf, kumarGratuity, vasukiGratuity, vasukiSuper, overallBalance }) => {
+      next: ({ kumarPf, vasukiPf, kumarGratuity, vasukiGratuity, vasukiSuper, overallBalance, kumarSalary, vasukiSalary }) => {
         try {
           const combinedPf = this.combinePfRecords([kumarPf, vasukiPf]);
           const byMonth = (date: string, value: number): ChartDatum => ({
@@ -1114,6 +1150,15 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
             overallInterest: [...overallBalance.totalRecords].reverse().map(({ date, difference }) => byMonth(date, difference)),
             overallBalance: [...overallBalance.totalRecords].reverse().map(({ date, total }) => byMonth(date, total))
           };
+          for (const [resourceId, owner, document] of [
+            ['8', 'kumar', kumarSalary], ['9', 'vasuki', vasukiSalary]
+          ] as const) {
+            const records = [...document.salaryRecords].sort((a, b) => salaryMonthKey(a.date).localeCompare(salaryMonthKey(b.date)));
+            for (const field of salaryFields(resourceId)) {
+              const metric: SalaryMetric = `${owner}Salary_${field.key}`;
+              this.allDashboardChartDataByMetric[metric] = records.map((record) => byMonth(record.date, record[field.key]!));
+            }
+          }
         } catch (error: unknown) {
           this.allDashboardChartsError = error instanceof Error
             ? error.message
@@ -1230,6 +1275,7 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private formatDashboardMetricValue(metric: DashboardMetric, value: number): string {
+    if (metric.includes('Salary_')) { return this.formatCurrency(value, 'AUD'); }
     if (isTransferMetric(metric)) {
       return this.metrics.find((option) => option.key === metric)?.format(value) ?? String(value);
     }

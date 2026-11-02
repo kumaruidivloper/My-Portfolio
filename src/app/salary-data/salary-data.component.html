@@ -1,0 +1,185 @@
+<section class="gratuity-accordion" [attr.aria-labelledby]="'salary-title-' + resourceId">
+  <header class="gratuity-heading">
+    <div class="gratuity-heading-copy">
+      <h2 [id]="'salary-title-' + resourceId">{{ ownerName }} Australia Salary</h2>
+      <p>{{ data ? (previewRangeCount !== null ? previewRangeCount + ' of ' : '') + records.length + ' monthly records' : 'Australian salary history' }}</p>
+    </div>
+    <button type="button" class="control-button accordion-toggle"
+      [attr.aria-expanded]="isExpanded" [attr.aria-controls]="'salary-panel-' + resourceId"
+      [attr.aria-label]="(isExpanded ? 'Collapse ' : 'Expand ') + ownerName + ' Australia salary'"
+      (click)="toggleExpanded()">
+      <span class="toggle-switch" aria-hidden="true"><span class="toggle-switch-thumb"></span></span>
+    </button>
+  </header>
+  @if (toastMessage) {
+    <div class="dashboard-toast" role="status"><span>{{ toastMessage }}</span>
+      <button type="button" aria-label="Dismiss notification" (click)="toastMessage = ''">&times;</button>
+    </div>
+  }
+  @if (errorMessage) {
+    <p class="gratuity-status gratuity-error" role="alert">{{ errorMessage }}</p>
+    <button type="button" class="control-button" (click)="loadData()" [disabled]="isLoading">Retry salary data</button>
+  }
+  @if (!isExpanded) {
+    <app-widget-preview-chart [data]="chartData" [label]="selectedLabel" [loading]="isLoading"
+      [formatValue]="formatAmount" [views]="views" [view]="selectedField"
+      (viewChange)="selectField($event)" (rangeCountChange)="previewRangeCount = $event"
+      (click)="toggleExpanded()"></app-widget-preview-chart>
+  }
+  @if (isExpanded) {
+    <div [id]="'salary-panel-' + resourceId">
+      @if (isLoading) { <app-dashboard-loader label="Loading salary records"></app-dashboard-loader> }
+      @if (data && !isLoading && !errorMessage) {
+        <article class="gratuity-records-card">
+          <header class="gratuity-records-heading">
+            <div><h3>Monthly salary records</h3><p>All amounts are entered manually.</p></div>
+            <div class="gratuity-heading-actions">
+              <button type="button" class="control-button add-button" [disabled]="isSaving" (click)="addRecord()">
+                <svg class="add-button-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg>
+                <span>Add salary record</span>
+              </button>
+              <button type="button" class="control-button accordion-toggle" [attr.aria-expanded]="areRecordsExpanded"
+                [attr.aria-controls]="'salary-records-' + resourceId" aria-label="Toggle salary records"
+                (click)="areRecordsExpanded = !areRecordsExpanded">
+                <span class="toggle-switch" aria-hidden="true"><span class="toggle-switch-thumb"></span></span>
+              </button>
+            </div>
+          </header>
+          @if (areRecordsExpanded) {
+            <app-responsive-table [id]="'salary-records-' + resourceId" [ariaLabel]="ownerName + ' salary records'"
+              [columns]="gridColumns" [rows]="gridRows" defaultSortKey="date" defaultSortDirection="desc">
+              <ng-template #gridActions let-index="index">
+                <div class="responsive-grid-action-buttons">
+                  <button type="button" class="control-button transfer-action" [disabled]="isSaving"
+                    [attr.aria-label]="'Edit salary record for ' + monthLabel(records[index].date)" (click)="editRecord(index)">
+                    <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"></path></svg>
+                  </button>
+                  <button type="button" class="control-button transfer-action delete-action" [disabled]="isSaving"
+                    [attr.aria-label]="'Delete salary record for ' + monthLabel(records[index].date)" (click)="requestDelete(index)">
+                    <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2m3 0-1 14H6L5 6M10 10v6m4-6v6"></path></svg>
+                  </button>
+                </div>
+              </ng-template>
+            </app-responsive-table>
+          }
+        </article>
+        @if (latestRecord; as latest) {
+          <div class="gratuity-summary">
+            <article class="gratuity-summary-card"><h3>{{ formatAmount(latest.ausSalary) }}</h3><p>Latest Australian salary · {{ monthLabel(latest.date) }}</p></article>
+            <article class="gratuity-summary-card"><h3>{{ formatAmount(latest.totalDeduction) }}</h3><p>Latest total deduction</p></article>
+          </div>
+          <article class="gratuity-chart-card">
+            <header>
+              <h3>{{ selectedLabel }}</h3>
+              <app-theme-select [options]="views" [value]="selectedField" ariaLabel="Salary metric" (valueChange)="selectField($event)"></app-theme-select>
+              <app-theme-select [options]="chartTypes" [value]="chartType" ariaLabel="Salary chart type" (valueChange)="selectChartType($event)"></app-theme-select>
+            </header>
+            <div class="chart-container gratuity-chart-container">
+              @switch (chartType) {
+                @case ('bar') {
+                  <ngx-charts-bar-vertical [results]="chartData" [scheme]="colors" [xAxis]="true" [yAxis]="true"
+                    [yAxisTickFormatting]="formatAxis" [roundDomains]="true"
+                    [showXAxisLabel]="true" xAxisLabel="Month" [showYAxisLabel]="true" [yAxisLabel]="selectedLabel + ' (AUD)'">
+                    <ng-template #tooltipTemplate let-model="model">
+                      <div class="chart-value-tooltip"><strong>{{ model.name }}</strong><span>{{ formatAmount(model.value) }}</span></div>
+                    </ng-template>
+                  </ngx-charts-bar-vertical>
+                }
+                @case ('line') {
+                  <ngx-charts-line-chart [results]="lineData" [scheme]="colors" [xAxis]="true" [yAxis]="true"
+                    [yAxisTickFormatting]="formatAxis" [autoScale]="true"
+                    [showXAxisLabel]="true" xAxisLabel="Month" [showYAxisLabel]="true" [yAxisLabel]="selectedLabel + ' (AUD)'">
+                    <ng-template #tooltipTemplate let-model="model">
+                      <div class="chart-value-tooltip"><strong>{{ model.name }}</strong><span>{{ formatAmount(model.value) }}</span></div>
+                    </ng-template>
+                  </ngx-charts-line-chart>
+                }
+                @case ('pie') {
+                  <ngx-charts-pie-chart [results]="chartData" [scheme]="colors" [labels]="true" [legend]="true">
+                    <ng-template #tooltipTemplate let-model="model">
+                      <div class="chart-value-tooltip"><strong>{{ model.name }}</strong><span>{{ formatAmount(model.value) }}</span></div>
+                    </ng-template>
+                  </ngx-charts-pie-chart>
+                }
+                @case ('doughnut') {
+                  <ngx-charts-pie-chart [results]="chartData" [scheme]="colors" [labels]="true" [legend]="true" [doughnut]="true" [arcWidth]="0.25">
+                    <ng-template #tooltipTemplate let-model="model">
+                      <div class="chart-value-tooltip"><strong>{{ model.name }}</strong><span>{{ formatAmount(model.value) }}</span></div>
+                    </ng-template>
+                  </ngx-charts-pie-chart>
+                }
+              }
+            </div>
+          </article>
+        } @else { <p class="gratuity-status" role="status">No salary records yet. Add the first month above.</p> }
+      }
+    </div>
+  }
+</section>
+
+@if (formOpen || deletingIndex !== null) {
+  <div class="gratuity-modal-backdrop" (click)="closeDialog()">
+    <section class="gratuity-modal" role="dialog" aria-modal="true" [attr.aria-labelledby]="'salary-dialog-' + resourceId"
+      cdkTrapFocus [cdkTrapFocusAutoCapture]="true" (keydown.escape)="closeDialog()" (click)="$event.stopPropagation()">
+      <header class="gratuity-modal-heading">
+        <div><p class="gratuity-eyebrow">{{ ownerName }} Australia Salary</p>
+          <h2 [id]="'salary-dialog-' + resourceId">{{ deletingIndex !== null ? 'Delete salary record' : isAdding ? 'Add salary record' : 'Edit salary record' }}</h2></div>
+        <button type="button" class="gratuity-modal-close" aria-label="Close salary dialog" [disabled]="isSaving" (click)="closeDialog()">&times;</button>
+      </header>
+      @if (formOpen) {
+        <form [formGroup]="editForm" (ngSubmit)="saveRecord()">
+          <app-form-stepper #stepper [labels]="['Month', 'Salary details', 'Review']" [startStep]="isAdding ? 0 : 2"
+            [stepValid]="stepper.step === 0 ? editForm.controls.date.valid : amountsValid" [saving]="isSaving"
+            [submitLabel]="isSaving ? 'Saving...' : isAdding ? 'Add salary record' : 'Save changes'"
+            [submitClass]="isAdding ? 'primary-action' : 'save-action'"
+            [submitDisabled]="isSaving || (!isAdding && !confirmed)"
+            (invalidNext)="editForm.markAllAsTouched()" (cancel)="closeDialog()">
+            <div [hidden]="stepper.step !== 0">
+              <label class="gratuity-field"><span>Month</span><app-theme-date-picker mode="month" formControlName="date"></app-theme-date-picker></label>
+              @if (editForm.controls.date.touched && editForm.controls.date.invalid) {
+                <small class="gratuity-field-error">Select a valid month without an existing salary record.</small>
+              }
+            </div>
+            <div [hidden]="stepper.step !== 1" class="gratuity-form-grid">
+              @for (field of fields; track field.key) {
+                <label class="gratuity-field"><span>{{ field.label }}</span>
+                  <input type="number" step="any" [formControlName]="field.key">
+                  @if (editForm.controls[field.key].touched && editForm.controls[field.key].invalid) {
+                    <small class="gratuity-field-error">Enter a valid amount.</small>
+                  }
+                </label>
+              }
+            </div>
+            <div [hidden]="stepper.step !== 2">
+              <dl class="review-summary">
+                <div><dt>Month</dt><dd>{{ editForm.controls.date.value }}</dd></div>
+                @for (field of fields; track field.key) {
+                  <div><dt>{{ field.label }}</dt><dd>{{ editForm.controls[field.key].value | number:'1.2-2' }}</dd></div>
+                }
+              </dl>
+              @if (!isAdding) { <ng-container [ngTemplateOutlet]="codeEntry"></ng-container> }
+              @if (saveError) { <p class="gratuity-field-error" role="alert">{{ saveError }}</p> }
+            </div>
+          </app-form-stepper>
+        </form>
+      } @else {
+        <p>Delete the salary record for {{ monthLabel(records[deletingIndex!].date) }}? This cannot be undone.</p>
+        <ng-container [ngTemplateOutlet]="codeEntry"></ng-container>
+        @if (saveError) { <p class="gratuity-field-error" role="alert">{{ saveError }}</p> }
+        <footer class="gratuity-modal-actions">
+          <button type="button" class="control-button" [disabled]="isSaving" (click)="closeDialog()">Cancel</button>
+          <button type="button" class="control-button" [disabled]="isSaving || !confirmed" (click)="deleteRecord()">{{ isSaving ? 'Deleting...' : 'Delete salary record' }}</button>
+        </footer>
+      }
+    </section>
+  </div>
+}
+<ng-template #codeEntry>
+  <label class="gratuity-field gratuity-confirmation-field"><span>Confirmation code</span>
+    <input type="password" inputmode="numeric" maxlength="14" autocomplete="off" [formControl]="confirmationCode" (input)="validateCode()">
+    <small>Enter the required 14-digit code to continue.</small>
+    @if (isCodeVerifying) { <small>Verifying code...</small> }
+    @if (isCodeIncorrect) { <small class="gratuity-field-error">The confirmation code is incorrect.</small> }
+    @if (confirmationCode.touched && confirmationCode.invalid) { <small class="gratuity-field-error">Enter all 14 digits.</small> }
+  </label>
+</ng-template>

@@ -21,6 +21,7 @@ import { ResponsiveTableComponent } from '../responsive-table/responsive-table.c
 import { WidgetPreviewChartComponent } from '../widget-preview-chart/widget-preview-chart.component';
 import { DashboardLoaderComponent } from '../dashboard-loader/dashboard-loader.component';
 import { RenderInViewDirective } from '../render-in-view/render-in-view.directive';
+import { SalaryDataComponent } from '../salary-data/salary-data.component';
 
 @NgModule({
   declarations: [
@@ -37,7 +38,8 @@ import { RenderInViewDirective } from '../render-in-view/render-in-view.directiv
     ResponsiveTableComponent,
     WidgetPreviewChartComponent,
     DashboardLoaderComponent,
-    RenderInViewDirective
+    RenderInViewDirective,
+    SalaryDataComponent
   ],
   imports: [
     CommonModule,

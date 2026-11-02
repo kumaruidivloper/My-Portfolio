@@ -101,6 +101,21 @@ body:not(.active):not(.night) .dashboard-page .ngx-charts .line-series .line {
     transition: none;
 }
 
+@media (min-width: 601px) {
+    .dashboard-page app-salary-data .responsive-grid-table {
+        min-width: 125rem;
+    }
+
+    .dashboard-page app-salary-data .responsive-grid-sort {
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+}
+
+.dashboard-page app-salary-data .gratuity-chart-card header {
+    flex-wrap: wrap;
+}
+
 .dashboard-options-heading {
     color: var(--light-color);
     font-size: 1.1rem;

@@ -28,6 +28,8 @@ Table delete buttons retain a red warning accent in both themes; dark mode uses 
 
 All dashboard stepped forms use theme-surface Next and Submit buttons with accent-colored text, raised shadows, and inset hover/focus feedback instead of solid accent fills. Disabled controls retain their muted appearance.
 
+Kumar Australia Salary (API resource 8) and Vasuki Australia Salary (resource 9) use the same lazy-loaded dashboard widget layout, previews, chart types, sortable/paginated tables, and themed stepped add/edit forms. Each salary field can be selected in the widget chart or dashboard details. Forms include month, initial advance repayment, total salary, Australian tax, India deduction, total deduction, and Australian salary; Vasuki also includes Australian health insurance. All amounts are entered manually: totals and net salary are not recalculated. Each owner can have one record per month. Editing and deletion require the existing confirmation code; adding does not. Salary remains separate from overall balance and its interest calculations. CSV exports and separate Excel salary sheets include every salary record and field.
+
 Use the dashboard's right-aligned three-dot More dashboard options button to view dashboard details or download all records as CSV or Excel (.xlsx). The options float below the button without shifting the dashboard; clicking outside dismisses them. Tab through the three options; Escape closes the options and returns focus to the button. Exports fetch every data source, including widgets not yet rendered, and ignore chart selections/date filters. CSV contains one table with a Section column and labeled data columns; Excel has separate sheets for transfers, each owner's PF/gratuity, combined PF, super, and overall totals, with frozen headers and filters. All record fields are included without compact-number or currency formatting; dates/months retain their recorded labels, except combined PF months are normalized as in the dashboard. Text is protected against CSV spreadsheet-formula execution. Loading or export errors are shown on the dashboard; incomplete downloads are not generated. The Excel library loads only when exporting Excel.
 
 Expanding a dashboard widget moves it to the top at full width. All other widgets also span the full width for alignment, including cards still loading. Collapsing the widget restores the normal side-by-side layout, with summary cards retaining their full width. Mobile layouts remain single-column.
@@ -157,4 +159,5 @@ https://jsonserver-eudl.onrender.com
 - Local IP example: `192.168.0.7`
 
 ## 8. Mock api
+  kumaruidivloper's Mock API project:
   https://mockapi.io/projects/64b76091df0839c97e168d7a
