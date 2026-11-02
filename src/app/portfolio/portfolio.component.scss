@@ -60,5 +60,10 @@
   background-color: var(--black);
   padding: 1.2rem 2.3rem;
   border-radius: 2rem;
+  color: #fff;
+}
+
+:host-context(body.active) .portfolio .box-container .box:hover .content h3,
+:host-context(body.night) .portfolio .box-container .box:hover .content h3 {
   color: var(--green);
 }
