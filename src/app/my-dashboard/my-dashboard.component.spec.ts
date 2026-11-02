@@ -135,12 +135,15 @@ describe('MyDashboardComponent', () => {
     const csv = await downloaded!.text();
     for (const name of ['Transfers', 'Kumar PF', 'Vasuki PF', 'Combined PF',
       'Kumar gratuity', 'Vasuki gratuity', 'Vasuki super', 'Overall totals',
-      'Kumar Australia Salary', 'Vasuki Australia Salary']) {
+      'Kumar Australia Salary', 'Vasuki Australia Salary', 'Combined Australia Salary']) {
       expect(csv).toContain(`"${name}"`);
     }
     expect(csv).toContain('"29-Sep-23","100","53.5","05-Oct-23","5350"');
     expect(csv).toContain('"31-Oct-23","200","54","03-Nov-23","10800"');
-    expect(csv.split('\r\n').length).toBe(13);
+    expect(csv.split('\r\n').length).toBe(14);
+    const combinedRow = csv.split('\r\n').find((row) => row.startsWith('"Combined Australia Salary",'))!;
+    expect(combinedRow).toContain('"Combined","Sep 2026"');
+    expect(combinedRow).toContain('"20","2000","200","40","260","1740","30"');
     expect(component.allDashboardFrom).toBe('2026-10');
     expect(component.isDashboardOptionsOpen).toBeFalse();
     expect(component.isExporting).toBeFalse();
@@ -166,7 +169,7 @@ describe('MyDashboardComponent', () => {
     expect(component.exportError).toBe('');
   });
 
-  it('exports all ten Excel sheets with all original numeric record fields', async () => {
+  it('exports all eleven Excel sheets including derived combined salary fields', async () => {
     let downloaded: Blob | undefined;
     spyOn(URL, 'createObjectURL').and.callFake((blob) => {
       if (blob instanceof Blob) {
@@ -181,7 +184,7 @@ describe('MyDashboardComponent', () => {
     expect(workbook.worksheets.map((sheet) => sheet.name)).toEqual([
       'Transfers', 'Kumar PF', 'Vasuki PF', 'Combined PF',
       'Kumar gratuity', 'Vasuki gratuity', 'Vasuki super', 'Overall totals',
-      'Kumar Australia Salary', 'Vasuki Australia Salary'
+      'Kumar Australia Salary', 'Vasuki Australia Salary', 'Combined Australia Salary'
     ]);
     expect(workbook.getWorksheet('Transfers')!.rowCount).toBe(3);
     expect(workbook.getWorksheet('Transfers')!.getRow(2).values)
@@ -196,6 +199,9 @@ describe('MyDashboardComponent', () => {
       .toEqual([undefined, 'Kumar', 'Sep 2026', 10, 1000, 100, 20, 130, 870]);
     expect(workbook.getWorksheet('Vasuki Australia Salary')!.getRow(2).values)
       .toEqual([undefined, 'Vasuki', 'Sep 2026', 10, 1000, 30, 100, 20, 130, 870]);
+    expect(workbook.getWorksheet('Combined Australia Salary')!.getRow(2).values)
+      .toEqual([undefined, 'Combined', 'Sep 2026', 20, 2000, 30, 200, 40, 260, 1740]);
+    expect(workbook.getWorksheet('Combined Australia Salary')!.rowCount).toBe(2);
     expect(component.exportError).toBe('');
   });
 

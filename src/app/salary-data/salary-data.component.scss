@@ -144,6 +144,219 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.gratuity-chart-card header app-theme-select.salary-chart-select {
+  width: max-content;
+  flex: 0 0 auto;
+  max-width: 100%;
+}
+
+.salary-breakdown-heading {
+  margin: 2rem 0 .5rem;
+  color: var(--black);
+  font-size: 1.8rem;
+}
+
+.salary-column-chooser {
+  margin-top: 1.5rem;
+  color: var(--black);
+  font-size: 1.4rem;
+
+  summary {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: fit-content;
+    min-height: 44px;
+    box-sizing: border-box;
+    padding: 1.2rem 1.6rem;
+    border-radius: 1rem;
+    box-shadow: var(--box-shadow);
+    cursor: pointer;
+    color: var(--green);
+
+    list-style: none;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--green);
+      outline-offset: 3px;
+    }
+  }
+
+  svg {
+    width: 1.8rem;
+    height: 1.8rem;
+    flex-shrink: 0;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  &[open] summary {
+    box-shadow: var(--box-shadow-inset);
+  }
+
+  &[open] .salary-columns-chevron {
+    transform: rotate(180deg);
+  }
+}
+
+.salary-columns-title {
+  font-weight: 600;
+}
+
+.salary-columns-count {
+  padding: .3rem .8rem;
+  border-radius: .6rem;
+  background: color-mix(in srgb, var(--green) 8%, var(--bg-color));
+  font-size: 1.2rem;
+}
+
+.salary-column-options {
+  padding: 2rem;
+  margin-top: 1.5rem;
+  border-radius: 1.2rem;
+  box-shadow: var(--box-shadow);
+  background: var(--bg-color);
+
+  p {
+    color: var(--light-color);
+    font-size: 1.3rem;
+    margin: .5rem 0 0;
+  }
+}
+
+.salary-columns-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  h4 {
+    color: var(--black);
+    font-size: 1.7rem;
+    margin: 0;
+  }
+
+  button {
+    font-size: 1.3rem;
+    min-height: 44px;
+  }
+}
+
+.salary-columns-required {
+  margin: 2rem 0;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--black) 12%, transparent);
+}
+
+.salary-columns-section-label {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  color: var(--light-color);
+  font-size: 1.2rem;
+}
+
+.salary-columns-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .8rem;
+  margin-top: 1rem;
+
+  span {
+    border: 1px solid color-mix(in srgb, var(--black) 14%, transparent);
+    border-radius: .7rem;
+    padding: .6rem 1rem;
+    font-size: 1.2rem;
+  }
+}
+
+.salary-columns-optional {
+  border: 0;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+
+  legend {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+}
+
+.salary-columns-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(23rem, 1fr));
+  gap: 1.2rem;
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    min-height: 44px;
+    padding: 1.2rem;
+    border: 1px solid transparent;
+    border-radius: 1rem;
+    box-shadow: var(--box-shadow);
+    cursor: pointer;
+
+    &:hover,
+    &:focus-within {
+      border-color: var(--green);
+    }
+
+    &.is-selected {
+      box-shadow: var(--box-shadow-inset);
+      color: var(--green);
+    }
+  }
+
+  input {
+    appearance: auto;
+    width: 1.8rem;
+    height: 1.8rem;
+    flex-shrink: 0;
+    margin: 0;
+    accent-color: var(--green);
+
+    &:focus-visible {
+      outline: 2px solid var(--green);
+      outline-offset: 3px;
+    }
+  }
+
+  small {
+    display: block;
+    margin-top: .3rem;
+    color: var(--light-color);
+    font-size: 1.1rem;
+  }
+}
+
+.salary-column-options .salary-columns-note {
+  margin-top: 1.8rem;
+  font-size: 1.2rem;
+}
+
+@media (max-width: 600px) {
+  .salary-column-chooser {
+    display: none;
+  }
+}
+
+.salary-breakdown-description {
+  margin-bottom: 1rem;
+  color: var(--light-color);
+  font-size: 1.3rem;
+}
+
 .preview-slider-input:disabled::-webkit-slider-thumb {
   cursor: not-allowed;
   opacity: .5;

@@ -7,6 +7,7 @@ export interface ResponsiveGridColumn {
   sortKey?: string;
   numeric?: boolean;
   actions?: boolean;
+  hiddenOnDesktop?: boolean;
 }
 
 export type ResponsiveGridRow = Record<string, string | number | undefined> & { actionIndex?: number };

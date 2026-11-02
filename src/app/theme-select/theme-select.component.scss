@@ -22,6 +22,20 @@
   outline: 0.2rem solid var(--green);
 }
 
+.theme-select-sized-label {
+  display: grid;
+  white-space: nowrap;
+
+  > span {
+    grid-area: 1 / 1;
+  }
+}
+
+.theme-select-measure {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .theme-select-arrow {
   border-bottom: 0.2rem solid var(--green);
   border-right: 0.2rem solid var(--green);

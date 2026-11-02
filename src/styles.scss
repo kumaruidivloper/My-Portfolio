@@ -103,7 +103,7 @@ body:not(.active):not(.night) .dashboard-page .ngx-charts .line-series .line {
 
 @media (min-width: 601px) {
     .dashboard-page app-salary-data .responsive-grid-table {
-        min-width: 125rem;
+        min-width: var(--salary-table-min-width, 125rem);
     }
 
     .dashboard-page app-salary-data .responsive-grid-sort {

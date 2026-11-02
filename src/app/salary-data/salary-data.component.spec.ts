@@ -14,6 +14,7 @@ describe('SalaryDataComponent', () => {
   let service: jasmine.SpyObj<SalaryDataService>;
   let codes: jasmine.SpyObj<ConfirmationCodeService>;
   let detector: jasmine.SpyObj<ChangeDetectorRef>;
+  let updates: Subject<void>;
   const document: SalaryApiDocument = {
     id: '8', name: 'Kumar Australia Salary', title: '', description: '', type: 'Salary',
     salaryRecords: [
@@ -22,7 +23,10 @@ describe('SalaryDataComponent', () => {
     ]
   };
   beforeEach(() => {
-    service = jasmine.createSpyObj<SalaryDataService>('SalaryDataService', ['getSalaryData', 'updateSalaryData']);
+    updates = new Subject<void>();
+    service = jasmine.createSpyObj<SalaryDataService>('SalaryDataService', ['getSalaryData', 'updateSalaryData'], {
+      salaryUpdated$: updates.asObservable()
+    });
     service.getSalaryData.and.returnValue(of(document));
     service.updateSalaryData.and.callFake((data) => of(data));
     codes = jasmine.createSpyObj<ConfirmationCodeService>('ConfirmationCodeService', ['verify']);
@@ -88,6 +92,53 @@ describe('SalaryDataComponent', () => {
       expect(window.document.querySelector('.date-picker-popup')).toBeNull();
     });
 
+    it('separates fixed badges from optional column tiles and supports toggling and reset', () => {
+      TestBed.overrideProvider(SalaryDataService, { useValue: service });
+      fixture = TestBed.createComponent(SalaryDataComponent);
+      fixture.detectChanges();
+      const host = fixture.nativeElement as HTMLElement;
+      (host.querySelector('.accordion-toggle') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      (host.querySelector('.gratuity-heading-actions .accordion-toggle') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      expect(host.querySelector('.salary-columns-badges')?.textContent).toContain('Australian tax');
+      expect(host.querySelectorAll('.salary-columns-tiles input').length).toBe(4);
+      expect(host.querySelector('.salary-columns-tiles')?.textContent).not.toContain('Total salary');
+      const checkbox = host.querySelector('.salary-columns-tiles input') as HTMLInputElement;
+      checkbox.click();
+      fixture.detectChanges();
+      expect(checkbox.closest('label')?.classList.contains('is-selected')).toBeTrue();
+      expect(checkbox.closest('label')?.textContent).toContain('Visible in table');
+      expect(fixture.componentInstance.visibleColumnCount).toBe(6);
+      (host.querySelector('.salary-columns-panel-heading button') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      expect(fixture.componentInstance.visibleColumnCount).toBe(5);
+      expect(host.querySelectorAll('.salary-columns-tiles .is-selected').length).toBe(1);
+    });
+
+    it('renders combined totals and owner details without add, edit, delete, or form controls', () => {
+      service.getSalaryData.and.callFake((id) => of({ ...document, id }));
+      TestBed.overrideProvider(SalaryDataService, { useValue: service });
+      fixture = TestBed.createComponent(SalaryDataComponent);
+      fixture.componentRef.setInput('combined', true);
+      fixture.detectChanges();
+      const host = fixture.nativeElement as HTMLElement;
+      (host.querySelector('.accordion-toggle') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      expect(host.querySelector('h2')?.textContent).toBe('Combined Australia Salary');
+      expect(host.querySelector('.salary-totals')?.textContent).toContain('$5,638.00');
+      (host.querySelector('.gratuity-heading-actions .accordion-toggle') as HTMLButtonElement).click();
+      fixture.detectChanges();
+      expect(host.querySelectorAll('app-responsive-table').length).toBe(2);
+      expect(host.querySelector('[aria-label="Kumar and Vasuki salary breakdown"]')?.textContent).toContain('Vasuki');
+      expect(host.querySelector('.add-button')).toBeNull();
+      expect(host.querySelector('.transfer-action')).toBeNull();
+      expect(host.querySelector('form')).toBeNull();
+      const panelId = host.querySelector('.accordion-toggle')?.getAttribute('aria-controls');
+      expect(panelId).toBe('salary-combined-panel');
+      expect(host.querySelector('#salary-combined-panel')).not.toBeNull();
+    });
+
     it('renders the empty-state add flow with all six Kumar numeric fields and themed step buttons', () => {
       fixture = TestBed.createComponent(SalaryDataComponent);
       fixture.detectChanges();
@@ -140,6 +191,35 @@ describe('SalaryDataComponent', () => {
     expect(component.chartData.map(({ value }) => value)).toEqual([10, 20]);
     component.selectChartType('line');
     expect(component.lineData[0].series).toEqual(component.chartData);
+  });
+
+  it('defaults to five desktop columns and keeps required columns visible', () => {
+    const visible = () => component.gridColumns.filter(column => !column.hiddenOnDesktop).map(column => column.key);
+    expect(visible()).toEqual(['date', 'totalSalary', 'ausTax', 'ausSalary', 'actions']);
+    component.toggleColumn('ausTax');
+    component.toggleColumn('totalSalary');
+    expect(component.visibleColumnCount).toBe(5);
+    component.toggleColumn('ausSalary');
+    expect(visible()).toEqual(['date', 'totalSalary', 'ausTax', 'actions']);
+    component.toggleColumn('totalDeduction');
+    expect(visible()).toContain('totalDeduction');
+    expect(component.gridColumns.length).toBe(8);
+    expect(component.gridRows[0]['totalDeduction']).toBe(31);
+    expect(component.totals.credited).toBe(2819);
+    component.selectedColumns = ['ausSalary'];
+    expect(visible()).toEqual(['date', 'totalSalary', 'ausTax', 'ausSalary', 'actions']);
+  });
+
+  it('shares optional columns across combined tables while retaining owner and all mobile fields', () => {
+    component.combined = true;
+    expect(component.visibleColumnCount).toBe(4);
+    expect(component.breakdownColumns.filter(column => !column.hiddenOnDesktop).map(column => column.key))
+      .toEqual(['date', 'owner', 'totalSalary', 'ausTax', 'ausSalary']);
+    component.toggleColumn('ausHealthInsurance');
+    expect(component.breakdownColumns.find(column => column.key === 'ausHealthInsurance')?.hiddenOnDesktop).toBeFalse();
+    expect(component.gridColumns.some(column => column.actions)).toBeFalse();
+    expect(component.gridColumns.length).toBe(8);
+    expect(component.breakdownColumns.length).toBe(9);
   });
 
   it('coordinates expansion with other dashboard widgets', () => {
@@ -404,5 +484,97 @@ describe('SalaryDataComponent', () => {
     component.setRange('to', 0);
     expect(component.totals).toEqual({ credited: 969, gross: 1000, deductions: 31 });
     expect(component.filteredRecords[0].ausHealthInsurance).toBe(100);
+  });
+
+  describe('Combined salary view', () => {
+    beforeEach(() => {
+      component.combined = true;
+      service.getSalaryData.and.callFake((id) => of({
+        ...document, id,
+        salaryRecords: id === '8' ? document.salaryRecords : [
+          { ...document.salaryRecords[0], date: 'Sep 2026', ausHealthInsurance: 40 },
+          { ...document.salaryRecords[1], date: 'Oct 2026', ausHealthInsurance: 50 }
+        ]
+      }));
+      component.ngOnInit();
+    });
+
+    it('combines both sources by month and filters totals, charts and owner details together', () => {
+      expect(component.records.length).toBe(3);
+      expect(component.totals).toEqual({ credited: 5638, gross: 6000, deductions: 260 });
+      component.toggleExpanded();
+      component.setRange('from', 1);
+      component.setRange('to', 1);
+      expect(component.chartData).toEqual([{ name: 'Sep 2026', value: 2819 }]);
+      expect(component.totals).toEqual({ credited: 2819, gross: 3000, deductions: 130 });
+      expect(component.gridRows.length).toBe(1);
+      expect(component.breakdownRows.map(({ owner }) => owner)).toEqual(['Kumar', 'Vasuki']);
+      expect(component.breakdownRows.map(({ ausSalary }) => ausSalary)).toEqual([1850, 969]);
+      expect(component.gridColumns.some(({ actions }) => actions)).toBeFalse();
+      component.selectField('ausHealthInsurance');
+      expect(component.chartData[0].value).toBe(40);
+    });
+
+    it('blocks every mutation entry point and never writes combined records', () => {
+      component.addRecord();
+      component.editRecord(0);
+      component.requestDelete(0);
+      component.saveRecord();
+      component.deleteRecord();
+      expect(component.formOpen).toBeFalse();
+      expect(component.deletingIndex).toBeNull();
+      expect(service.updateSalaryData).not.toHaveBeenCalled();
+    });
+
+    it('refreshes after source saves and unsubscribes when destroyed', () => {
+      service.getSalaryData.calls.reset();
+      updates.next();
+      expect(service.getSalaryData.calls.allArgs()).toEqual([['8'], ['9']]);
+      component.ngOnDestroy();
+      service.getSalaryData.calls.reset();
+      updates.next();
+      expect(service.getSalaryData).not.toHaveBeenCalled();
+    });
+
+    it('reports either source failing instead of displaying partial combined results and supports retry', () => {
+      service.getSalaryData.and.callFake((id) => id === '8' ? of(document) : throwError(() => new Error('Vasuki salary unavailable')));
+      component.loadData();
+      expect(component.errorMessage).toBe('Vasuki salary unavailable');
+      expect(component.isLoading).toBeFalse();
+      expect(component.data).toBeNull();
+      expect(component.breakdownRows).toEqual([]);
+      service.getSalaryData.and.callFake((id) => of({ ...document, id }));
+      component.loadData();
+      expect(component.errorMessage).toBe('');
+      expect(component.records.length).toBe(2);
+    });
+
+    it('cancels older requests on refresh so late responses cannot overwrite newer totals', () => {
+      const oldKumar = new Subject<SalaryApiDocument>();
+      const oldVasuki = new Subject<SalaryApiDocument>();
+      service.getSalaryData.and.callFake((id) => id === '8' ? oldKumar : oldVasuki);
+      component.loadData();
+      service.getSalaryData.and.callFake((id) => of({ ...document, id, salaryRecords: [] }));
+      updates.next();
+      oldKumar.next(document);
+      oldKumar.complete();
+      oldVasuki.next({ ...document, id: '9' });
+      oldVasuki.complete();
+      expect(component.records).toEqual([]);
+      expect(component.totals).toEqual({ credited: 0, gross: 0, deductions: 0 });
+      expect(component.isLoading).toBeFalse();
+    });
+
+    it('coordinates expansion independently from both editable salary widgets', () => {
+      component.toggleExpanded();
+      announceAccordionOpened('salary-8');
+      expect(component.isExpanded).toBeFalse();
+      component.toggleExpanded();
+      announceAccordionOpened('salary-9');
+      expect(component.isExpanded).toBeFalse();
+      component.toggleExpanded();
+      announceAccordionOpened('salary-combined');
+      expect(component.isExpanded).toBeTrue();
+    });
   });
 });

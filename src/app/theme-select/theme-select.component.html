@@ -8,7 +8,14 @@
     [attr.aria-label]="ariaLabel"
     (click)="toggle()"
     (keydown)="onKeydown($event)">
-    <span>{{ selectedLabel }}</span>
+    <span [class.theme-select-sized-label]="sizeToOptions">
+      <span>{{ selectedLabel }}</span>
+      @if (sizeToOptions) {
+        @for (option of options; track option.value) {
+          <span class="theme-select-measure" aria-hidden="true">{{ option.label }}</span>
+        }
+      }
+    </span>
     <i class="theme-select-arrow" aria-hidden="true"></i>
   </button>
   @if (isOpen) {

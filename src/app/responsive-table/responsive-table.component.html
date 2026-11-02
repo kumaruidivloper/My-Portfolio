@@ -5,6 +5,7 @@
         @for (column of columns; track column.key) {
           <th
             scope="col"
+            [class.desktop-hidden-column]="column.hiddenOnDesktop"
             [class.numeric-column]="column.numeric"
             [class.actions-heading]="column.actions"
             [attr.aria-sort]="column.sortable ? sortLabel(column.sortKey || column.key) : null">
@@ -26,6 +27,7 @@
           @for (column of columns; track column.key) {
             <td
               [attr.data-label]="column.label"
+              [class.desktop-hidden-column]="column.hiddenOnDesktop"
               [class.numeric-column]="column.numeric"
               [class.actions-cell]="column.actions">
               @if (column.actions && actionsTemplate) {

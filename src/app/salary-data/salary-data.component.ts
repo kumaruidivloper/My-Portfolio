@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { Subscription, forkJoin, map } from 'rxjs';
 import { SALARY_FIELDS, SalaryApiDocument, SalaryField, SalaryRecord, SalaryResourceId, salaryFields, salaryMonthKey, salaryMonthLabel } from '../model/salary-record';
 import { CHART_TYPE_OPTIONS, ChartType, chartColorScheme, formatCompactAxisValue, isChartType, toLineChartSeries } from '../model/chart-type';
 import { memoizeLast } from '../model/memoize';
@@ -8,6 +8,7 @@ import { ResponsiveGridColumn, ResponsiveGridRow } from '../responsive-table/res
 import { SalaryDataService } from '../service/salary-data.service';
 import { ConfirmationCodeService } from '../service/confirmation-code.service';
 import { announceAccordionOpened, collapseWhenAnotherOpens } from '../service/accordion-group';
+import { combineSalaryRecords } from '../model/combined-salary';
 
 const finiteAmount: ValidatorFn = (control) =>
   typeof control.value === 'number' && Number.isFinite(control.value) ? null : { invalidAmount: true };
@@ -22,6 +23,7 @@ const amountControl = () => new FormControl(0, { nonNullable: true, validators: 
 export class SalaryDataComponent implements OnInit, OnDestroy {
   @Input() resourceId: SalaryResourceId = '8';
   @Input() ownerName = 'Kumar';
+  @Input() combined = false;
   readonly editForm = new FormGroup({
     date: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.pattern(/^\d{4}-(0[1-9]|1[0-2])$/)] }),
     initialAdvanceRepayment: amountControl(),
@@ -55,6 +57,7 @@ export class SalaryDataComponent implements OnInit, OnDestroy {
   rangeFrom: number | null = null;
   rangeTo: number | null = null;
   rangeError = '';
+  selectedColumns: readonly SalaryField[] = ['ausSalary'];
   isAdding = false;
   editingIndex: number | null = null;
   deletingIndex: number | null = null;
@@ -65,8 +68,10 @@ export class SalaryDataComponent implements OnInit, OnDestroy {
   private codeAttempt = 0;
   private destroyed = false;
   private readonly subscriptions = new Subscription();
+  private loadSubscription?: Subscription;
+  private sourceDocuments: SalaryApiDocument[] = [];
   private readonly accordionSubscription = collapseWhenAnotherOpens(
-    () => `salary-${this.resourceId}`, () => {
+    () => this.widgetId, () => {
       if (!this.isExpanded) { return; }
       this.isExpanded = false;
       this.areRecordsExpanded = false;
@@ -103,10 +108,24 @@ export class SalaryDataComponent implements OnInit, OnDestroy {
   private readonly buildFields = memoizeLast(salaryFields);
   private readonly buildViews = memoizeLast((resourceId: SalaryResourceId) =>
     salaryFields(resourceId).map(({ key, label }) => ({ value: key, label })));
-  private readonly buildColumns = memoizeLast((resourceId: SalaryResourceId): ResponsiveGridColumn[] => [
+  private readonly buildColumns = memoizeLast((resourceId: SalaryResourceId, readOnly: boolean, selected: readonly SalaryField[]): ResponsiveGridColumn[] => [
     { key: 'date', label: 'Month', sortable: true },
-    ...salaryFields(resourceId).map(({ key, label }) => ({ key, label, numeric: true, sortable: true })),
-    { key: 'actions', label: 'Actions', actions: true }
+    ...salaryFields(resourceId).map(({ key, label }) => ({
+      key, label, numeric: true, sortable: true,
+      hiddenOnDesktop: key !== 'totalSalary' && key !== 'ausTax' && !selected.includes(key)
+    })),
+    ...(!readOnly ? [{ key: 'actions', label: 'Actions', actions: true }] : [])
+  ]);
+  private readonly buildBreakdown = memoizeLast((documents: SalaryApiDocument[], from: string, to: string): ResponsiveGridRow[] =>
+    documents.flatMap((document) => document.salaryRecords
+      .filter(({ date }) => salaryMonthKey(date) >= from && salaryMonthKey(date) <= to)
+      .map((record) => ({
+        ...record, date: salaryMonthLabel(record.date),
+        owner: document.id === '8' ? 'Kumar' : 'Vasuki',
+        ausHealthInsurance: record.ausHealthInsurance ?? 0
+      }))));
+  private readonly buildBreakdownColumns = memoizeLast((columns: ResponsiveGridColumn[]): ResponsiveGridColumn[] => [
+    columns[0], { key: 'owner', label: 'Owner', sortable: true }, ...columns.slice(1)
   ]);
   private readonly emptyRecords: SalaryRecord[] = [];
 
@@ -116,26 +135,46 @@ export class SalaryDataComponent implements OnInit, OnDestroy {
     private changeDetector: ChangeDetectorRef
   ) {}
 
-  ngOnInit(): void { this.loadData(); }
+  ngOnInit(): void {
+    this.loadData();
+    if (this.combined) {
+      this.subscriptions.add(this.salaryService.salaryUpdated$.subscribe(() => this.loadData()));
+    }
+  }
 
   ngOnDestroy(): void {
     this.destroyed = true;
     this.codeAttempt++;
     this.subscriptions.unsubscribe();
+    this.loadSubscription?.unsubscribe();
     this.accordionSubscription.unsubscribe();
   }
 
-  get fields() { return this.buildFields(this.resourceId); }
+  get widgetId(): string { return this.combined ? 'salary-combined' : `salary-${this.resourceId}`; }
+  get title(): string { return `${this.combined ? 'Combined' : this.ownerName} Australia Salary`; }
+  get fields() { return this.buildFields(this.combined ? '9' : this.resourceId); }
   get records(): SalaryRecord[] { return this.data?.salaryRecords ?? this.emptyRecords; }
-  get views() { return this.buildViews(this.resourceId); }
+  get views() { return this.buildViews(this.combined ? '9' : this.resourceId); }
   get selectedLabel(): string { return SALARY_FIELDS.find(({ key }) => key === this.selectedField)!.label; }
   get chartData() { return this.buildChart(this.isExpanded ? this.filteredRecords : this.records, this.selectedField); }
-  get colors() { return this.buildColors(this.chartData, `salary-${this.resourceId}`); }
+  get colors() { return this.buildColors(this.chartData, this.widgetId); }
   get lineData() { return this.buildLine(this.chartData, this.selectedLabel); }
   get gridRows() { return this.buildRows(this.records, this.fromMonth, this.toMonth); }
   get gridColumns(): ResponsiveGridColumn[] {
-    return this.buildColumns(this.resourceId);
+    return this.buildColumns(this.combined ? '9' : this.resourceId, this.combined, this.selectedColumns);
   }
+  get breakdownColumns() { return this.buildBreakdownColumns(this.gridColumns); }
+  get visibleColumnCount(): number { return this.gridColumns.filter(({ hiddenOnDesktop }) => !hiddenOnDesktop).length; }
+  get tableMinWidth(): string { return `${this.visibleColumnCount * 17}rem`; }
+  get breakdownMinWidth(): string { return `${(this.visibleColumnCount + 1) * 17}rem`; }
+  isRequiredColumn(key: SalaryField): boolean { return key === 'totalSalary' || key === 'ausTax'; }
+  isColumnSelected(key: SalaryField): boolean { return this.isRequiredColumn(key) || this.selectedColumns.includes(key); }
+  toggleColumn(key: SalaryField): void {
+    if (this.isRequiredColumn(key)) { return; }
+    this.selectedColumns = this.selectedColumns.includes(key)
+      ? this.selectedColumns.filter((column) => column !== key) : [...this.selectedColumns, key];
+  }
+  get breakdownRows() { return this.buildBreakdown(this.sourceDocuments, this.fromMonth, this.toMonth); }
   get dateBounds() { return this.buildBounds(this.records); }
   get rangeMax(): number {
     return this.dateBounds.min ? this.monthPosition(this.dateBounds.max) - this.monthPosition(this.dateBounds.min) : 0;
@@ -159,7 +198,7 @@ export class SalaryDataComponent implements OnInit, OnDestroy {
   toggleExpanded(): void {
     this.isExpanded = !this.isExpanded;
     this.previewRangeCount = null;
-    if (this.isExpanded) { announceAccordionOpened(`salary-${this.resourceId}`); }
+    if (this.isExpanded) { announceAccordionOpened(this.widgetId); }
   }
 
   selectField(value: string): void {
@@ -228,19 +267,35 @@ export class SalaryDataComponent implements OnInit, OnDestroy {
   }
 
   loadData(): void {
+    this.loadSubscription?.unsubscribe();
     this.isLoading = true;
     this.errorMessage = '';
-    this.subscriptions.add(this.salaryService.getSalaryData(this.resourceId).subscribe({
+    const source = this.combined
+      ? forkJoin([this.salaryService.getSalaryData('8'), this.salaryService.getSalaryData('9')]).pipe(
+        map((documents): SalaryApiDocument => {
+          this.sourceDocuments = documents;
+          return {
+            id: 'combined', name: this.title, title: '', description: '', type: 'Salary',
+            salaryRecords: combineSalaryRecords(documents[0].salaryRecords, documents[1].salaryRecords)
+          };
+        }))
+      : this.salaryService.getSalaryData(this.resourceId);
+    this.loadSubscription = source.subscribe({
       next: (data) => { this.data = data; this.resetRange(); this.isLoading = false; this.changeDetector.detectChanges(); },
       error: (error: unknown) => {
         this.isLoading = false;
+        if (this.combined) {
+          this.data = null;
+          this.sourceDocuments = [];
+        }
         this.errorMessage = error instanceof Error ? error.message : 'Unable to load salary records.';
         this.changeDetector.detectChanges();
       }
-    }));
+    });
   }
 
   addRecord(): void {
+    if (this.combined) { return; }
     if (this.isSaving || !this.data) { return; }
     this.closeDialog();
     this.isAdding = true;
@@ -248,6 +303,7 @@ export class SalaryDataComponent implements OnInit, OnDestroy {
   }
 
   editRecord(index: number): void {
+    if (this.combined) { return; }
     const record = this.records[index];
     if (this.isSaving || !record) { return; }
     this.closeDialog();
@@ -256,6 +312,7 @@ export class SalaryDataComponent implements OnInit, OnDestroy {
   }
 
   requestDelete(index: number): void {
+    if (this.combined) { return; }
     if (this.isSaving || !this.records[index]) { return; }
     this.closeDialog();
     this.deletingIndex = index;
@@ -303,6 +360,7 @@ export class SalaryDataComponent implements OnInit, OnDestroy {
   }
 
   saveRecord(): void {
+    if (this.combined) { return; }
     if (this.isSaving || !this.data || !this.formOpen) { return; }
     if (this.editForm.invalid || !this.amountsValid) { this.editForm.markAllAsTouched(); return; }
     if (!this.isAdding && !this.confirmed) {
@@ -329,6 +387,7 @@ export class SalaryDataComponent implements OnInit, OnDestroy {
   }
 
   deleteRecord(): void {
+    if (this.combined) { return; }
     if (this.deletingIndex === null || this.isSaving || !this.confirmed) { return; }
     this.persist(this.records.filter((_, index) => index !== this.deletingIndex), 'Salary record deleted successfully.');
   }

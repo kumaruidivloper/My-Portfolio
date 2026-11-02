@@ -15,6 +15,7 @@ export class ThemeSelectComponent {
   @Input() options: readonly ThemeSelectOption[] = [];
   @Input() value = '';
   @Input() ariaLabel = 'Select option';
+  @Input() sizeToOptions = false;
   @Output() valueChange = new EventEmitter<string>();
 
   isOpen = false;

@@ -1,12 +1,13 @@
-<section class="gratuity-accordion" [attr.aria-labelledby]="'salary-title-' + resourceId">
+<section class="gratuity-accordion" [attr.aria-labelledby]="widgetId + '-title'">
   <header class="gratuity-heading">
     <div class="gratuity-heading-copy">
-      <h2 [id]="'salary-title-' + resourceId">{{ ownerName }} Australia Salary</h2>
+      <h2 [id]="widgetId + '-title'">{{ title }}</h2>
       <p>{{ data ? (previewRangeCount !== null ? previewRangeCount + ' of ' : '') + records.length + ' monthly records' : 'Australian salary history' }}</p>
+      @if (combined) { <p>Read-only · Derived from Kumar and Vasuki salary records</p> }
     </div>
     <button type="button" class="control-button accordion-toggle"
-      [attr.aria-expanded]="isExpanded" [attr.aria-controls]="'salary-panel-' + resourceId"
-      [attr.aria-label]="(isExpanded ? 'Collapse ' : 'Expand ') + ownerName + ' Australia salary'"
+      [attr.aria-expanded]="isExpanded" [attr.aria-controls]="widgetId + '-panel'"
+      [attr.aria-label]="(isExpanded ? 'Collapse ' : 'Expand ') + (combined ? 'Combined' : ownerName) + ' Australia salary'"
       (click)="toggleExpanded()">
       <span class="toggle-switch" aria-hidden="true"><span class="toggle-switch-thumb"></span></span>
     </button>
@@ -27,10 +28,10 @@
       (click)="toggleExpanded()"></app-widget-preview-chart>
   }
   @if (isExpanded) {
-    <div [id]="'salary-panel-' + resourceId">
+    <div [id]="widgetId + '-panel'">
       @if (isLoading) { <app-dashboard-loader label="Loading salary records"></app-dashboard-loader> }
       @if (data && !isLoading && !errorMessage) {
-        <div class="salary-range" role="group" [attr.aria-label]="ownerName + ' salary month range'">
+        <div class="salary-range" role="group" [attr.aria-label]="(combined ? 'Combined' : ownerName) + ' salary month range'">
           <div class="salary-range-heading">
             <div>
               <h3>Salary period</h3>
@@ -84,7 +85,7 @@
           <div class="salary-range-axis" aria-hidden="true"><span>{{ dateBounds.min ? monthLabel(dateBounds.min) : 'No data' }}</span><span>{{ dateBounds.max ? monthLabel(dateBounds.max) : 'No data' }}</span></div>
           <div class="salary-range-footer">
             <span class="salary-range-count" role="status">{{ filteredRecords.length }} of {{ records.length }} records selected</span>
-            <p class="salary-range-description" [id]="'salary-range-help-' + resourceId">
+            <p class="salary-range-description" [id]="widgetId + '-range-help'">
               {{ !records.length ? 'Add a salary record to start filtering.' : !rangeMax ? 'One month available. All records included.' : 'Drag either handle or choose exact months. Both months included.' }}
             </p>
           </div>
@@ -97,21 +98,65 @@
         </div>
         <article class="gratuity-records-card">
           <header class="gratuity-records-heading">
-            <div><h3>Monthly salary records</h3><p>All amounts are entered manually.</p></div>
+            <div><h3>{{ combined ? 'Combined monthly salary' : 'Monthly salary records' }}</h3>
+              <p>{{ combined ? 'Totals sum both owners by month. Months recorded for only one owner are included.' : 'All amounts are entered manually.' }}</p>
+            </div>
             <div class="gratuity-heading-actions">
+              @if (!combined) {
               <button type="button" class="control-button add-button" [disabled]="isSaving" (click)="addRecord()">
                 <svg class="add-button-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"></path></svg>
                 <span>Add salary record</span>
               </button>
+              }
               <button type="button" class="control-button accordion-toggle" [attr.aria-expanded]="areRecordsExpanded"
-                [attr.aria-controls]="'salary-records-' + resourceId" aria-label="Toggle salary records"
+                [attr.aria-controls]="widgetId + '-records'" aria-label="Toggle salary records"
                 (click)="areRecordsExpanded = !areRecordsExpanded">
                 <span class="toggle-switch" aria-hidden="true"><span class="toggle-switch-thumb"></span></span>
               </button>
             </div>
           </header>
           @if (areRecordsExpanded) {
-            <app-responsive-table [id]="'salary-records-' + resourceId" [ariaLabel]="ownerName + ' salary records'"
+            <div [id]="widgetId + '-records'">
+            <details class="salary-column-chooser">
+              <summary>
+                <svg class="salary-columns-icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"></rect><path d="M9 4v16M15 4v16"></path></svg>
+                <span class="salary-columns-title">Table columns</span>
+                <span class="salary-columns-count">{{ visibleColumnCount }} visible</span>
+                <svg class="salary-columns-chevron" aria-hidden="true" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"></path></svg>
+              </summary>
+              <div class="salary-column-options" role="group" aria-label="Desktop salary columns">
+                <div class="salary-columns-panel-heading">
+                  <div><h4>Customize your table</h4><p>Focus on the salary details that matter to you.</p></div>
+                  <button type="button" class="control-button" (click)="selectedColumns = ['ausSalary']">Reset columns</button>
+                </div>
+                <div class="salary-columns-required">
+                  <span class="salary-columns-section-label">
+                    <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>
+                    Always visible
+                  </span>
+                  <div class="salary-columns-badges">
+                    <span>Month</span><span>Total salary</span><span>Australian tax</span>
+                    <span>{{ combined ? 'Owner (breakdown)' : 'Actions' }}</span>
+                  </div>
+                </div>
+                <fieldset class="salary-columns-optional">
+                  <legend>Optional details</legend>
+                  <div class="salary-columns-tiles">
+                    @for (field of fields; track field.key) {
+                      @if (!isRequiredColumn(field.key)) {
+                        <label [class.is-selected]="isColumnSelected(field.key)">
+                          <input type="checkbox" [checked]="isColumnSelected(field.key)" (change)="toggleColumn(field.key)">
+                          <span>{{ field.label }}<small>{{ isColumnSelected(field.key) ? 'Visible in table' : 'Hidden on desktop' }}</small></span>
+                        </label>
+                      }
+                    }
+                  </div>
+                </fieldset>
+                <p class="salary-columns-note">Changes apply instantly to this widget. Mobile cards and downloads always include all details.</p>
+              </div>
+            </details>
+            <app-responsive-table [ariaLabel]="(combined ? 'Combined' : ownerName) + ' salary records'"
+              [style.--salary-table-min-width]="tableMinWidth"
               [columns]="gridColumns" [rows]="gridRows" defaultSortKey="date" defaultSortDirection="desc">
               <ng-template #gridActions let-index="index">
                 <div class="responsive-grid-action-buttons">
@@ -126,14 +171,22 @@
                 </div>
               </ng-template>
             </app-responsive-table>
+            @if (combined) {
+              <h3 class="salary-breakdown-heading">Kumar &amp; Vasuki breakdown</h3>
+              <p class="salary-breakdown-description">Source records for the selected period. All amounts in AUD.</p>
+              <app-responsive-table ariaLabel="Kumar and Vasuki salary breakdown" [columns]="breakdownColumns"
+                [style.--salary-table-min-width]="breakdownMinWidth"
+                [rows]="breakdownRows" defaultSortKey="date" defaultSortDirection="desc"></app-responsive-table>
+            }
+            </div>
           }
         </article>
         @if (filteredRecords.length) {
           <article class="gratuity-chart-card">
             <header>
-              <h3>{{ selectedLabel }}</h3>
-              <app-theme-select [options]="views" [value]="selectedField" ariaLabel="Salary metric" (valueChange)="selectField($event)"></app-theme-select>
-              <app-theme-select [options]="chartTypes" [value]="chartType" ariaLabel="Salary chart type" (valueChange)="selectChartType($event)"></app-theme-select>
+              <h3>{{ combined ? 'Combined ' : '' }}{{ selectedLabel }}</h3>
+              <app-theme-select class="salary-chart-select" [sizeToOptions]="true" [options]="views" [value]="selectedField" ariaLabel="Salary metric" (valueChange)="selectField($event)"></app-theme-select>
+              <app-theme-select class="salary-chart-select" [sizeToOptions]="true" [options]="chartTypes" [value]="chartType" ariaLabel="Salary chart type" (valueChange)="selectChartType($event)"></app-theme-select>
             </header>
             <div class="chart-container gratuity-chart-container">
               @switch (chartType) {
@@ -173,14 +226,14 @@
             </div>
           </article>
         } @else {
-          <p class="gratuity-status" role="status">{{ records.length ? 'No salary records in the selected month range.' : 'No salary records yet. Add the first month above.' }}</p>
+          <p class="gratuity-status" role="status">{{ records.length ? 'No salary records in the selected month range.' : combined ? 'No salary records yet. Add records in the Kumar or Vasuki salary widget.' : 'No salary records yet. Add the first month above.' }}</p>
         }
       }
     </div>
   }
 </section>
 
-@if (formOpen || deletingIndex !== null) {
+@if (!combined && (formOpen || deletingIndex !== null)) {
   <div class="gratuity-modal-backdrop" (click)="closeDialog()">
     <section class="gratuity-modal" role="dialog" aria-modal="true" [attr.aria-labelledby]="'salary-dialog-' + resourceId"
       cdkTrapFocus [cdkTrapFocusAutoCapture]="true" (keydown.escape)="closeDialog()" (click)="$event.stopPropagation()">

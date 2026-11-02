@@ -3,6 +3,12 @@ app-responsive-table {
   min-width: 0;
 }
 
+@media (min-width: 601px) {
+  .responsive-grid-table .desktop-hidden-column {
+    display: none;
+  }
+}
+
 .responsive-grid-scroll {
   margin-top: 1.5rem;
   overflow-x: auto;

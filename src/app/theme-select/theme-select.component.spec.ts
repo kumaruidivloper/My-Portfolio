@@ -1,4 +1,5 @@
 import { ElementRef } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
 import { ThemeSelectComponent } from './theme-select.component';
 
 describe('ThemeSelectComponent', () => {
@@ -31,5 +32,25 @@ describe('ThemeSelectComponent', () => {
     component.onKeydown(new KeyboardEvent('keydown', { key: 'Enter' }));
 
     expect(emitted).toEqual(['2']);
+  });
+
+  it('reserves every option label only when option-based sizing is enabled', () => {
+    TestBed.configureTestingModule({ declarations: [ThemeSelectComponent] });
+    const fixture = TestBed.createComponent(ThemeSelectComponent);
+    fixture.componentRef.setInput('options', [{ label: 'Bar', value: 'bar' }, { label: 'Doughnut', value: 'doughnut' }]);
+    fixture.componentRef.setInput('value', 'bar');
+    fixture.detectChanges();
+    const host = fixture.nativeElement as HTMLElement;
+    expect(host.querySelector('.theme-select-measure')).toBeNull();
+    fixture.componentRef.setInput('sizeToOptions', true);
+    fixture.detectChanges();
+    expect(Array.from(host.querySelectorAll('.theme-select-measure')).map(el => el.textContent?.trim()))
+      .toEqual(['Bar', 'Doughnut']);
+    expect(host.querySelectorAll('.theme-select-measure[aria-hidden="true"]').length).toBe(2);
+    fixture.componentRef.setInput('value', 'doughnut');
+    fixture.detectChanges();
+    expect(host.querySelector('.theme-select-sized-label > span')?.textContent?.trim()).toBe('Doughnut');
+    expect(host.querySelectorAll('.theme-select-measure').length).toBe(2);
+    fixture.destroy();
   });
 });

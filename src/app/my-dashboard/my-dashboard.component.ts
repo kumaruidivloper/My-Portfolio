@@ -18,7 +18,8 @@ import { PfApiDocument } from '../model/pf-record';
 import { GratuityApiDocument } from '../model/gratuity-record';
 import { createDashboardExport, DashboardExportFormat, DashboardExportTable, downloadDashboardExport } from '../model/dashboard-export';
 import { SalaryDataService } from '../service/salary-data.service';
-import { SalaryField, salaryFields, salaryMonthKey } from '../model/salary-record';
+import { combineSalaryRecords } from '../model/combined-salary';
+import { SalaryField, salaryFields, salaryMonthKey, salaryMonthLabel } from '../model/salary-record';
 
 type DashboardChartType = ChartType;
 type SalaryMetric = `${'kumar' | 'vasuki'}Salary_${SalaryField}`;
@@ -1109,6 +1110,16 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
           ])
         });
       }
+      const combinedSalaryFields = salaryFields('9');
+      tables.push({
+        name: 'Combined Australia Salary',
+        columns: ['Owner', 'Month', ...combinedSalaryFields.map(({ label }) => `${label} (AUD)`)],
+        rows: combineSalaryRecords(documents.kumarSalary.salaryRecords, documents.vasukiSalary.salaryRecords)
+          .map((record) => [
+            'Combined', salaryMonthLabel(record.date),
+            ...combinedSalaryFields.map(({ key }) => record[key]!)
+          ])
+      });
       const blob = await createDashboardExport(tables, format);
       if (this.isDestroyed) {
         return;
