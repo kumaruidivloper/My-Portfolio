@@ -9,6 +9,7 @@ import { SalaryDataService } from '../service/salary-data.service';
 import { ConfirmationCodeService } from '../service/confirmation-code.service';
 import { announceAccordionOpened, collapseWhenAnotherOpens } from '../service/accordion-group';
 import { combineSalaryRecords } from '../model/combined-salary';
+import { DashboardRecordRefreshService } from '../service/dashboard-record-refresh.service';
 
 const finiteAmount: ValidatorFn = (control) =>
   typeof control.value === 'number' && Number.isFinite(control.value) ? null : { invalidAmount: true };
@@ -132,13 +133,16 @@ export class SalaryDataComponent implements OnInit, OnDestroy {
   constructor(
     private salaryService: SalaryDataService,
     private confirmationService: ConfirmationCodeService,
-    private changeDetector: ChangeDetectorRef
+    private changeDetector: ChangeDetectorRef,
+    private recordRefreshService: DashboardRecordRefreshService = new DashboardRecordRefreshService()
   ) {}
 
   ngOnInit(): void {
     this.loadData();
     if (this.combined) {
       this.subscriptions.add(this.salaryService.salaryUpdated$.subscribe(() => this.loadData()));
+    } else {
+      this.subscriptions.add(this.recordRefreshService.updated$.subscribe(() => this.loadData()));
     }
   }
 

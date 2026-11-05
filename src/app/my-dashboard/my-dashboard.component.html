@@ -40,6 +40,14 @@
         cdkTrapFocus [cdkTrapFocusAutoCapture]="true"
         (keydown.escape)="isDashboardOptionsOpen = false; optionsButton.focus()">
         <p class="dashboard-options-heading">Dashboard</p>
+        <button type="button" class="dashboard-option" aria-haspopup="dialog" aria-controls="central-record-form-modal"
+          [disabled]="isExporting || isSaving"
+          (click)="isDashboardOptionsOpen = false; isCentralRecordFormOpen = true">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8">
+            <path d="M12 5v14M5 12h14"></path>
+          </svg>
+          <span>Add data</span>
+        </button>
         <button type="button" class="dashboard-option" aria-haspopup="dialog" aria-controls="all-details-modal"
           (click)="isDashboardOptionsOpen = false; openAllDetailsModal()">
           <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8">
@@ -343,6 +351,10 @@
     }
     </div>
   </div>
+
+  @if (isCentralRecordFormOpen) {
+    <app-central-record-form (cancel)="isCentralRecordFormOpen = false" (saved)="onCentralRecordSaved()"></app-central-record-form>
+  }
 
   @if (isAllDetailsModalOpen) {
     <div class="modal-backdrop all-details-backdrop" (click)="closeAllDetails()">

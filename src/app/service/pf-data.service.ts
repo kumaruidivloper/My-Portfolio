@@ -53,18 +53,28 @@ export function parsePfDataResponse(response: unknown, fallbackName = 'Kumar'): 
   providedIn: 'root'
 })
 export class PfDataService {
+  private readonly cache = new Map<PfResourceId, PfApiDocument>();
+
   constructor(private http: HttpClient, private totalBalanceService: TotalBalanceService) {}
+
+  getCachedPfData(resourceId: PfResourceId = '2'): PfApiDocument | null {
+    return this.cache.get(resourceId) ?? null;
+  }
 
   getPfData(resourceId: PfResourceId = '2'): Observable<PfApiDocument> {
     return this.http.get<unknown>(`${PF_DATA_API_URL}/${resourceId}`).pipe(
-      map((response) => parsePfDataResponse(response, PF_RESOURCE_NAMES[resourceId]))
+      map((response) => parsePfDataResponse(response, PF_RESOURCE_NAMES[resourceId])),
+      tap((document) => this.cache.set(resourceId, document))
     );
   }
 
   updatePfData(document: PfApiDocument, resourceId: PfResourceId = '2'): Observable<PfApiDocument> {
     return this.http.put<unknown>(`${PF_DATA_API_URL}/${resourceId}`, document).pipe(
       map((response) => parsePfDataResponse(response, PF_RESOURCE_NAMES[resourceId])),
-      tap(() => this.totalBalanceService.syncTotals())
+      tap((updated) => {
+        this.cache.set(resourceId, updated);
+        this.totalBalanceService.syncTotals();
+      })
     );
   }
 }

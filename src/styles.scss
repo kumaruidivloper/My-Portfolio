@@ -310,7 +310,7 @@ section{
     color:var(--green);
 }
 
-html body .dashboard-page button.control-button.primary-action:hover {
+html body .dashboard-page button.control-button.primary-action:hover:not(.central-form-action) {
     background: var(--green);
     box-shadow: var(--box-shadow);
     color: var(--white);
@@ -345,7 +345,7 @@ html body .dashboard-page .dashboard-top-actions button.control-button[aria-expa
     color: var(--green);
 }
 
-html body .dashboard-page button.control-button:hover {
+html body .dashboard-page button.control-button:hover:not(.central-form-action) {
     box-shadow: var(--box-shadow);
 }
 
@@ -454,12 +454,32 @@ html body .dashboard-page .pf-delete-details dd {
     margin-top: .4rem;
 }
 
-html body .dashboard-page .gratuity-modal-close {
-    background: transparent;
-    color: var(--light-color);
+html body .dashboard-page :is(button.pf-modal-close, button.gratuity-modal-close) {
+    align-items: center;
+    background: var(--bg-color);
+    border: 0;
+    border-radius: 50%;
+    box-shadow: var(--box-shadow);
+    color: var(--black);
     cursor: pointer;
     font-size: 2.8rem;
+    display: inline-flex;
+    height: 4rem;
+    justify-content: center;
     line-height: 1;
+    transition: box-shadow .18s ease, color .18s ease, transform .18s ease;
+    width: 4rem;
+}
+
+html body .dashboard-page :is(button.pf-modal-close, button.gratuity-modal-close):not(:disabled):hover {
+    box-shadow: var(--box-shadow-inset);
+    color: var(--green);
+    transform: translateY(-1px);
+}
+
+html body .dashboard-page :is(button.pf-modal-close, button.gratuity-modal-close):focus-visible {
+    outline: .2rem solid var(--green);
+    outline-offset: .2rem;
 }
 
 html body .dashboard-page .gratuity-field {
@@ -543,14 +563,39 @@ html body .dashboard-page .reset-action svg {
     width: 1.6rem;
 }
 
-html body .dashboard-page .modal-actions button.control-button:not(.primary-action):not(:disabled):hover {
+html body .dashboard-page .modal-actions button.control-button:not(.primary-action):not(.central-form-action):not(:disabled):hover {
     color: var(--green);
     transform: translateY(-2px);
 }
 
-html body .dashboard-page .modal-actions button.control-button.primary-action:not(:disabled):hover {
+html body .dashboard-page .modal-actions button.control-button.primary-action:not(.central-form-action):not(:disabled):hover {
     filter: brightness(1.08);
     transform: translateY(-2px);
+}
+
+html body .dashboard-page app-central-record-form .modal-actions button.control-button {
+    background: var(--bg-color);
+    box-shadow: var(--box-shadow);
+    color: var(--black);
+}
+
+html body .dashboard-page app-central-record-form .modal-actions button.control-button.primary-action {
+    color: var(--green);
+}
+
+html body .dashboard-page app-central-record-form .modal-actions button.control-button:not(:disabled):is(:hover, :focus-visible, :active) {
+    background: var(--bg-color);
+    box-shadow: var(--box-shadow-inset);
+    color: var(--green);
+    filter: none;
+    outline: none;
+    transform: translateY(-1px);
+}
+
+html body .dashboard-page app-central-record-form app-theme-select .theme-select-trigger:focus-visible {
+    box-shadow: var(--box-shadow-inset);
+    color: var(--green);
+    outline: none;
 }
 
 .dashboard-toast {

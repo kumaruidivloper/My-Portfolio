@@ -82,11 +82,18 @@ export function parseGratuityDataResponse(
   providedIn: 'root'
 })
 export class GratuityDataService {
+  private readonly cache = new Map<GratuityResourceId, GratuityApiDocument>();
+
   constructor(private http: HttpClient, private totalBalanceService: TotalBalanceService) {}
+
+  getCachedGratuityData(resourceId: GratuityResourceId = '4'): GratuityApiDocument | null {
+    return this.cache.get(resourceId) ?? null;
+  }
 
   getGratuityData(resourceId: GratuityResourceId = '4'): Observable<GratuityApiDocument> {
     return this.http.get<unknown>(`${GRATUITY_DATA_API_URL}/${resourceId}`).pipe(
-      map((response) => parseGratuityDataResponse(response, GRATUITY_RESOURCE_NAMES[resourceId], resourceId))
+      map((response) => parseGratuityDataResponse(response, GRATUITY_RESOURCE_NAMES[resourceId], resourceId)),
+      tap((document) => this.cache.set(resourceId, document))
     );
   }
 
@@ -110,7 +117,10 @@ export class GratuityDataService {
       : document;
     return this.http.put<unknown>(`${GRATUITY_DATA_API_URL}/${resourceId}`, requestDocument).pipe(
       map((response) => parseGratuityDataResponse(response, GRATUITY_RESOURCE_NAMES[resourceId], resourceId)),
-      tap(() => this.totalBalanceService.syncTotals())
+      tap((updated) => {
+        this.cache.set(resourceId, updated);
+        this.totalBalanceService.syncTotals();
+      })
     );
   }
 }

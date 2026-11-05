@@ -10,6 +10,7 @@ import { PreviewViewOption } from '../widget-preview-chart/widget-preview-chart.
 import { PfDataService, PfResourceId } from '../service/pf-data.service';
 import { PfApiDocument, PfRecord } from '../model/pf-record';
 import { ConfirmationCodeService } from '../service/confirmation-code.service';
+import { DashboardRecordRefreshService } from '../service/dashboard-record-refresh.service';
 import { ResponsiveGridColumn, ResponsiveGridRow } from '../responsive-table/responsive-table.component';
 
 type PfMetric = 'pfAmount' | 'difference';
@@ -66,6 +67,7 @@ export class PfDataComponent implements OnInit, OnDestroy {
   private toastTimeout?: Subscription;
   private readonly formSubscription: Subscription;
   private readonly accordionSubscription: Subscription;
+  private readonly refreshSubscription: Subscription;
   selectedMetric: PfMetric = 'pfAmount';
   selectedChartType: ChartType = 'bar';
   readonly chartTypeOptions = CHART_TYPE_OPTIONS;
@@ -79,13 +81,15 @@ export class PfDataComponent implements OnInit, OnDestroy {
   constructor(
     private pfDataService: PfDataService,
     private changeDetectorRef: ChangeDetectorRef,
-    private confirmationCodeService: ConfirmationCodeService
+    private confirmationCodeService: ConfirmationCodeService,
+    private recordRefreshService: DashboardRecordRefreshService = new DashboardRecordRefreshService()
   ) {
     this.accordionSubscription = collapseWhenAnotherOpens(
       () => `pf-${this.resourceId}`,
       () => this.collapse()
     );
     this.formSubscription = this.editForm.valueChanges.subscribe(() => this.syncDifference());
+    this.refreshSubscription = this.recordRefreshService.updated$.subscribe(() => this.loadPfData());
   }
 
   ngOnInit(): void {
@@ -95,6 +99,7 @@ export class PfDataComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.formSubscription.unsubscribe();
     this.accordionSubscription.unsubscribe();
+    this.refreshSubscription.unsubscribe();
     this.toastTimeout?.unsubscribe();
   }
 

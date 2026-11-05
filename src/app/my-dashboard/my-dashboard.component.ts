@@ -20,6 +20,7 @@ import { createDashboardExport, DashboardExportFormat, DashboardExportTable, dow
 import { SalaryDataService } from '../service/salary-data.service';
 import { combineSalaryRecords } from '../model/combined-salary';
 import { SalaryField, salaryFields, salaryMonthKey, salaryMonthLabel } from '../model/salary-record';
+import { DashboardRecordRefreshService } from '../service/dashboard-record-refresh.service';
 
 type DashboardChartType = ChartType;
 type SalaryMetric = `${'kumar' | 'vasuki'}Salary_${SalaryField}`;
@@ -296,6 +297,7 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   exportError = '';
   exportMessage = '';
   isDashboardOptionsOpen = false;
+  isCentralRecordFormOpen = false;
   readonly dashboardOptionsPositions: ConnectedPosition[] = [
     { originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top', offsetY: 8 },
     { originX: 'end', originY: 'top', overlayX: 'end', overlayY: 'bottom', offsetY: -8 }
@@ -313,6 +315,7 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   private amountCalculation?: Subscription;
   private allDashboardChartsSubscription?: Subscription;
   private salaryUpdatesSubscription?: Subscription;
+  private centralRecordUpdatesSubscription?: Subscription;
   private allDashboardChartDataByMetric: Partial<Record<DashboardMetric, ChartDatum[]>> = {};
   private deleteCodeValidationAttempt = 0;
   private verifiedDeleteCode = '';
@@ -328,7 +331,8 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     private pfDataService: PfDataService,
     private gratuityDataService: GratuityDataService,
     private totalBalanceService: TotalBalanceService,
-    private salaryDataService: SalaryDataService
+    private salaryDataService: SalaryDataService,
+    private recordRefreshService: DashboardRecordRefreshService = new DashboardRecordRefreshService()
   ) {}
 
   ngOnInit(): void {
@@ -336,6 +340,22 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       this.allDashboardChartDataByMetric = {};
       this.resetAllDashboardDateRange();
       if (this.isAllDetailsModalOpen) { this.loadAllDashboardCharts(); }
+    });
+    this.centralRecordUpdatesSubscription = this.recordRefreshService.updated$.subscribe((refreshDashboard) => {
+      if (!refreshDashboard) { return; }
+      this.allDashboardChartDataByMetric = {};
+      this.resetAllDashboardDateRange();
+      if (this.isAllDetailsModalOpen) { this.loadAllDashboardCharts(); }
+      this.transferService.getTransfers().subscribe({
+        next: (transfers) => {
+          this.transfers = transfers;
+          this.changeDetectorRef.detectChanges();
+        },
+        error: (error: unknown) => {
+          this.errorMessage = error instanceof Error ? error.message : 'Unable to refresh transfer records.';
+          this.changeDetectorRef.detectChanges();
+        }
+      });
     });
     this.amountCalculation = merge(
       this.editForm.controls.amountTransferredAUD.valueChanges,
@@ -370,6 +390,7 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.amountCalculation?.unsubscribe();
     this.allDashboardChartsSubscription?.unsubscribe();
     this.salaryUpdatesSubscription?.unsubscribe();
+    this.centralRecordUpdatesSubscription?.unsubscribe();
     this.accordionSubscription.unsubscribe();
     this.stopPinningWidget();
     clearTimeout(this.highlightTimer);
@@ -944,6 +965,11 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!Object.keys(this.allDashboardChartDataByMetric).length) {
       this.loadAllDashboardCharts();
     }
+  }
+
+  onCentralRecordSaved(): void {
+    this.isCentralRecordFormOpen = false;
+    this.showToast('Record added successfully.');
   }
 
   closeAllDetails(): void {

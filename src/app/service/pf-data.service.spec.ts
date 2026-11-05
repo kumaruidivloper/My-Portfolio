@@ -36,6 +36,7 @@ describe('PfDataService', () => {
     expect(request.request.method).toBe('GET');
     request.flush(response);
     expect(result).toEqual(response);
+    expect(service.getCachedPfData()).toEqual(response);
   });
 
   it('loads Vasuki PF data from resource 3', () => {

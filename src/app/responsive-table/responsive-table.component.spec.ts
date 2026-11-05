@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { OverlayContainer, OverlayModule } from '@angular/cdk/overlay';
 import { ResponsiveGridColumn, ResponsiveGridRow, ResponsiveTableComponent } from './responsive-table.component';
 import { ThemeSelectComponent } from '../theme-select/theme-select.component';
 
@@ -41,11 +42,14 @@ class ResponsiveTableHostComponent {
 
 describe('ResponsiveTableComponent', () => {
   let fixture: ComponentFixture<ResponsiveTableHostComponent>;
+  let overlayContainer: OverlayContainer;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
+      imports: [OverlayModule],
       declarations: [ResponsiveTableComponent, ResponsiveTableHostComponent, ThemeSelectComponent]
     });
+    overlayContainer = TestBed.inject(OverlayContainer);
     fixture = TestBed.createComponent(ResponsiveTableHostComponent);
     fixture.detectChanges();
   });
@@ -198,7 +202,7 @@ describe('ResponsiveTableComponent', () => {
     const selectSize = (size: string): void => {
       trigger.click();
       fixture.detectChanges();
-      const option = Array.from(host.querySelectorAll<HTMLElement>('[role="option"]'))
+      const option = Array.from(overlayContainer.getContainerElement().querySelectorAll<HTMLElement>('[role="option"]'))
         .find((element) => element.textContent?.trim() === size);
       expect(option).toBeDefined();
       option?.click();
@@ -207,7 +211,7 @@ describe('ResponsiveTableComponent', () => {
     expect(trigger.textContent?.trim()).toBe('5');
     trigger.click();
     fixture.detectChanges();
-    expect(Array.from(host.querySelectorAll('[role="option"]'), (option) => option.textContent?.trim()))
+    expect(Array.from(overlayContainer.getContainerElement().querySelectorAll('[role="option"]'), (option) => option.textContent?.trim()))
       .toEqual(['5', '10', '25', '50', '100']);
     expect(host.querySelector('.responsive-grid-scroll app-theme-select')).toBeNull();
     trigger.click();

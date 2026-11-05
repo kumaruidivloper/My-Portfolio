@@ -11,6 +11,7 @@ import { GratuityApiDocument, GratuityRecord } from '../model/gratuity-record';
 import { ConfirmationCodeService } from '../service/confirmation-code.service';
 import { GratuityDataService, GratuityResourceId } from '../service/gratuity-data.service';
 import { ResponsiveGridColumn, ResponsiveGridRow } from '../responsive-table/responsive-table.component';
+import { DashboardRecordRefreshService } from '../service/dashboard-record-refresh.service';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -69,6 +70,7 @@ export class KumarGratuityComponent implements OnInit, OnDestroy {
   previousMonthFound = false;
   private readonly dateSubscription: Subscription;
   private readonly accordionSubscription: Subscription;
+  private readonly refreshSubscription: Subscription;
   isExpanded = false;
   areRecordsExpanded = false;
   isLoading = false;
@@ -93,7 +95,8 @@ export class KumarGratuityComponent implements OnInit, OnDestroy {
   constructor(
     private gratuityDataService: GratuityDataService,
     private confirmationCodeService: ConfirmationCodeService,
-    private changeDetectorRef: ChangeDetectorRef
+    private changeDetectorRef: ChangeDetectorRef,
+    private recordRefreshService: DashboardRecordRefreshService = new DashboardRecordRefreshService()
   ) {
     this.accordionSubscription = collapseWhenAnotherOpens(
       () => `gratuity-${this.resourceId}`,
@@ -102,6 +105,7 @@ export class KumarGratuityComponent implements OnInit, OnDestroy {
     this.dateSubscription = this.editForm.controls.date.valueChanges.subscribe((month) =>
       this.populatePreviousMonthValue(month)
     );
+    this.refreshSubscription = this.recordRefreshService.updated$.subscribe(() => this.loadData());
   }
 
   ngOnInit(): void {
@@ -111,6 +115,7 @@ export class KumarGratuityComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.dateSubscription.unsubscribe();
     this.accordionSubscription.unsubscribe();
+    this.refreshSubscription.unsubscribe();
     this.toastTimeout?.unsubscribe();
   }
 

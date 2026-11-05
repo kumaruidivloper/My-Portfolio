@@ -1,4 +1,5 @@
 import { Component, ElementRef, EventEmitter, HostListener, Input, Output } from '@angular/core';
+import { ConnectedPosition } from '@angular/cdk/overlay';
 
 export interface ThemeSelectOption {
   label: string;
@@ -17,6 +18,13 @@ export class ThemeSelectComponent {
   @Input() ariaLabel = 'Select option';
   @Input() sizeToOptions = false;
   @Output() valueChange = new EventEmitter<string>();
+
+  readonly popupPositions: ConnectedPosition[] = [
+    { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top', offsetY: 6 },
+    { originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top', offsetY: 6 },
+    { originX: 'start', originY: 'top', overlayX: 'start', overlayY: 'bottom', offsetY: -6 },
+    { originX: 'end', originY: 'top', overlayX: 'end', overlayY: 'bottom', offsetY: -6 }
+  ];
 
   isOpen = false;
   activeIndex = 0;
@@ -74,6 +82,13 @@ export class ThemeSelectComponent {
       case 'Tab':
         this.close();
         break;
+    }
+  }
+
+  onOverlayKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      this.close();
     }
   }
 

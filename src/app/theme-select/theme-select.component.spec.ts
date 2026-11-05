@@ -1,4 +1,5 @@
 import { ElementRef } from '@angular/core';
+import { OverlayModule } from '@angular/cdk/overlay';
 import { TestBed } from '@angular/core/testing';
 import { ThemeSelectComponent } from './theme-select.component';
 
@@ -35,7 +36,7 @@ describe('ThemeSelectComponent', () => {
   });
 
   it('reserves every option label only when option-based sizing is enabled', () => {
-    TestBed.configureTestingModule({ declarations: [ThemeSelectComponent] });
+    TestBed.configureTestingModule({ imports: [OverlayModule], declarations: [ThemeSelectComponent] });
     const fixture = TestBed.createComponent(ThemeSelectComponent);
     fixture.componentRef.setInput('options', [{ label: 'Bar', value: 'bar' }, { label: 'Doughnut', value: 'doughnut' }]);
     fixture.componentRef.setInput('value', 'bar');

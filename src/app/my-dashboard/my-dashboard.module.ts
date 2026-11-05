@@ -22,6 +22,7 @@ import { WidgetPreviewChartComponent } from '../widget-preview-chart/widget-prev
 import { DashboardLoaderComponent } from '../dashboard-loader/dashboard-loader.component';
 import { RenderInViewDirective } from '../render-in-view/render-in-view.directive';
 import { SalaryDataComponent } from '../salary-data/salary-data.component';
+import { CentralRecordFormComponent } from '../central-record-form/central-record-form.component';
 
 @NgModule({
   declarations: [
@@ -39,7 +40,8 @@ import { SalaryDataComponent } from '../salary-data/salary-data.component';
     WidgetPreviewChartComponent,
     DashboardLoaderComponent,
     RenderInViewDirective,
-    SalaryDataComponent
+    SalaryDataComponent,
+    CentralRecordFormComponent
   ],
   imports: [
     CommonModule,

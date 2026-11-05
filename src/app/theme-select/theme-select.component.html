@@ -2,6 +2,9 @@
   <button
     type="button"
     class="theme-select-trigger"
+    cdkOverlayOrigin
+    #selectOrigin="cdkOverlayOrigin"
+    #selectTrigger
     role="combobox"
     aria-haspopup="listbox"
     [attr.aria-expanded]="isOpen"
@@ -18,7 +21,15 @@
     </span>
     <i class="theme-select-arrow" aria-hidden="true"></i>
   </button>
-  @if (isOpen) {
+  <ng-template
+    cdkConnectedOverlay
+    [cdkConnectedOverlayOrigin]="selectOrigin"
+    [cdkConnectedOverlayOpen]="isOpen"
+    [cdkConnectedOverlayWidth]="selectTrigger.offsetWidth"
+    [cdkConnectedOverlayPositions]="popupPositions"
+    [cdkConnectedOverlayViewportMargin]="12"
+    [cdkConnectedOverlayPush]="true"
+    (overlayKeydown)="onOverlayKeydown($event)">
     <ul class="theme-select-list" role="listbox" [attr.aria-label]="ariaLabel">
       @for (option of options; track option.value; let i = $index) {
         <li
@@ -33,5 +44,5 @@
         </li>
       }
     </ul>
-  }
+  </ng-template>
 </div>

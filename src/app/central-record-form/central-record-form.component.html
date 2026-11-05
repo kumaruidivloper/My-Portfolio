@@ -1,0 +1,88 @@
+<div class="modal-backdrop" (click)="onBackdropClick($event)">
+  <section class="central-form-modal" id="central-record-form-modal" role="dialog" aria-modal="true" aria-labelledby="central-form-title">
+    <header class="modal-heading">
+      <div>
+        <p class="eyebrow">DASHBOARD DATA</p>
+        <h2 id="central-form-title">Add a record</h2>
+      </div>
+      <button type="button" class="modal-close" aria-label="Close form" [disabled]="isSaving" (click)="cancel.emit()">&times;</button>
+    </header>
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <app-form-stepper
+        #stepper
+        [labels]="['Details', 'Review']"
+        [stepValid]="canReview"
+        [saving]="isSaving"
+        [submitLabel]="isSaving ? 'Saving…' : 'Add record'"
+        [submitDisabled]="isSaving"
+        (invalidNext)="onInvalidNext()"
+        (cancel)="cancel.emit()">
+        <div [hidden]="stepper.step !== 0">
+          <div class="form-field category-field">
+            <span>Record type</span>
+            <app-theme-select
+              ariaLabel="Record type"
+              [options]="categories"
+              [value]="category"
+              (valueChange)="changeCategory($event)">
+            </app-theme-select>
+          </div>
+
+          @if (isTransfer) {
+            <div class="form-grid">
+              <label class="form-field"><span>Transfer date</span><app-theme-date-picker mode="date" ariaLabel="Transfer date" formControlName="dateOfTransfer"></app-theme-date-picker></label>
+              <label class="form-field"><span>Amount sent (AUD)</span><input type="number" min="0" step="0.01" required formControlName="amountTransferredAUD"></label>
+              <label class="form-field"><span>Exchange rate</span><input type="number" min="0.0001" step="0.0001" required formControlName="conversionRate"></label>
+              <label class="form-field"><span>Received date</span><app-theme-date-picker mode="date" ariaLabel="Received date" formControlName="receivedDate"></app-theme-date-picker></label>
+              <label class="form-field"><span>Amount received (INR)</span><input type="number" [value]="receivedAmount" readonly></label>
+            </div>
+          }
+
+          @if (isBalanceRecord || isGratuityRecord) {
+            <div class="form-grid">
+              <label class="form-field"><span>Month</span><app-theme-date-picker mode="month" ariaLabel="Record month" formControlName="date"></app-theme-date-picker></label>
+              <label class="form-field"><span>{{ isBalanceRecord ? 'PF balance (INR)' : category === 'vasukiSuper' ? 'Super balance (AUD)' : 'Gratuity (INR)' }}</span><input type="number" step="0.01" required formControlName="amount"></label>
+              <label class="form-field">
+                <span>{{ monthlyDifferenceLabel }}</span>
+                <input type="number" step="0.01" required formControlName="difference" [readonly]="isBalanceRecord || isGratuityRecord">
+                @if (isBalanceRecord && isLoadingPfHistory) { <small class="field-hint">Loading previous PF record…</small> }
+                @if (isBalanceRecord && pfHistoryError) { <small class="field-error" role="alert">{{ pfHistoryError }}</small> }
+                @if (isGratuityRecord && isLoadingGratuityHistory) { <small class="field-hint">Loading previous gratuity record…</small> }
+                @if (isGratuityRecord && gratuityHistoryError) { <small class="field-error" role="alert">{{ gratuityHistoryError }}</small> }
+              </label>
+            </div>
+          }
+
+          @if (isSalary) {
+            <div class="form-grid">
+              <label class="form-field"><span>Month</span><app-theme-date-picker mode="month" ariaLabel="Salary month" formControlName="date"></app-theme-date-picker></label>
+              <label class="form-field"><span>Initial advance repayment (AUD)</span><input type="number" step="0.01" required formControlName="initialAdvanceRepayment"></label>
+              <label class="form-field"><span>Total salary (AUD)</span><input type="number" step="0.01" required formControlName="totalSalary"></label>
+              @if (isVasukiSalary) {
+                <label class="form-field"><span>Australian health insurance (AUD)</span><input type="number" step="0.01" required formControlName="ausHealthInsurance"></label>
+              }
+              <label class="form-field"><span>Australian tax (AUD)</span><input type="number" step="0.01" required formControlName="ausTax"></label>
+              <label class="form-field"><span>India deduction (AUD)</span><input type="number" step="0.01" required formControlName="indiaDeduction"></label>
+              <label class="form-field"><span>Total deduction (AUD)</span><input type="number" step="0.01" required formControlName="totalDeduction"></label>
+              <label class="form-field"><span>Australian salary (AUD)</span><input type="number" step="0.01" required formControlName="ausSalary"></label>
+            </div>
+          }
+
+          @if (validationErrorMessage) { <p class="form-error" role="alert">{{ validationErrorMessage }}</p> }
+        </div>
+        <section class="review-section" [hidden]="stepper.step !== 1" aria-label="Review record fields">
+          <dl class="review-fields">
+            @for (field of reviewFields; track field.label) {
+              <div class="review-field">
+                <dt>{{ field.label }}</dt>
+                <dd>{{ field.value }}</dd>
+              </div>
+            }
+          </dl>
+          @if (errorMessage) { <p class="form-error" role="alert">{{ errorMessage }}</p> }
+        </section>
+      </app-form-stepper>
+    </form>
+  </section>
+</div>

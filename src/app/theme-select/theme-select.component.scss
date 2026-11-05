@@ -54,15 +54,14 @@
   background: var(--bg-color);
   border-radius: 1rem;
   box-shadow: var(--box-shadow);
-  left: 0;
   list-style: none;
-  margin-top: 0.6rem;
+  margin: 0;
   max-height: var(--theme-select-list-max-height, 26rem);
+  max-width: calc(100vw - 24px);
   overflow-y: auto;
+  overscroll-behavior-y: contain;
   padding: 0.6rem;
-  position: absolute;
-  right: 0;
-  z-index: 20;
+  width: 100%;
 }
 
 .theme-select-option {
