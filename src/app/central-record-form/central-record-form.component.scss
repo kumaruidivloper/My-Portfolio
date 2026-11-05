@@ -131,6 +131,15 @@
   }
 }
 
+.record-type-divider {
+  border: 0;
+  border-top: 0.2rem solid var(--green);
+  box-shadow:
+    0 0 0.6rem color-mix(in srgb, var(--green) 80%, transparent),
+    0 0 1.4rem color-mix(in srgb, var(--green) 45%, transparent);
+  margin: 0 0 1.8rem;
+}
+
 .form-grid {
   display: grid;
   gap: 1.6rem;
