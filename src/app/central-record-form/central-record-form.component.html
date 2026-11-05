@@ -19,15 +19,22 @@
         (invalidNext)="onInvalidNext()"
         (cancel)="cancel.emit()">
         <div [hidden]="stepper.step !== 0">
-          <div class="form-field category-field">
-            <span>Record type</span>
-            <app-theme-select
-              ariaLabel="Record type"
-              [options]="categories"
-              [value]="category"
-              (valueChange)="changeCategory($event)">
-            </app-theme-select>
-          </div>
+          <fieldset class="record-type-fieldset">
+            <legend>Record type</legend>
+            <div class="record-type-options">
+              @for (item of categories; track item.value) {
+                <label class="record-type-option" [class.selected]="category === item.value">
+                  <input
+                    type="radio"
+                    name="recordType"
+                    [value]="item.value"
+                    [checked]="category === item.value"
+                    (change)="changeCategory(item.value)">
+                  <span>{{ item.label }}</span>
+                </label>
+              }
+            </div>
+          </fieldset>
 
           @if (isTransfer) {
             <div class="form-grid">
