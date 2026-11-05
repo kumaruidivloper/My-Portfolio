@@ -23,7 +23,10 @@
             <legend>Record type</legend>
             <div class="record-type-options">
               @for (item of categories; track item.value) {
-                <label class="record-type-option" [class.selected]="category === item.value">
+                <label
+                  class="record-type-option"
+                  [class.selected]="category === item.value"
+                  [class.record-type-option-wide]="item.value === 'transfer' || item.value === 'vasukiSuper'">
                   <input
                     type="radio"
                     name="recordType"
