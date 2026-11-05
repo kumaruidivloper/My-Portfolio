@@ -61,7 +61,15 @@
   height: 4rem;
   justify-content: center;
   line-height: 1;
+  transition: box-shadow 0.18s ease, color 0.18s ease, transform 0.18s ease;
   width: 4rem;
+
+  &:hover:not(:disabled),
+  &:focus-visible:not(:disabled) {
+    box-shadow: var(--box-shadow-inset);
+    color: var(--green);
+    transform: translateY(-1px);
+  }
 }
 
 .record-type-fieldset {
