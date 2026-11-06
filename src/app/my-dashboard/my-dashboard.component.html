@@ -772,13 +772,15 @@
             class="control-button"
             [disabled]="isSaving"
             (click)="cancelDeleteTransfer()">
+            <svg class="btn-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"></path></svg>
             Cancel
           </button>
           <button
             type="button"
-            class="control-button primary-action"
+            class="control-button delete-confirm"
             [disabled]="isSaving || isDeleteCodeVerifying || !isDeleteCodeVerified || deleteConfirmationCode.invalid"
             (click)="deleteTransfer()">
+            <svg class="btn-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a1 1 0 001 1h8a1 1 0 001-1l1-12M9 7V4h6v3"></path></svg>
             {{ isSaving ? 'Deleting…' : isDeleteCodeVerifying ? 'Verifying…' : 'Delete transfer' }}
           </button>
         </footer>

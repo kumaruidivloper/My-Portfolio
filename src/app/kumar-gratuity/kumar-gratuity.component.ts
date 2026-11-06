@@ -1,5 +1,6 @@
 import { announceAccordionOpened, collapseWhenAnotherOpens } from '../service/accordion-group';
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, Input, OnDestroy, OnInit } from '@angular/core';
+import { isOverlayOpen } from '../service/escape-dismiss';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Subscription, timer } from 'rxjs';
 import {
@@ -320,6 +321,16 @@ export class KumarGratuityComponent implements OnInit, OnDestroy {
       { date, gratuity: formValue.gratuity, difference: formValue.difference },
       ...this.records
     ], 'Gratuity record added successfully.', true);
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (isOverlayOpen()) { return; }
+    if (this.pendingDeleteRecordIndex !== null) {
+      this.cancelDeleteRecord();
+    } else if (this.isAddingRecord || this.editingRecordIndex !== null) {
+      this.closeEditModal();
+    }
   }
 
   closeEditModal(): void {

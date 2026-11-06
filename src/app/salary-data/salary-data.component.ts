@@ -1,4 +1,5 @@
-import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, Input, OnDestroy, OnInit } from '@angular/core';
+import { isOverlayOpen } from '../service/escape-dismiss';
 import { FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { Subscription, forkJoin, map } from 'rxjs';
 import { SALARY_FIELDS, SalaryApiDocument, SalaryField, SalaryRecord, SalaryResourceId, salaryFields, salaryMonthKey, salaryMonthLabel } from '../model/salary-record';
@@ -320,6 +321,13 @@ export class SalaryDataComponent implements OnInit, OnDestroy {
     if (this.isSaving || !this.records[index]) { return; }
     this.closeDialog();
     this.deletingIndex = index;
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (!isOverlayOpen() && (this.formOpen || this.deletingIndex !== null)) {
+      this.closeDialog();
+    }
   }
 
   closeDialog(): void {

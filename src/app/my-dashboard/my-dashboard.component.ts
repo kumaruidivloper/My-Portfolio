@@ -1,5 +1,6 @@
 import { announceAccordionOpened, collapseWhenAnotherOpens } from '../service/accordion-group';
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { isOverlayOpen } from '../service/escape-dismiss';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { ConnectedPosition } from '@angular/cdk/overlay';
 import { firstValueFrom, forkJoin, merge, Subscription, timer } from 'rxjs';
@@ -1393,6 +1394,19 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.saveError = '';
     this.resetDeleteConfirmationCode();
     this.dismissToast();
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    // The central form handles its own Escape.
+    if (isOverlayOpen() || this.isCentralRecordFormOpen) { return; }
+    if (this.pendingDeleteIndex !== null) {
+      this.cancelDeleteTransfer();
+    } else if (this.isAddingTransfer || this.editingTransferIndex !== null) {
+      this.closeEditModal();
+    } else if (this.isAllDetailsModalOpen) {
+      this.closeAllDetails();
+    }
   }
 
   cancelDeleteTransfer(): void {

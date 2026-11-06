@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, Output } from '@angular/core';
+import { Component, EventEmitter, HostListener, OnDestroy, Output } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { firstValueFrom, Subscription } from 'rxjs';
 import { GratuityApiDocument, GratuityRecord } from '../model/gratuity-record';
@@ -10,8 +10,10 @@ import { PfDataService, PfResourceId } from '../service/pf-data.service';
 import { SalaryDataService } from '../service/salary-data.service';
 import { DashboardRecordRefreshService } from '../service/dashboard-record-refresh.service';
 import { TransferService } from '../service/transfer.service';
+import { isOverlayOpen } from '../service/escape-dismiss';
 
 type RecordCategory = 'transfer' | 'kumarPf' | 'vasukiPf' | 'kumarGratuity' | 'vasukiGratuity' | 'vasukiSuper' | 'kumarSalary' | 'vasukiSalary';
+interface CategoryOption { value: RecordCategory; label: string; group: string; short: string }
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -49,16 +51,21 @@ export class CentralRecordFormComponent implements OnDestroy {
   @Output() cancel = new EventEmitter<void>();
   @Output() saved = new EventEmitter<void>();
 
-  readonly categories: { value: RecordCategory; label: string }[] = [
-    { value: 'transfer', label: 'Australia to India transfer' },
-    { value: 'kumarPf', label: 'Kumar PF' },
-    { value: 'vasukiPf', label: 'Vasuki PF' },
-    { value: 'kumarGratuity', label: 'Kumar gratuity' },
-    { value: 'vasukiGratuity', label: 'Vasuki gratuity' },
-    { value: 'vasukiSuper', label: 'Vasuki super' },
-    { value: 'kumarSalary', label: 'Kumar Australia salary' },
-    { value: 'vasukiSalary', label: 'Vasuki Australia salary' }
+  readonly categories: CategoryOption[] = [
+    { value: 'transfer', label: 'Australia to India transfer', group: 'Transfer', short: 'Australia to India' },
+    { value: 'kumarPf', label: 'Kumar PF', group: 'Provident fund', short: 'Kumar' },
+    { value: 'vasukiPf', label: 'Vasuki PF', group: 'Provident fund', short: 'Vasuki' },
+    { value: 'kumarGratuity', label: 'Kumar gratuity', group: 'Gratuity', short: 'Kumar' },
+    { value: 'vasukiGratuity', label: 'Vasuki gratuity', group: 'Gratuity', short: 'Vasuki' },
+    { value: 'vasukiSuper', label: 'Vasuki super', group: 'Super', short: 'Vasuki' },
+    { value: 'kumarSalary', label: 'Kumar Australia salary', group: 'Australia salary', short: 'Kumar' },
+    { value: 'vasukiSalary', label: 'Vasuki Australia salary', group: 'Australia salary', short: 'Vasuki' }
   ];
+  readonly categoryGroups = this.categories.reduce<{ title: string; items: CategoryOption[] }[]>((groups, item) => {
+    const group = groups.find((entry) => entry.title === item.group);
+    if (group) { group.items.push(item); } else { groups.push({ title: item.group, items: [item] }); }
+    return groups;
+  }, []);
   category: RecordCategory = 'transfer';
   isSaving = false;
   errorMessage = '';
@@ -187,6 +194,13 @@ export class CentralRecordFormComponent implements OnDestroy {
     addAmount('Total Deduction', value.totalDeduction, 'AUD');
     addAmount('Australian Salary', value.ausSalary, 'AUD');
     return fields;
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (!this.isSaving && !isOverlayOpen()) {
+      this.cancel.emit();
+    }
   }
 
   onBackdropClick(event: MouseEvent): void {

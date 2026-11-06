@@ -283,8 +283,14 @@
         <ng-container [ngTemplateOutlet]="codeEntry"></ng-container>
         @if (saveError) { <p class="gratuity-field-error" role="alert">{{ saveError }}</p> }
         <footer class="gratuity-modal-actions">
-          <button type="button" class="control-button" [disabled]="isSaving" (click)="closeDialog()">Cancel</button>
-          <button type="button" class="control-button" [disabled]="isSaving || !confirmed" (click)="deleteRecord()">{{ isSaving ? 'Deleting...' : 'Delete salary record' }}</button>
+          <button type="button" class="control-button" [disabled]="isSaving" (click)="closeDialog()">
+            <svg class="btn-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+            Cancel
+          </button>
+          <button type="button" class="control-button delete-confirm" [disabled]="isSaving || !confirmed" (click)="deleteRecord()">
+            <svg class="btn-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a1 1 0 001 1h8a1 1 0 001-1l1-12M9 7V4h6v3"></path></svg>
+            {{ isSaving ? 'Deleting...' : 'Delete salary record' }}
+          </button>
         </footer>
       }
     </section>

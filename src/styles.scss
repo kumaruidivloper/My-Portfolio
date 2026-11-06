@@ -365,6 +365,46 @@ html body .dashboard-page app-form-stepper .stepper-actions button.control-butto
     color: var(--green);
 }
 
+// Delete confirmation buttons use the neutral themed look, not a coloured fill.
+html body .dashboard-page :is(.stepper-actions, .modal-actions, .pf-modal-actions, .gratuity-modal-actions) button.control-button {
+    align-items: center;
+    display: inline-flex;
+    gap: .5rem;
+    justify-content: center;
+}
+
+html body .dashboard-page button.control-button .btn-icon {
+    fill: none;
+    flex: none;
+    height: 1.1em;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2;
+    width: 1.1em;
+}
+
+html body .dashboard-page button.control-button.delete-confirm {
+    background: var(--bg-color);
+    box-shadow: var(--box-shadow);
+    color: var(--green);
+    filter: none;
+    transform: none;
+}
+
+html body .dashboard-page button.control-button.delete-confirm:not(:disabled):is(:hover, :focus-visible, :active) {
+    background: var(--bg-color);
+    box-shadow: var(--box-shadow-inset);
+    color: var(--green);
+    filter: none;
+    transform: none;
+}
+
+html body .dashboard-page button.control-button.delete-confirm:disabled {
+    color: var(--light-color);
+    opacity: .55;
+}
+
 body.active .dashboard-page .chart-container svg text,
 body.active .dashboard-page .transfer-chart-visual svg text {
     fill: #fff !important;
@@ -471,13 +511,17 @@ html body .dashboard-page :is(button.pf-modal-close, button.gratuity-modal-close
     width: 4rem;
 }
 
-html body .dashboard-page :is(button.pf-modal-close, button.gratuity-modal-close):not(:disabled):hover {
+html body .dashboard-page :is(button.pf-modal-close, button.gratuity-modal-close, button.modal-close):not(:disabled):hover {
     box-shadow: var(--box-shadow-inset);
     color: var(--green);
     transform: translateY(-1px);
 }
 
-html body .dashboard-page :is(button.pf-modal-close, button.gratuity-modal-close):focus-visible {
+html body .dashboard-page button.modal-close {
+    transition: box-shadow .18s ease, color .18s ease, transform .18s ease;
+}
+
+html body .dashboard-page :is(button.pf-modal-close, button.gratuity-modal-close, button.modal-close):focus-visible {
     outline: .2rem solid var(--green);
     outline-offset: .2rem;
 }
