@@ -43,7 +43,7 @@ function formatMonth(key: string): string {
 @Component({
   selector: 'app-sum-of-value',
   templateUrl: './sum-of-value.component.html',
-  styleUrls: ['./sum-of-value.component.scss'],
+  styleUrls: ['./sum-of-value.component.scss', '../my-dashboard/widget-title.scss'],
   standalone: false
 })
 export class SumOfValueComponent implements OnInit, OnDestroy {

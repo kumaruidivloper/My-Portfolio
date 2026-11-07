@@ -45,7 +45,7 @@ function backendDate(value: string): string {
 @Component({
   selector: 'app-central-record-form',
   templateUrl: './central-record-form.component.html',
-  styleUrls: ['./central-record-form.component.scss'],
+  styleUrls: ['./record-type-picker.scss', './central-record-form.component.scss'],
   standalone: false
 })
 export class CentralRecordFormComponent implements OnInit, OnDestroy {
