@@ -1,3 +1,4 @@
+import { ElementRef } from '@angular/core';
 import { of } from 'rxjs';
 import { GratuityDataService } from '../service/gratuity-data.service';
 import { PfDataService } from '../service/pf-data.service';
@@ -25,7 +26,8 @@ describe('CentralRecordFormComponent', () => {
       pfDataService,
       gratuityDataService,
       salaryDataService,
-      new DashboardRecordRefreshService()
+      new DashboardRecordRefreshService(),
+      new ElementRef(document.createElement("div"))
     );
   });
 

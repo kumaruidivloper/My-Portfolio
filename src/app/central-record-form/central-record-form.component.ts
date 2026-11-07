@@ -1,4 +1,4 @@
-import { Component, EventEmitter, HostListener, OnDestroy, Output } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, OnDestroy, Output } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { firstValueFrom, Subscription } from 'rxjs';
 import { GratuityApiDocument, GratuityRecord } from '../model/gratuity-record';
@@ -103,7 +103,8 @@ export class CentralRecordFormComponent implements OnDestroy {
     private pfDataService: PfDataService,
     private gratuityDataService: GratuityDataService,
     private salaryDataService: SalaryDataService,
-    private refreshService: DashboardRecordRefreshService
+    private refreshService: DashboardRecordRefreshService,
+    private host: ElementRef<HTMLElement>
   ) {
     this.formSubscription = this.form.valueChanges.subscribe(() => {
       this.syncPfDifference();
@@ -119,6 +120,8 @@ export class CentralRecordFormComponent implements OnDestroy {
     this.formSubscription.unsubscribe();
   }
 
+  get isVasukiRecord(): boolean { return this.category.startsWith('vasuki'); }
+  get isKumarRecord(): boolean { return this.category === 'transfer' || this.category.startsWith('kumar'); }
   get isTransfer(): boolean { return this.category === 'transfer'; }
   get isSalary(): boolean { return this.category === 'kumarSalary' || this.category === 'vasukiSalary'; }
   get isBalanceRecord(): boolean { return this.category === 'kumarPf' || this.category === 'vasukiPf'; }
@@ -231,6 +234,18 @@ export class CentralRecordFormComponent implements OnDestroy {
       const resourceId: GratuityResourceId = this.category === 'kumarGratuity' ? '4' : this.category === 'vasukiGratuity' ? '5' : '6';
       this.loadGratuityHistory(resourceId);
     }
+    this.focusFirstField();
+  }
+
+  private focusFirstField(): void {
+    setTimeout(() => {
+      const field = this.host.nativeElement.querySelector<HTMLElement>(
+        '.form-grid .form-field input:not([readonly]), .form-grid .form-field button'
+      );
+      if (!field) { return; }
+      field.focus({ preventScroll: true });
+      field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
   }
 
   onInvalidNext(): void {

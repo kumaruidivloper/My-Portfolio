@@ -8,7 +8,7 @@
       <button type="button" class="modal-close" aria-label="Close form" [disabled]="isSaving" (click)="cancel.emit()">&times;</button>
     </header>
 
-    <form [formGroup]="form" (ngSubmit)="submit()">
+    <form [formGroup]="form" (ngSubmit)="submit()" [class.owner-vasuki]="isVasukiRecord" [class.owner-kumar]="isKumarRecord">
       <app-form-stepper
         #stepper
         [labels]="['Details', 'Review']"
