@@ -1,6 +1,6 @@
-import { Component, ElementRef, EventEmitter, HostListener, OnDestroy, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, OnDestroy, OnInit, Output } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
-import { firstValueFrom, Subscription } from 'rxjs';
+import { firstValueFrom, Observable, Subscription } from 'rxjs';
 import { GratuityApiDocument, GratuityRecord } from '../model/gratuity-record';
 import { PfApiDocument, PfRecord } from '../model/pf-record';
 import { SalaryRecord, salaryMonthKey, salaryMonthLabel } from '../model/salary-record';
@@ -13,6 +13,7 @@ import { TransferService } from '../service/transfer.service';
 import { isOverlayOpen } from '../service/escape-dismiss';
 
 type RecordCategory = 'transfer' | 'kumarPf' | 'vasukiPf' | 'kumarGratuity' | 'vasukiGratuity' | 'vasukiSuper' | 'kumarSalary' | 'vasukiSalary';
+interface ItemSummary { headline: string; detail: string }
 interface CategoryOption { value: RecordCategory; label: string; group: string; short: string }
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -47,12 +48,12 @@ function backendDate(value: string): string {
   styleUrls: ['./central-record-form.component.scss'],
   standalone: false
 })
-export class CentralRecordFormComponent implements OnDestroy {
+export class CentralRecordFormComponent implements OnInit, OnDestroy {
   @Output() cancel = new EventEmitter<void>();
   @Output() saved = new EventEmitter<void>();
 
   readonly categories: CategoryOption[] = [
-    { value: 'transfer', label: 'Australia to India transfer', group: 'Transfer', short: 'Australia to India' },
+    { value: 'transfer', label: 'Australia to India transfer', group: 'Transfer', short: 'AUD to INR' },
     { value: 'kumarPf', label: 'Kumar PF', group: 'Provident fund', short: 'Kumar' },
     { value: 'vasukiPf', label: 'Vasuki PF', group: 'Provident fund', short: 'Vasuki' },
     { value: 'kumarGratuity', label: 'Kumar gratuity', group: 'Gratuity', short: 'Kumar' },
@@ -66,7 +67,9 @@ export class CentralRecordFormComponent implements OnDestroy {
     if (group) { group.items.push(item); } else { groups.push({ title: item.group, items: [item] }); }
     return groups;
   }, []);
-  category: RecordCategory = 'transfer';
+  category: RecordCategory | null = null;
+  summaries: Partial<Record<RecordCategory, ItemSummary>> = {};
+  private readonly summarySubscription = new Subscription();
   isSaving = false;
   errorMessage = '';
   hasTriedToReview = false;
@@ -104,7 +107,8 @@ export class CentralRecordFormComponent implements OnDestroy {
     private gratuityDataService: GratuityDataService,
     private salaryDataService: SalaryDataService,
     private refreshService: DashboardRecordRefreshService,
-    private host: ElementRef<HTMLElement>
+    private host: ElementRef<HTMLElement>,
+    private changeDetector: ChangeDetectorRef
   ) {
     this.formSubscription = this.form.valueChanges.subscribe(() => {
       this.syncPfDifference();
@@ -112,7 +116,68 @@ export class CentralRecordFormComponent implements OnDestroy {
     });
   }
 
+  ngOnInit(): void {
+    this.loadSummary(this.transferService.getTransfers(), 'transfer', (transfers) => {
+      if (!transfers.length) { return { headline: 'No records', detail: '' }; }
+      const sent = transfers.reduce((sum, record) => sum + record.amountTransferredAUD, 0);
+      const received = transfers.reduce((sum, record) => sum + record.amountReceivedINR, 0);
+      return {
+        headline: this.formatReviewCurrency(received, 'INR'),
+        detail: `${this.formatReviewCurrency(sent, 'AUD')} sent · ${transfers.length} transfers`
+      };
+    });
+    const pfIds: [RecordCategory, PfResourceId][] = [['kumarPf', '2'], ['vasukiPf', '3']];
+    for (const [category, id] of pfIds) {
+      this.loadSummary(this.pfDataService.getPfData(id), category, (document) =>
+        this.balanceSummary(document.pfRecords.map((r) => ({ date: r.date, amount: r.pfAmount, difference: r.difference })), 'INR'));
+    }
+    const gratuityIds: [RecordCategory, GratuityResourceId][] = [['kumarGratuity', '4'], ['vasukiGratuity', '5'], ['vasukiSuper', '6']];
+    for (const [category, id] of gratuityIds) {
+      this.loadSummary(this.gratuityDataService.getGratuityData(id), category, (document) =>
+        this.balanceSummary(document.gratuityRecords.map((r) => ({ date: r.date, amount: r.gratuity, difference: r.difference })), 'INR'));
+    }
+    const salaryIds: [RecordCategory, 'salary8' | 'salary9'][] = [['kumarSalary', 'salary8'], ['vasukiSalary', 'salary9']];
+    for (const [category, key] of salaryIds) {
+      this.loadSummary(this.salaryDataService.getSalaryData(key === 'salary8' ? '8' : '9'), category, (document) => {
+        const latest = document.salaryRecords.reduce<SalaryRecord | null>(
+          (best, record) => !best || salaryMonthKey(record.date) > salaryMonthKey(best.date) ? record : best, null);
+        return latest
+          ? { headline: this.formatReviewCurrency(latest.ausSalary, 'AUD'), detail: `${salaryMonthLabel(latest.date)} salary` }
+          : { headline: 'No records', detail: '' };
+      });
+    }
+  }
+
+  summaryFor(category: string): ItemSummary {
+    return this.summaries[category as RecordCategory] ?? { headline: 'Loading…', detail: '' };
+  }
+
+  private loadSummary<T>(source: Observable<T>, category: RecordCategory, build: (data: T) => ItemSummary): void {
+    const set = (summary: ItemSummary) => { this.summaries = { ...this.summaries, [category]: summary };
+      this.changeDetector.markForCheck();
+      this.changeDetector.detectChanges();
+    };
+    this.summarySubscription.add(source.subscribe({
+      next: (data) => {
+        try { set(build(data)); } catch { set({ headline: '—', detail: 'Unavailable' }); }
+      },
+      error: () => set({ headline: '—', detail: 'Unavailable' })
+    }));
+  }
+
+  private balanceSummary(records: { date: string; amount: number; difference: number }[], currency: 'AUD' | 'INR'): ItemSummary {
+    const latest = records.reduce<typeof records[number] | null>(
+      (best, record) => !best || monthRecordKey(record.date) > monthRecordKey(best.date) ? record : best, null);
+    if (!latest) { return { headline: 'No records', detail: '' }; }
+    const sign = latest.difference < 0 ? '−' : '+';
+    return {
+      headline: this.formatReviewCurrency(latest.amount, currency),
+      detail: `${this.formatReviewMonth(monthRecordKey(latest.date))} · ${sign}${this.formatReviewCurrency(Math.abs(latest.difference), currency)}`
+    };
+  }
+
   ngOnDestroy(): void {
+    this.summarySubscription.unsubscribe();
     this.pfLoadAttempt++;
     this.pfDataSubscription?.unsubscribe();
     this.gratuityLoadAttempt++;
@@ -120,13 +185,16 @@ export class CentralRecordFormComponent implements OnDestroy {
     this.formSubscription.unsubscribe();
   }
 
+  get selectedCategoryLabel(): string {
+    return this.categories.find((item) => item.value === this.category)?.label ?? '';
+  }
   get isTransfer(): boolean { return this.category === 'transfer'; }
   get isSalary(): boolean { return this.category === 'kumarSalary' || this.category === 'vasukiSalary'; }
   get isBalanceRecord(): boolean { return this.category === 'kumarPf' || this.category === 'vasukiPf'; }
   get isGratuityRecord(): boolean { return this.category === 'kumarGratuity' || this.category === 'vasukiGratuity' || this.category === 'vasukiSuper'; }
   get isVasukiSalary(): boolean { return this.category === 'vasukiSalary'; }
   get monthlyDifferenceLabel(): string {
-    return this.category === 'vasukiSuper' ? 'Monthly difference (AUD)' : this.isBalanceRecord || this.isGratuityRecord ? 'Monthly difference (INR)' : 'Monthly difference';
+    return this.isBalanceRecord || this.isGratuityRecord ? 'Monthly difference (INR)' : 'Monthly difference';
   }
   get receivedAmount(): number {
     const { amountTransferredAUD, conversionRate } = this.form.getRawValue();
@@ -180,9 +248,8 @@ export class CentralRecordFormComponent implements OnDestroy {
 
     if (this.isGratuityRecord) {
       addMonth();
-      const currency = this.category === 'vasukiSuper' ? 'AUD' : 'INR';
-      addAmount(this.category === 'vasukiSuper' ? 'Super Balance' : 'Gratuity', value.amount, currency);
-      addAmount('Monthly Difference', value.difference, currency);
+      addAmount(this.category === 'vasukiSuper' ? 'Super Balance' : 'Gratuity', value.amount, 'INR');
+      addAmount('Monthly Difference', value.difference, 'INR');
       return fields;
     }
 
@@ -210,8 +277,16 @@ export class CentralRecordFormComponent implements OnDestroy {
     }
   }
 
-  changeCategory(value: string): void {
-    if (!this.categories.some((item) => item.value === value)) { return; }
+  toggleCategory(value: string, isOn: boolean): void {
+    if (isOn) {
+      this.changeCategory(value);
+    } else if (this.category === value) {
+      this.changeCategory(null);
+    }
+  }
+
+  changeCategory(value: string | null): void {
+    if (value !== null && !this.categories.some((item) => item.value === value)) { return; }
     this.pfLoadAttempt++;
     this.pfDataSubscription?.unsubscribe();
     this.gratuityLoadAttempt++;
@@ -222,10 +297,11 @@ export class CentralRecordFormComponent implements OnDestroy {
     this.gratuityDocument = null;
     this.isLoadingGratuityHistory = false;
     this.gratuityHistoryError = '';
-    this.category = value as RecordCategory;
+    this.category = value as RecordCategory | null;
     this.form.reset();
     this.errorMessage = '';
     this.hasTriedToReview = false;
+    if (!this.category) { return; }
     if (this.isBalanceRecord) {
       this.loadPfHistory(this.category === 'kumarPf' ? '2' : '3');
     } else if (this.isGratuityRecord) {
@@ -338,6 +414,7 @@ export class CentralRecordFormComponent implements OnDestroy {
   }
 
   private validateSelectedFields(): void {
+    if (!this.category) { throw new Error('Please toggle a record type to add the form fields.'); }
     const value = this.form.getRawValue();
     if (this.isTransfer) {
       backendDate(value.dateOfTransfer);

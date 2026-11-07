@@ -88,14 +88,28 @@
 
 .record-type-groups {
   display: grid;
-  gap: 1.2rem;
+  gap: 1.6rem 2.4rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.record-type-group:first-child {
+  grid-column: 1 / -1;
 }
 
 .record-type-group {
-  align-items: center;
+  background: var(--bg-color);
+  border-radius: 1.2rem;
+  box-shadow: var(--box-shadow);
   display: grid;
-  gap: 1rem 1.6rem;
-  grid-template-columns: 14rem minmax(0, 1fr);
+  gap: 0.6rem 1rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  min-width: 0;
+  padding: 1.4rem 1.6rem;
+  transition: box-shadow 0.18s ease;
+
+  &:has(.toggle-input:checked) {
+    box-shadow: var(--box-shadow-inset);
+  }
 }
 
 .record-type-group-title {
@@ -106,58 +120,123 @@
   text-transform: uppercase;
 }
 
-.record-type-options {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.record-type-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+  text-align: right;
 }
 
-// A lone option fills the row.
-.record-type-option:only-child {
+.summary-row {
+  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.summary-total {
+  color: var(--green);
+  font-size: 1.5rem;
+}
+
+.summary-detail {
+  color: var(--light-color);
+  font-size: 1.15rem;
+}
+
+.record-type-options {
+  display: grid;
+  gap: 1rem 2.4rem;
   grid-column: 1 / -1;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+}
+
+.record-type-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.record-type-item .summary-row {
+  align-items: flex-start;
 }
 
 .record-type-option {
   align-items: center;
-  background: var(--bg-color);
-  border: 0;
-  border-radius: 1rem;
-  box-shadow: var(--box-shadow);
   color: var(--black);
   cursor: pointer;
   display: flex;
   font-size: 1.4rem;
-  gap: 1rem;
+  gap: 1.2rem;
   line-height: 1.3;
-  min-height: 5rem;
+  min-height: 4.4rem;
   min-width: 0;
-  padding: 1rem 1.4rem;
-  transition: background-color 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
+  padding: 0.6rem 0;
+  position: relative;
+  transition: color 0.18s ease;
 
   &:hover,
-  &:focus-within {
-    box-shadow: var(--box-shadow-inset);
+  &:focus-within,
+  &.selected {
     color: var(--green);
   }
 
-  // An accent bar and tint make the chosen type clear even where the inset shadow is subtle.
   &.selected {
-    background: color-mix(in srgb, var(--green) 10%, var(--bg-color));
-    box-shadow: var(--box-shadow-inset), inset 0.35rem 0 0 var(--green);
-    color: var(--green);
     font-weight: 600;
   }
 
-  input {
-    accent-color: var(--green);
-    cursor: pointer;
-    flex: 0 0 2rem;
-    height: 2rem;
+  .toggle-input {
+    height: 100%;
+    inset: 0;
     margin: 0;
-    width: 2rem;
+    opacity: 0;
+    position: absolute;
+    width: 100%;
+    cursor: pointer;
   }
 
-  input:focus-visible {
+  // Recessed brushed-steel slot with a chrome knob.
+  .toggle-track {
+    background: linear-gradient(180deg, #3a3d42 0%, #5a5e65 100%);
+    border-radius: 3rem;
+    box-shadow: inset 0 0.3rem 0.6rem rgba(0, 0, 0, 0.65), 0 0.1rem 0 rgba(255, 255, 255, 0.5);
+    flex: 0 0 5.6rem;
+    height: 3rem;
+    position: relative;
+    transition: background 0.25s ease, box-shadow 0.25s ease;
+    width: 5.6rem;
+
+    &::after {
+      background:
+        radial-gradient(circle at 35% 30%, #ffffff 0%, rgba(255, 255, 255, 0) 35%),
+        linear-gradient(145deg, #f4f6f8 0%, #b8bec6 45%, #7d848d 55%, #d9dde2 100%);
+      border: 0.1rem solid #6b7078;
+      border-radius: 50%;
+      box-shadow: 0 0.3rem 0.6rem rgba(0, 0, 0, 0.55), inset 0 0.1rem 0.2rem rgba(255, 255, 255, 0.9);
+      content: '';
+      height: 2.4rem;
+      left: 0.3rem;
+      position: absolute;
+      top: 0.3rem;
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      width: 2.4rem;
+    }
+  }
+
+  .toggle-input:checked + .toggle-track {
+    background: linear-gradient(180deg, color-mix(in srgb, var(--green) 70%, #000) 0%, var(--green) 100%);
+    box-shadow: inset 0 0.3rem 0.6rem rgba(0, 0, 0, 0.55), 0 0 1.2rem color-mix(in srgb, var(--green) 60%, transparent), 0 0.1rem 0 rgba(255, 255, 255, 0.5);
+
+    &::after {
+      transform: translateX(2.6rem);
+    }
+  }
+
+  .toggle-input:focus-visible + .toggle-track {
     outline: 0.2rem solid var(--green);
     outline-offset: 0.2rem;
   }
@@ -168,13 +247,42 @@
   }
 }
 
-.record-type-divider {
-  border: 0;
-  border-top: 0.2rem solid var(--green);
-  box-shadow:
-    0 0 0.6rem color-mix(in srgb, var(--green) 80%, transparent),
-    0 0 1.4rem color-mix(in srgb, var(--green) 45%, transparent);
-  margin: 0 0 1.8rem;
+.record-type-hint,
+.form-hint-empty {
+  color: var(--light-color);
+  font-size: 1.4rem;
+  margin: 0 0 1.2rem;
+}
+
+.form-hint-empty {
+  margin: 40px 0;
+  text-align: center;
+}
+
+.editing-label {
+  align-items: center;
+  color: var(--black);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 1.5rem;
+  gap: 0.8rem 1rem;
+  justify-content: center;
+  margin: 40px 0;
+
+  strong {
+    color: var(--green);
+  }
+}
+
+.editing-label-prefix {
+  background: var(--green);
+  border-radius: 2rem;
+  color: var(--bg-color);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.08rem;
+  padding: 0.4rem 1rem;
+  text-transform: uppercase;
 }
 
 .form-grid {
@@ -375,23 +483,37 @@
   }
 
   .record-type-groups {
-    gap: 1.4rem;
+    gap: 1.2rem;
+    grid-template-columns: 1fr 1fr;
   }
 
   .record-type-group {
     grid-template-columns: 1fr;
-    gap: 0.6rem;
+  }
+
+  .record-type-summary {
+    grid-column: 1;
+    grid-row: auto;
+    text-align: left;
+  }
+
+  .summary-row {
+    align-items: flex-start;
+  }
+
+  .record-type-group:first-child {
+    grid-column: 1 / -1;
   }
 
   .record-type-options {
-    gap: 12px 16px;
+    gap: 1rem;
+    grid-template-columns: 1fr;
   }
 
   .record-type-option {
     font-size: 1.3rem;
     gap: 0.8rem;
-    min-height: 48px;
-    padding: 0.8rem 1.1rem;
+    min-height: 44px;
   }
 
   .form-grid {
@@ -416,8 +538,3 @@
   }
 }
 
-@media (max-width: 340px) {
-  .record-type-options {
-    grid-template-columns: 1fr;
-  }
-}

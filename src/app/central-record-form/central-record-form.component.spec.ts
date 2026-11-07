@@ -1,4 +1,4 @@
-import { ElementRef } from '@angular/core';
+import { ChangeDetectorRef, ElementRef } from '@angular/core';
 import { of } from 'rxjs';
 import { GratuityDataService } from '../service/gratuity-data.service';
 import { PfDataService } from '../service/pf-data.service';
@@ -27,13 +27,15 @@ describe('CentralRecordFormComponent', () => {
       gratuityDataService,
       salaryDataService,
       new DashboardRecordRefreshService(),
-      new ElementRef(document.createElement("div"))
+      new ElementRef(document.createElement("div")),
+      { markForCheck: () => undefined, detectChanges: () => undefined } as ChangeDetectorRef
     );
   });
 
   it('converts transfer dates and calculates received INR before saving', async () => {
     transferService.getTransfers.and.returnValue(of([]));
     transferService.updateTransfers.and.returnValue(of([]));
+    component.changeCategory('transfer');
     component.form.patchValue({
       dateOfTransfer: '2026-01-02',
       amountTransferredAUD: 1000,
@@ -54,6 +56,7 @@ describe('CentralRecordFormComponent', () => {
   });
 
   it('formats transfer review rows with padded dates and currency values', () => {
+    component.changeCategory('transfer');
     component.form.patchValue({
       dateOfTransfer: '2026-11-05',
       amountTransferredAUD: 555,

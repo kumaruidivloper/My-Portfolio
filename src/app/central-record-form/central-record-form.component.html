@@ -21,22 +21,40 @@
         <div [hidden]="stepper.step !== 0">
           <fieldset class="record-type-fieldset">
             <legend>Record type</legend>
+            <p class="record-type-hint">Please toggle an item to add the form fields.</p>
             <div class="record-type-groups">
               @for (group of categoryGroups; track group.title) {
                 <div class="record-type-group">
                   <span class="record-type-group-title">{{ group.title }}</span>
+                  @if (group.items.length === 1) {
+                    <div class="record-type-summary">
+                      <div class="summary-row">
+                        <strong class="summary-total">{{ summaryFor(group.items[0].value).headline }}</strong>
+                        @if (summaryFor(group.items[0].value).detail) { <small class="summary-detail">{{ summaryFor(group.items[0].value).detail }}</small> }
+                      </div>
+                    </div>
+                  }
                   <div class="record-type-options">
                     @for (item of group.items; track item.value) {
-                      <label class="record-type-option" [class.selected]="category === item.value">
-                        <input
-                          type="radio"
-                          name="recordType"
-                          [attr.aria-label]="item.label"
-                          [value]="item.value"
-                          [checked]="category === item.value"
-                          (change)="changeCategory(item.value)">
-                        <span>{{ item.short }}</span>
-                      </label>
+                      <div class="record-type-item">
+                        @if (group.items.length > 1) {
+                          <div class="summary-row">
+                            <strong class="summary-total">{{ summaryFor(item.value).headline }}</strong>
+                            @if (summaryFor(item.value).detail) { <small class="summary-detail">{{ summaryFor(item.value).detail }}</small> }
+                          </div>
+                        }
+                        <label class="record-type-option" [class.selected]="category === item.value">
+                          <input
+                            type="checkbox"
+                            role="switch"
+                            class="toggle-input"
+                            [attr.aria-label]="item.label"
+                            [checked]="category === item.value"
+                            (change)="toggleCategory(item.value, $any($event.target).checked)">
+                          <span class="toggle-track" aria-hidden="true"></span>
+                          <span>{{ item.short }}</span>
+                        </label>
+                      </div>
                     }
                   </div>
                 </div>
@@ -44,7 +62,14 @@
             </div>
           </fieldset>
 
-          <hr class="record-type-divider">
+          @if (!category) {
+            <p class="form-hint-empty" role="status">Please toggle an item above to add the form fields.</p>
+          } @else {
+            <p class="editing-label" role="status">
+              <span class="editing-label-prefix">Now editing</span>
+              <strong>{{ selectedCategoryLabel }}</strong>
+            </p>
+          }
 
           @if (isTransfer) {
             <div class="form-grid">
@@ -59,7 +84,7 @@
           @if (isBalanceRecord || isGratuityRecord) {
             <div class="form-grid">
               <label class="form-field"><span>Month</span><app-theme-date-picker mode="month" ariaLabel="Record month" formControlName="date"></app-theme-date-picker></label>
-              <label class="form-field"><span>{{ isBalanceRecord ? 'PF balance (INR)' : category === 'vasukiSuper' ? 'Super balance (AUD)' : 'Gratuity (INR)' }}</span><input type="number" step="0.01" required formControlName="amount"></label>
+              <label class="form-field"><span>{{ isBalanceRecord ? 'PF balance (INR)' : category === 'vasukiSuper' ? 'Super balance (INR)' : 'Gratuity (INR)' }}</span><input type="number" step="0.01" required formControlName="amount"></label>
               <label class="form-field">
                 <span>{{ monthlyDifferenceLabel }}</span>
                 <input type="number" step="0.01" required formControlName="difference" [readonly]="isBalanceRecord || isGratuityRecord">
