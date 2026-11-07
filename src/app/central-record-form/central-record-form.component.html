@@ -20,16 +20,16 @@
         (cancel)="cancel.emit()">
         <div [hidden]="stepper.step !== 0">
           <fieldset class="record-type-fieldset">
-            <legend>Record type</legend>
+            <legend class="visually-hidden">Record type</legend>
             <p class="record-type-hint">Please toggle an item to add the form fields.</p>
             <div class="record-type-groups">
               @for (group of categoryGroups; track group.title) {
-                <div class="record-type-group">
+                <div class="record-type-group" [class.active]="group.items.some(groupItem => groupItem.value === category)" [hidden]="category && !group.items.some(groupItem => groupItem.value === category)">
                   <span class="record-type-group-title">{{ group.title }}</span>
                   @if (group.items.length === 1) {
                     <div class="record-type-summary">
                       <div class="summary-row">
-                        <strong class="summary-total">{{ summaryFor(group.items[0].value).headline }}</strong>
+                        @if (summaryFor(group.items[0].value).loading) { <app-dashboard-loader inline label="Loading latest record"></app-dashboard-loader> } @else { <strong class="summary-total">{{ summaryFor(group.items[0].value).headline }}</strong> }
                         @if (summaryFor(group.items[0].value).detail) { <small class="summary-detail">{{ summaryFor(group.items[0].value).detail }}</small> }
                       </div>
                     </div>
@@ -39,7 +39,7 @@
                       <div class="record-type-item">
                         @if (group.items.length > 1) {
                           <div class="summary-row">
-                            <strong class="summary-total">{{ summaryFor(item.value).headline }}</strong>
+                            @if (summaryFor(item.value).loading) { <app-dashboard-loader inline label="Loading latest record"></app-dashboard-loader> } @else { <strong class="summary-total">{{ summaryFor(item.value).headline }}</strong> }
                             @if (summaryFor(item.value).detail) { <small class="summary-detail">{{ summaryFor(item.value).detail }}</small> }
                           </div>
                         }
@@ -57,20 +57,17 @@
                       </div>
                     }
                   </div>
+                  @if (group.items.some(groupItem => groupItem.value === category)) {
+                    <div class="record-type-fields">
+                      <ng-container [ngTemplateOutlet]="recordFields"></ng-container>
+                    </div>
+                  }
                 </div>
               }
             </div>
           </fieldset>
 
-          @if (!category) {
-            <p class="form-hint-empty" role="status">Please toggle an item above to add the form fields.</p>
-          } @else {
-            <p class="editing-label" role="status">
-              <span class="editing-label-prefix">Now editing</span>
-              <strong>{{ selectedCategoryLabel }}</strong>
-            </p>
-          }
-
+          <ng-template #recordFields>
           @if (isTransfer) {
             <div class="form-grid">
               <label class="form-field"><span>Transfer date</span><app-theme-date-picker mode="date" ariaLabel="Transfer date" formControlName="dateOfTransfer"></app-theme-date-picker></label>
@@ -112,6 +109,7 @@
           }
 
           @if (validationErrorMessage) { <p class="form-error" role="alert">{{ validationErrorMessage }}</p> }
+          </ng-template>
         </div>
         <section class="review-section" [hidden]="stepper.step !== 1" aria-label="Review record fields">
           <dl class="review-fields">

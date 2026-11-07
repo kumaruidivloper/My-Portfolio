@@ -13,7 +13,7 @@ import { TransferService } from '../service/transfer.service';
 import { isOverlayOpen } from '../service/escape-dismiss';
 
 type RecordCategory = 'transfer' | 'kumarPf' | 'vasukiPf' | 'kumarGratuity' | 'vasukiGratuity' | 'vasukiSuper' | 'kumarSalary' | 'vasukiSalary';
-interface ItemSummary { headline: string; detail: string }
+interface ItemSummary { headline: string; detail: string; loading?: boolean }
 interface CategoryOption { value: RecordCategory; label: string; group: string; short: string }
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -149,7 +149,7 @@ export class CentralRecordFormComponent implements OnInit, OnDestroy {
   }
 
   summaryFor(category: string): ItemSummary {
-    return this.summaries[category as RecordCategory] ?? { headline: 'Loading…', detail: '' };
+    return this.summaries[category as RecordCategory] ?? { headline: '', detail: '', loading: true };
   }
 
   private loadSummary<T>(source: Observable<T>, category: RecordCategory, build: (data: T) => ItemSummary): void {
@@ -185,9 +185,6 @@ export class CentralRecordFormComponent implements OnInit, OnDestroy {
     this.formSubscription.unsubscribe();
   }
 
-  get selectedCategoryLabel(): string {
-    return this.categories.find((item) => item.value === this.category)?.label ?? '';
-  }
   get isTransfer(): boolean { return this.category === 'transfer'; }
   get isSalary(): boolean { return this.category === 'kumarSalary' || this.category === 'vasukiSalary'; }
   get isBalanceRecord(): boolean { return this.category === 'kumarPf' || this.category === 'vasukiPf'; }

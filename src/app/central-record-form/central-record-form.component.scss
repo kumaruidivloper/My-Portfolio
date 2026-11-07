@@ -72,6 +72,18 @@
   }
 }
 
+.visually-hidden {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
 .record-type-fieldset {
   border: 0;
   margin: 0 0 1.6rem;
@@ -118,6 +130,22 @@
   font-weight: 700;
   letter-spacing: 0.08rem;
   text-transform: uppercase;
+}
+
+.record-type-group[hidden] {
+  display: none;
+}
+
+.record-type-group.active {
+  grid-column: 1 / -1;
+  order: -1;
+}
+
+.record-type-fields {
+  border-top: 0.1rem solid color-mix(in srgb, var(--light-color) 35%, transparent);
+  grid-column: 1 / -1;
+  margin-top: 0.6rem;
+  padding-top: 40px;
 }
 
 .record-type-summary {
@@ -257,32 +285,6 @@
 .form-hint-empty {
   margin: 40px 0;
   text-align: center;
-}
-
-.editing-label {
-  align-items: center;
-  color: var(--black);
-  display: flex;
-  flex-wrap: wrap;
-  font-size: 1.5rem;
-  gap: 0.8rem 1rem;
-  justify-content: center;
-  margin: 40px 0;
-
-  strong {
-    color: var(--green);
-  }
-}
-
-.editing-label-prefix {
-  background: var(--green);
-  border-radius: 2rem;
-  color: var(--bg-color);
-  font-size: 1.1rem;
-  font-weight: 700;
-  letter-spacing: 0.08rem;
-  padding: 0.4rem 1rem;
-  text-transform: uppercase;
 }
 
 .form-grid {
@@ -487,27 +489,53 @@
     grid-template-columns: 1fr 1fr;
   }
 
-  .record-type-group {
+  // One block per row so each toggle has room for its summary on the same line.
+  .record-type-groups {
     grid-template-columns: 1fr;
   }
 
-  .record-type-summary {
-    grid-column: 1;
-    grid-row: auto;
-    text-align: left;
+  .record-type-group {
+    grid-template-columns: minmax(0, 1fr) auto;
   }
 
-  .summary-row {
-    align-items: flex-start;
-  }
-
-  .record-type-group:first-child {
+  .record-type-group-title {
     grid-column: 1 / -1;
   }
 
   .record-type-options {
-    gap: 1rem;
+    gap: 0.6rem;
     grid-template-columns: 1fr;
+  }
+
+  // Toggle on the left, summary right-aligned on the same line.
+  .record-type-item {
+    align-items: center;
+    flex-direction: row-reverse;
+    gap: 1rem;
+    justify-content: space-between;
+  }
+
+  .record-type-item .summary-row,
+  .summary-row {
+    align-items: flex-end;
+    text-align: right;
+  }
+
+  .record-type-summary {
+    grid-column: 2;
+    grid-row: 2;
+    text-align: right;
+  }
+
+  .record-type-group:has(.record-type-summary) .record-type-options {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  // Single toggle (Transfer, Super): keep it on the left.
+  .record-type-group:has(.record-type-summary) .record-type-item {
+    flex-direction: row;
+    justify-content: flex-start;
   }
 
   .record-type-option {
