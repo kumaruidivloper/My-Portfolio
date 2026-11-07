@@ -292,7 +292,7 @@
   }
 
   .record-type-group {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 
   .record-type-group-title {
@@ -312,21 +312,40 @@
     justify-content: space-between;
   }
 
+  // 50/50 split between the toggle and its summary.
+  .record-type-item > * {
+    flex: 1 1 50%;
+    min-width: 0;
+  }
+
   .record-type-item .summary-row,
   .summary-row {
     align-items: flex-end;
     text-align: right;
   }
 
-  .record-type-summary {
-    grid-column: 2;
-    grid-row: 2;
-    text-align: right;
+  // Single toggle: title + toggle on the left, summary on the same row at the right.
+  .record-type-head {
+    display: contents;
   }
 
-  .record-type-group:has(.record-type-summary) .record-type-options {
+  .record-type-group:has(.record-type-summary) .record-type-head {
+    display: grid;
+    gap: 0.6rem;
     grid-column: 1;
-    grid-row: 2;
+    grid-row: 1;
+    min-width: 0;
+  }
+
+  .record-type-group:has(.record-type-summary) .record-type-group-title {
+    grid-column: auto;
+  }
+
+  .record-type-summary {
+    align-self: center;
+    grid-column: 2;
+    grid-row: 1;
+    text-align: right;
   }
 
   // Single toggle (Transfer, Super): keep it on the left.
