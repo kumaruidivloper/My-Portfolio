@@ -29,30 +29,6 @@
   width: 100%;
 }
 
-form {
-  &.owner-kumar {
-    --owner-accent: var(--green);
-  }
-
-  &.owner-vasuki {
-    --owner-accent: #facc15;
-  }
-
-  &.owner-kumar .form-grid,
-  &.owner-kumar .review-section,
-  &.owner-vasuki .form-grid,
-  &.owner-vasuki .review-section {
-    background: color-mix(in srgb, var(--owner-accent) 12%, var(--bg-color));
-    border-radius: 1rem;
-    padding: 1.6rem;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
-  }
-}
-
-:host-context(body.day) form.owner-vasuki {
-  --owner-accent: #7c3aed;
-}
-
 .modal-heading {
   align-items: flex-start;
   display: flex;

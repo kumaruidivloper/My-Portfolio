@@ -120,8 +120,6 @@ export class CentralRecordFormComponent implements OnDestroy {
     this.formSubscription.unsubscribe();
   }
 
-  get isVasukiRecord(): boolean { return this.category.startsWith('vasuki'); }
-  get isKumarRecord(): boolean { return this.category === 'transfer' || this.category.startsWith('kumar'); }
   get isTransfer(): boolean { return this.category === 'transfer'; }
   get isSalary(): boolean { return this.category === 'kumarSalary' || this.category === 'vasukiSalary'; }
   get isBalanceRecord(): boolean { return this.category === 'kumarPf' || this.category === 'vasukiPf'; }
