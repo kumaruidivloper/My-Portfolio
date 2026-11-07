@@ -13,7 +13,7 @@ import { TransferService } from '../service/transfer.service';
 import { isOverlayOpen } from '../service/escape-dismiss';
 
 type RecordCategory = 'transfer' | 'kumarPf' | 'vasukiPf' | 'kumarGratuity' | 'vasukiGratuity' | 'vasukiSuper' | 'kumarSalary' | 'vasukiSalary';
-interface ItemSummary { headline: string; detail: string; loading?: boolean }
+interface ItemSummary { headline: string; detail: string; loading?: boolean; trend?: 'up' | 'down' | 'flat'; change?: string }
 interface CategoryOption { value: RecordCategory; label: string; group: string; short: string }
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -139,11 +139,11 @@ export class CentralRecordFormComponent implements OnInit, OnDestroy {
     const salaryIds: [RecordCategory, 'salary8' | 'salary9'][] = [['kumarSalary', 'salary8'], ['vasukiSalary', 'salary9']];
     for (const [category, key] of salaryIds) {
       this.loadSummary(this.salaryDataService.getSalaryData(key === 'salary8' ? '8' : '9'), category, (document) => {
-        const latest = document.salaryRecords.reduce<SalaryRecord | null>(
-          (best, record) => !best || salaryMonthKey(record.date) > salaryMonthKey(best.date) ? record : best, null);
-        return latest
-          ? { headline: this.formatReviewCurrency(latest.ausSalary, 'AUD'), detail: `${salaryMonthLabel(latest.date)} salary` }
-          : { headline: 'No records', detail: '' };
+        const sorted = [...document.salaryRecords].sort((a, b) => salaryMonthKey(b.date).localeCompare(salaryMonthKey(a.date)));
+        const [latest, previous] = sorted;
+        if (!latest) { return { headline: 'No records', detail: '' }; }
+        const summary: ItemSummary = { headline: this.formatReviewCurrency(latest.ausSalary, 'AUD'), detail: `${salaryMonthLabel(latest.date)} salary` };
+        return previous ? { ...summary, ...this.trendOf(latest.ausSalary - previous.ausSalary, 'AUD') } : summary;
       });
     }
   }
@@ -169,10 +169,17 @@ export class CentralRecordFormComponent implements OnInit, OnDestroy {
     const latest = records.reduce<typeof records[number] | null>(
       (best, record) => !best || monthRecordKey(record.date) > monthRecordKey(best.date) ? record : best, null);
     if (!latest) { return { headline: 'No records', detail: '' }; }
-    const sign = latest.difference < 0 ? '−' : '+';
     return {
       headline: this.formatReviewCurrency(latest.amount, currency),
-      detail: `${this.formatReviewMonth(monthRecordKey(latest.date))} · ${sign}${this.formatReviewCurrency(Math.abs(latest.difference), currency)}`
+      detail: `${this.formatReviewMonth(monthRecordKey(latest.date))} vs prev. month`,
+      ...this.trendOf(latest.difference, currency)
+    };
+  }
+
+  private trendOf(difference: number, currency: 'AUD' | 'INR'): Pick<ItemSummary, 'trend' | 'change'> {
+    return {
+      trend: difference > 0 ? 'up' : difference < 0 ? 'down' : 'flat',
+      change: this.formatReviewCurrency(Math.abs(difference), currency)
     };
   }
 

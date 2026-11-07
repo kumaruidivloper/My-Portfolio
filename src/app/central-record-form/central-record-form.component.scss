@@ -166,8 +166,9 @@
   }
 
   span {
-    border: 0.15rem solid var(--green);
+    background: var(--green);
     border-radius: 2rem;
+    color: var(--bg-color);
     padding: 0.6rem 1.6rem;
     text-align: center;
   }
@@ -187,12 +188,48 @@
   align-items: flex-end;
   display: flex;
   flex-direction: column;
-  line-height: 1.25;
+  gap: 0.6rem;
+  line-height: 1.5;
 }
 
 .summary-total {
   color: var(--green);
   font-size: 1.5rem;
+}
+
+.summary-trend {
+  background: color-mix(in srgb, var(--light-color) 18%, transparent);
+  border-radius: 2rem;
+  color: var(--light-color);
+  font-size: 1.25rem;
+  font-weight: 400;
+  padding: 0.2rem 0.9rem;
+
+  &.up {
+    background: color-mix(in srgb, #22c55e 20%, transparent);
+    color: #22c55e;
+  }
+
+  &.down {
+    background: color-mix(in srgb, #ef4444 20%, transparent);
+    color: #ef4444;
+  }
+}
+
+// Light theme: darker text on stronger tints so the trend pill stays readable.
+:host-context(body.day) .summary-trend {
+  background: rgb(0 0 0 / 10%);
+  color: #374151;
+
+  &.up {
+    background: rgb(22 163 74 / 18%);
+    color: #166534;
+  }
+
+  &.down {
+    background: rgb(220 38 38 / 16%);
+    color: #991b1b;
+  }
 }
 
 .summary-detail {

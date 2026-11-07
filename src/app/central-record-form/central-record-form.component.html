@@ -30,6 +30,7 @@
                     <div class="record-type-summary">
                       <div class="summary-row">
                         @if (summaryFor(group.items[0].value).loading) { <app-dashboard-loader inline label="Loading latest record"></app-dashboard-loader> } @else { <strong class="summary-total">{{ summaryFor(group.items[0].value).headline }}</strong> }
+                        @if (summaryFor(group.items[0].value).trend) { <span class="summary-trend" [class.up]="summaryFor(group.items[0].value).trend === 'up'" [class.down]="summaryFor(group.items[0].value).trend === 'down'"><span aria-hidden="true">{{ summaryFor(group.items[0].value).trend === 'up' ? '▲' : summaryFor(group.items[0].value).trend === 'down' ? '▼' : '▬' }}</span> {{ summaryFor(group.items[0].value).change }}</span> }
                         @if (summaryFor(group.items[0].value).detail) { <small class="summary-detail">{{ summaryFor(group.items[0].value).detail }}</small> }
                       </div>
                     </div>
@@ -40,7 +41,8 @@
                         @if (group.items.length > 1) {
                           <div class="summary-row">
                             @if (summaryFor(item.value).loading) { <app-dashboard-loader inline label="Loading latest record"></app-dashboard-loader> } @else { <strong class="summary-total">{{ summaryFor(item.value).headline }}</strong> }
-                            @if (summaryFor(item.value).detail) { <small class="summary-detail">{{ summaryFor(item.value).detail }}</small> }
+                            @if (summaryFor(item.value).trend) { <span class="summary-trend" [class.up]="summaryFor(item.value).trend === 'up'" [class.down]="summaryFor(item.value).trend === 'down'"><span aria-hidden="true">{{ summaryFor(item.value).trend === 'up' ? '▲' : summaryFor(item.value).trend === 'down' ? '▼' : '▬' }}</span> {{ summaryFor(item.value).change }}</span> }
+                        @if (summaryFor(item.value).detail) { <small class="summary-detail">{{ summaryFor(item.value).detail }}</small> }
                           </div>
                         }
                         <label class="record-type-option" [class.selected]="category === item.value">
