@@ -22,7 +22,7 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', '
 @Component({
   selector: 'app-pf-data',
   templateUrl: './pf-data.component.html',
-  styleUrls: ['./pf-data.component.scss', '../my-dashboard/widget-title.scss'],
+  styleUrls: ['./pf-data.component.scss'],
   standalone: false
 })
 export class PfDataComponent implements OnInit, OnDestroy {

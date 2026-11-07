@@ -12,7 +12,7 @@ import { TotalBalanceService } from '../service/total-balance.service';
 @Component({
   selector: 'app-total-balance',
   templateUrl: './total-balance.component.html',
-  styleUrls: ['../sum-of-value/sum-of-value.component.scss', '../my-dashboard/widget-title.scss'],
+  styleUrls: ['../sum-of-value/sum-of-value.component.scss'],
   standalone: false
 })
 export class TotalBalanceComponent implements OnInit, OnDestroy {

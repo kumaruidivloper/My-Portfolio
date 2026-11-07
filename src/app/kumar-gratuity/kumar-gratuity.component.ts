@@ -38,7 +38,7 @@ const NO_RECORDS: GratuityRecord[] = [];
 @Component({
   selector: 'app-kumar-gratuity',
   templateUrl: './kumar-gratuity.component.html',
-  styleUrls: ['./kumar-gratuity.component.scss', '../my-dashboard/widget-title.scss'],
+  styleUrls: ['./kumar-gratuity.component.scss'],
   standalone: false
 })
 export class KumarGratuityComponent implements OnInit, OnDestroy {
