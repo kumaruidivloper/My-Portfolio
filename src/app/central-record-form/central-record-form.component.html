@@ -25,16 +25,8 @@
             <div class="record-type-groups">
               @for (group of categoryGroups; track group.title) {
                 <div class="record-type-group" [class.active]="group.items.some(groupItem => groupItem.value === category)" [hidden]="category && !group.items.some(groupItem => groupItem.value === category)">
+                  <div class="record-type-head">
                   <span class="record-type-group-title">{{ group.title }}</span>
-                  @if (group.items.length === 1) {
-                    <div class="record-type-summary">
-                      <div class="summary-row">
-                        @if (summaryFor(group.items[0].value).loading) { <app-dashboard-loader inline label="Loading latest record"></app-dashboard-loader> } @else { <strong class="summary-total">{{ summaryFor(group.items[0].value).headline }}</strong> }
-                        @if (summaryFor(group.items[0].value).trend) { <span class="summary-trend" [class.up]="summaryFor(group.items[0].value).trend === 'up'" [class.down]="summaryFor(group.items[0].value).trend === 'down'"><span aria-hidden="true">{{ summaryFor(group.items[0].value).trend === 'up' ? '▲' : summaryFor(group.items[0].value).trend === 'down' ? '▼' : '▬' }}</span> {{ summaryFor(group.items[0].value).change }}</span> }
-                        @if (summaryFor(group.items[0].value).detail) { <small class="summary-detail">{{ summaryFor(group.items[0].value).detail }}</small> }
-                      </div>
-                    </div>
-                  }
                   <div class="record-type-options">
                     @for (item of group.items; track item.value) {
                       <div class="record-type-item">
@@ -59,6 +51,16 @@
                       </div>
                     }
                   </div>
+                  </div>
+                  @if (group.items.length === 1) {
+                    <div class="record-type-summary">
+                      <div class="summary-row">
+                        @if (summaryFor(group.items[0].value).loading) { <app-dashboard-loader inline label="Loading latest record"></app-dashboard-loader> } @else { <strong class="summary-total">{{ summaryFor(group.items[0].value).headline }}</strong> }
+                        @if (summaryFor(group.items[0].value).trend) { <span class="summary-trend" [class.up]="summaryFor(group.items[0].value).trend === 'up'" [class.down]="summaryFor(group.items[0].value).trend === 'down'"><span aria-hidden="true">{{ summaryFor(group.items[0].value).trend === 'up' ? '▲' : summaryFor(group.items[0].value).trend === 'down' ? '▼' : '▬' }}</span> {{ summaryFor(group.items[0].value).change }}</span> }
+                        @if (summaryFor(group.items[0].value).detail) { <small class="summary-detail">{{ summaryFor(group.items[0].value).detail }}</small> }
+                      </div>
+                    </div>
+                  }
                   @if (group.items.some(groupItem => groupItem.value === category)) {
                     <div class="record-type-fields">
                       <div class="editing-divider" role="status"><span>Editing · {{ selectedCategoryLabel }}</span></div>
