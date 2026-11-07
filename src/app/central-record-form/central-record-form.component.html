@@ -59,6 +59,7 @@
                   </div>
                   @if (group.items.some(groupItem => groupItem.value === category)) {
                     <div class="record-type-fields">
+                      <div class="editing-divider" role="status"><span>Editing · {{ selectedCategoryLabel }}</span></div>
                       <ng-container [ngTemplateOutlet]="recordFields"></ng-container>
                     </div>
                   }

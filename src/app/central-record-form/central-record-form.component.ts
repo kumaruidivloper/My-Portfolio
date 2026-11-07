@@ -185,6 +185,9 @@ export class CentralRecordFormComponent implements OnInit, OnDestroy {
     this.formSubscription.unsubscribe();
   }
 
+  get selectedCategoryLabel(): string {
+    return this.categories.find((item) => item.value === this.category)?.label ?? '';
+  }
   get isTransfer(): boolean { return this.category === 'transfer'; }
   get isSalary(): boolean { return this.category === 'kumarSalary' || this.category === 'vasukiSalary'; }
   get isBalanceRecord(): boolean { return this.category === 'kumarPf' || this.category === 'vasukiPf'; }

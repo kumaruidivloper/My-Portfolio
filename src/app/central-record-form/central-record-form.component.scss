@@ -142,10 +142,35 @@
 }
 
 .record-type-fields {
-  border-top: 0.1rem solid color-mix(in srgb, var(--light-color) 35%, transparent);
   grid-column: 1 / -1;
-  margin-top: 0.6rem;
-  padding-top: 40px;
+  margin-top: 1rem;
+}
+
+.editing-divider {
+  align-items: center;
+  color: var(--green);
+  display: flex;
+  font-size: 1.2rem;
+  font-weight: 700;
+  gap: 1.2rem;
+  letter-spacing: 0.12rem;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+
+  &::before,
+  &::after {
+    background: color-mix(in srgb, var(--light-color) 45%, transparent);
+    content: '';
+    flex: 1;
+    height: 0.1rem;
+  }
+
+  span {
+    border: 0.15rem solid var(--green);
+    border-radius: 2rem;
+    padding: 0.6rem 1.6rem;
+    text-align: center;
+  }
 }
 
 .record-type-summary {
