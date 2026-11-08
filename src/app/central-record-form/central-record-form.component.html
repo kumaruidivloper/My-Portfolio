@@ -19,6 +19,7 @@
         (invalidNext)="onInvalidNext()"
         (cancel)="cancel.emit()">
         <div [hidden]="stepper.step !== 0">
+          @if (successMessage) { <p class="form-success" role="status">{{ successMessage }}</p> }
           <fieldset class="record-type-fieldset">
             <legend class="visually-hidden">Record type</legend>
             <p class="record-type-hint">Please toggle an item to add the form fields.</p>

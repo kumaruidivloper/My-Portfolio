@@ -7,6 +7,7 @@ import { SalaryDataService } from '../service/salary-data.service';
 import { DashboardRecordRefreshService } from '../service/dashboard-record-refresh.service';
 import { TransferService } from '../service/transfer.service';
 import { CentralRecordFormComponent } from './central-record-form.component';
+import { FormStepperComponent } from '../form-stepper/form-stepper.component';
 
 describe('CentralRecordFormComponent', () => {
   let transferService: jasmine.SpyObj<TransferService>;
@@ -142,6 +143,67 @@ describe('CentralRecordFormComponent', () => {
       amountReceivedINR: 90500
     }]);
     expect(component.errorMessage).toBe('');
+  });
+
+  it('returns to the card picker after saving and allows another record', async () => {
+    transferService.getTransfers.and.returnValue(of([]));
+    transferService.updateTransfers.and.returnValue(of([]));
+    const stepper = new FormStepperComponent();
+    stepper.labels = ['Details', 'Review'];
+    stepper.step = 1;
+    component.stepper = stepper;
+    const saved = jasmine.createSpy('saved');
+    component.saved.subscribe(saved);
+    component.changeCategory('transfer');
+    component.form.patchValue({
+      dateOfTransfer: '2026-01-02', amountTransferredAUD: 1000,
+      conversionRate: 90.5, receivedDate: '2026-01-04'
+    });
+
+    await component.submit();
+
+    expect(saved).toHaveBeenCalledTimes(1);
+    expect(component.category).toBeNull();
+    expect(stepper.step).toBe(0);
+    expect(component.form.controls.amountTransferredAUD.value).toBe(0);
+    expect(component.successMessage).toBe('Record added successfully.');
+    expect(component.isSaving).toBeFalse();
+    component.changeCategory('transfer');
+    expect(component.successMessage).toBe('');
+    component.form.patchValue({
+      dateOfTransfer: '2026-02-02', amountTransferredAUD: 200,
+      conversionRate: 90, receivedDate: '2026-02-04'
+    });
+    stepper.step = 1;
+    await component.submit();
+    expect(saved).toHaveBeenCalledTimes(2);
+    expect(component.category).toBeNull();
+    expect(stepper.step).toBe(0);
+  });
+
+  it('keeps entered details and review step when saving fails', async () => {
+    transferService.getTransfers.and.returnValue(of([]));
+    transferService.updateTransfers.and.returnValue(throwError(() => new Error('Save failed')));
+    const stepper = new FormStepperComponent();
+    stepper.labels = ['Details', 'Review'];
+    stepper.step = 1;
+    component.stepper = stepper;
+    const saved = jasmine.createSpy('saved');
+    component.saved.subscribe(saved);
+    component.changeCategory('transfer');
+    component.form.patchValue({
+      dateOfTransfer: '2026-01-02', amountTransferredAUD: 1000,
+      conversionRate: 90.5, receivedDate: '2026-01-04'
+    });
+
+    await component.submit();
+
+    expect(component.category).toBe('transfer');
+    expect(component.form.controls.amountTransferredAUD.value).toBe(1000);
+    expect(stepper.step).toBe(1);
+    expect(component.errorMessage).toBe('Save failed');
+    expect(component.successMessage).toBe('');
+    expect(saved).not.toHaveBeenCalled();
   });
 
   it('formats transfer review rows with padded dates and currency values', () => {

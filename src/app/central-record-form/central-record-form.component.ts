@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, OnDestroy, OnInit, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { catchError, filter, firstValueFrom, map, Observable, of, startWith, Subscription, switchMap } from 'rxjs';
 import { GratuityApiDocument, GratuityRecord } from '../model/gratuity-record';
@@ -11,6 +11,7 @@ import { SalaryDataService } from '../service/salary-data.service';
 import { DashboardRecordRefreshService } from '../service/dashboard-record-refresh.service';
 import { TransferService } from '../service/transfer.service';
 import { isOverlayOpen } from '../service/escape-dismiss';
+import { FormStepperComponent } from '../form-stepper/form-stepper.component';
 
 type RecordCategory = 'transfer' | 'kumarPf' | 'vasukiPf' | 'kumarGratuity' | 'vasukiGratuity' | 'vasukiSuper' | 'kumarSalary' | 'vasukiSalary';
 interface ItemSummary { headline: string; detail: string; loading?: boolean; trend?: 'up' | 'down' | 'flat'; change?: string }
@@ -51,6 +52,7 @@ function backendDate(value: string): string {
 export class CentralRecordFormComponent implements OnInit, OnDestroy {
   @Output() cancel = new EventEmitter<void>();
   @Output() saved = new EventEmitter<void>();
+  @ViewChild(FormStepperComponent) stepper?: FormStepperComponent;
 
   readonly categories: CategoryOption[] = [
     { value: 'transfer', label: 'Australia to India transfer', group: 'Transfer', short: 'AUD to INR' },
@@ -72,6 +74,7 @@ export class CentralRecordFormComponent implements OnInit, OnDestroy {
   private readonly summarySubscription = new Subscription();
   isSaving = false;
   errorMessage = '';
+  successMessage = '';
   hasTriedToReview = false;
   isLoadingPfHistory = false;
   pfHistoryError = '';
@@ -308,6 +311,7 @@ export class CentralRecordFormComponent implements OnInit, OnDestroy {
     this.category = value as RecordCategory | null;
     this.form.reset();
     this.errorMessage = '';
+    this.successMessage = '';
     this.hasTriedToReview = false;
     if (!this.category) { return; }
     if (this.isBalanceRecord) {
@@ -347,6 +351,11 @@ export class CentralRecordFormComponent implements OnInit, OnDestroy {
     try {
       await this.saveSelectedRecord();
       this.refreshService.notifyUpdated(!this.isSalary);
+      this.changeCategory(null);
+      this.stepper?.goTo(0);
+      this.successMessage = 'Record added successfully.';
+      const modal = this.host.nativeElement.querySelector<HTMLElement>('.central-form-modal');
+      if (modal) { modal.scrollTop = 0; }
       this.saved.emit();
     } catch (error) {
       this.errorMessage = error instanceof Error ? error.message : 'Unable to save this record.';

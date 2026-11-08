@@ -968,11 +968,6 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  onCentralRecordSaved(): void {
-    this.isCentralRecordFormOpen = false;
-    this.showToast('Record added successfully.');
-  }
-
   closeAllDetails(): void {
     this.isAllDetailsModalOpen = false;
     this.clearAllDashboardSelection();

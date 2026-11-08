@@ -79,6 +79,12 @@
   margin: 0 0 1.2rem;
 }
 
+.form-success {
+  color: var(--green);
+  font-size: 1.4rem;
+  margin-bottom: 1.2rem;
+}
+
 .form-hint-empty {
   margin: 40px 0;
   text-align: center;
@@ -382,4 +388,3 @@
     z-index: 1;
   }
 }
-
