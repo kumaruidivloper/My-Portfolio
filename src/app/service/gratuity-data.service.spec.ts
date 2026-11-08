@@ -69,12 +69,24 @@ describe('GratuityDataService', () => {
   it('updates only Vasuki gratuity resource 5', () => {
     const document = { ...response, id: '5', name: 'Vasu' };
 
+    const updated = jasmine.createSpy('updated');
+    service.gratuityUpdated$.subscribe(updated);
     service.updateGratuityData(document, '5').subscribe((data) => expect(data).toEqual(document));
 
     const request = http.expectOne(VASUKI_GRATUITY_API_URL);
     expect(request.request.method).toBe('PUT');
     expect(request.request.body).toEqual(document);
+    expect(updated).not.toHaveBeenCalled();
     request.flush(document);
+    expect(updated).toHaveBeenCalledOnceWith('5');
+  });
+
+  it('does not publish an update when saving fails', () => {
+    const updated = jasmine.createSpy('updated');
+    service.gratuityUpdated$.subscribe(updated);
+    service.updateGratuityData(response).subscribe({ error: () => undefined });
+    http.expectOne(GRATUITY_API_URL).flush('Unavailable', { status: 500, statusText: 'Unavailable' });
+    expect(updated).not.toHaveBeenCalled();
   });
 
   it('loads Vasuki super records and normalizes them for the shared history UI', () => {

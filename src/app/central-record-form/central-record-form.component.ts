@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, OnDestroy, OnInit, Output } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
-import { firstValueFrom, Observable, Subscription } from 'rxjs';
+import { catchError, filter, firstValueFrom, map, Observable, of, startWith, Subscription, switchMap } from 'rxjs';
 import { GratuityApiDocument, GratuityRecord } from '../model/gratuity-record';
 import { PfApiDocument, PfRecord } from '../model/pf-record';
 import { SalaryRecord, salaryMonthKey, salaryMonthLabel } from '../model/salary-record';
@@ -117,7 +117,7 @@ export class CentralRecordFormComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.loadSummary(this.transferService.getTransfers(), 'transfer', (transfers) => {
+    this.loadSummary(() => this.transferService.getTransfers(), this.transferService.transferUpdated$, 'transfer', (transfers) => {
       if (!transfers.length) { return { headline: 'No records', detail: '' }; }
       const sent = transfers.reduce((sum, record) => sum + record.amountTransferredAUD, 0);
       const received = transfers.reduce((sum, record) => sum + record.amountReceivedINR, 0);
@@ -128,17 +128,17 @@ export class CentralRecordFormComponent implements OnInit, OnDestroy {
     });
     const pfIds: [RecordCategory, PfResourceId][] = [['kumarPf', '2'], ['vasukiPf', '3']];
     for (const [category, id] of pfIds) {
-      this.loadSummary(this.pfDataService.getPfData(id), category, (document) =>
+      this.loadSummary(() => this.pfDataService.getPfData(id), this.pfDataService.pfUpdated$.pipe(filter((updatedId) => updatedId === id)), category, (document) =>
         this.balanceSummary(document.pfRecords.map((r) => ({ date: r.date, amount: r.pfAmount, difference: r.difference })), 'INR'));
     }
     const gratuityIds: [RecordCategory, GratuityResourceId][] = [['kumarGratuity', '4'], ['vasukiGratuity', '5'], ['vasukiSuper', '6']];
     for (const [category, id] of gratuityIds) {
-      this.loadSummary(this.gratuityDataService.getGratuityData(id), category, (document) =>
+      this.loadSummary(() => this.gratuityDataService.getGratuityData(id), this.gratuityDataService.gratuityUpdated$.pipe(filter((updatedId) => updatedId === id)), category, (document) =>
         this.balanceSummary(document.gratuityRecords.map((r) => ({ date: r.date, amount: r.gratuity, difference: r.difference })), 'INR'));
     }
     const salaryIds: [RecordCategory, 'salary8' | 'salary9'][] = [['kumarSalary', 'salary8'], ['vasukiSalary', 'salary9']];
     for (const [category, key] of salaryIds) {
-      this.loadSummary(this.salaryDataService.getSalaryData(key === 'salary8' ? '8' : '9'), category, (document) => {
+      this.loadSummary(() => this.salaryDataService.getSalaryData(key === 'salary8' ? '8' : '9'), this.salaryDataService.salaryUpdated$, category, (document) => {
         const sorted = [...document.salaryRecords].sort((a, b) => salaryMonthKey(b.date).localeCompare(salaryMonthKey(a.date)));
         const [latest, previous] = sorted;
         if (!latest) { return { headline: 'No records', detail: '' }; }
@@ -152,16 +152,17 @@ export class CentralRecordFormComponent implements OnInit, OnDestroy {
     return this.summaries[category as RecordCategory] ?? { headline: '', detail: '', loading: true };
   }
 
-  private loadSummary<T>(source: Observable<T>, category: RecordCategory, build: (data: T) => ItemSummary): void {
-    const set = (summary: ItemSummary) => { this.summaries = { ...this.summaries, [category]: summary };
+  private loadSummary<T>(source: () => Observable<T>, updates: Observable<unknown>, category: RecordCategory, build: (data: T) => ItemSummary): void {
+    this.summarySubscription.add(updates.pipe(
+      startWith(null),
+      switchMap(() => source().pipe(
+        map(build),
+        catchError(() => of<ItemSummary>({ headline: '—', detail: 'Unavailable' }))
+      ))
+    ).subscribe((summary) => {
+      this.summaries = { ...this.summaries, [category]: summary };
       this.changeDetector.markForCheck();
       this.changeDetector.detectChanges();
-    };
-    this.summarySubscription.add(source.subscribe({
-      next: (data) => {
-        try { set(build(data)); } catch { set({ headline: '—', detail: 'Unavailable' }); }
-      },
-      error: () => set({ headline: '—', detail: 'Unavailable' })
     }));
   }
 

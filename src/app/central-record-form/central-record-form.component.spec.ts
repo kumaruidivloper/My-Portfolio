@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, ElementRef } from '@angular/core';
-import { of } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
+import { TransferRecord } from '../model/transfer';
 import { GratuityDataService } from '../service/gratuity-data.service';
 import { PfDataService } from '../service/pf-data.service';
 import { SalaryDataService } from '../service/salary-data.service';
@@ -13,14 +14,26 @@ describe('CentralRecordFormComponent', () => {
   let gratuityDataService: jasmine.SpyObj<GratuityDataService>;
   let salaryDataService: jasmine.SpyObj<SalaryDataService>;
   let component: CentralRecordFormComponent;
+  let transferUpdates: Subject<void>;
+  let pfUpdates: Subject<'2' | '3'>;
+  let gratuityUpdates: Subject<'4' | '5' | '6'>;
+  let salaryUpdates: Subject<void>;
 
   beforeEach(() => {
-    transferService = jasmine.createSpyObj<TransferService>('TransferService', ['getTransfers', 'updateTransfers']);
-    pfDataService = jasmine.createSpyObj<PfDataService>('PfDataService', ['getPfData', 'getCachedPfData', 'updatePfData']);
+    transferUpdates = new Subject<void>();
+    pfUpdates = new Subject<'2' | '3'>();
+    gratuityUpdates = new Subject<'4' | '5' | '6'>();
+    salaryUpdates = new Subject<void>();
+    transferService = jasmine.createSpyObj<TransferService>('TransferService', ['getTransfers', 'updateTransfers'],
+      { transferUpdated$: transferUpdates.asObservable() });
+    pfDataService = jasmine.createSpyObj<PfDataService>('PfDataService', ['getPfData', 'getCachedPfData', 'updatePfData'],
+      { pfUpdated$: pfUpdates.asObservable() });
     gratuityDataService = jasmine.createSpyObj<GratuityDataService>(
-      'GratuityDataService', ['getGratuityData', 'getCachedGratuityData', 'updateGratuityData']
+      'GratuityDataService', ['getGratuityData', 'getCachedGratuityData', 'updateGratuityData'],
+      { gratuityUpdated$: gratuityUpdates.asObservable() }
     );
-    salaryDataService = jasmine.createSpyObj<SalaryDataService>('SalaryDataService', ['getSalaryData', 'updateSalaryData']);
+    salaryDataService = jasmine.createSpyObj<SalaryDataService>('SalaryDataService', ['getSalaryData', 'updateSalaryData'],
+      { salaryUpdated$: salaryUpdates.asObservable() });
     component = new CentralRecordFormComponent(
       transferService,
       pfDataService,
@@ -30,6 +43,82 @@ describe('CentralRecordFormComponent', () => {
       new ElementRef(document.createElement("div")),
       { markForCheck: () => undefined, detectChanges: () => undefined } as ChangeDetectorRef
     );
+  });
+
+  it('refreshes the relevant summaries on local updates and stops after destruction', () => {
+    transferService.getTransfers.and.returnValue(of([]));
+    pfDataService.getPfData.and.callFake((id) => of({
+      id: id ?? '2', name: '', description: '', pfRecords: [{ date: "Jan'26", pfAmount: 100, difference: 10 }]
+    }));
+    gratuityDataService.getGratuityData.and.callFake((id) => of({
+      id: id ?? '4', name: '', title: '', description: '', type: '',
+      gratuityRecords: [{ date: "Jan'26", gratuity: 100, difference: 10 }]
+    }));
+    salaryDataService.getSalaryData.and.callFake((id) => of({
+      id, name: '', title: '', description: '', type: '', salaryRecords: []
+    }));
+
+    component.ngOnInit();
+    expect(component.summaryFor('kumarPf').headline).toContain('100');
+    pfDataService.getPfData.calls.reset();
+    pfDataService.getPfData.and.returnValue(of({
+      id: '2', name: '', description: '', pfRecords: [{ date: "Feb'26", pfAmount: 250, difference: 150 }]
+    }));
+    pfUpdates.next('2');
+    expect(component.summaryFor('kumarPf').headline).toContain('250');
+    expect(pfDataService.getPfData).toHaveBeenCalledOnceWith('2');
+    expect(component.summaryFor('vasukiPf').headline).toContain('100');
+
+    gratuityDataService.getGratuityData.calls.reset();
+    gratuityUpdates.next('6');
+    expect(gratuityDataService.getGratuityData).toHaveBeenCalledOnceWith('6');
+    transferService.getTransfers.calls.reset();
+    transferUpdates.next();
+    expect(transferService.getTransfers).toHaveBeenCalledTimes(1);
+    salaryDataService.getSalaryData.calls.reset();
+    salaryUpdates.next();
+    expect(salaryDataService.getSalaryData).toHaveBeenCalledTimes(2);
+
+    component.ngOnDestroy();
+    pfUpdates.next('2');
+    expect(pfDataService.getPfData).toHaveBeenCalledTimes(1);
+  });
+
+  it('recovers a summary on the next update after a load error', () => {
+    transferService.getTransfers.and.returnValue(throwError(() => new Error('Unavailable')));
+    pfDataService.getPfData.and.returnValue(of({ id: '2', name: '', description: '', pfRecords: [] }));
+    gratuityDataService.getGratuityData.and.returnValue(of({
+      id: '4', name: '', title: '', description: '', type: '', gratuityRecords: []
+    }));
+    salaryDataService.getSalaryData.and.returnValue(of({
+      id: '8', name: '', title: '', description: '', type: '', salaryRecords: []
+    }));
+    component.ngOnInit();
+    expect(component.summaryFor('transfer').detail).toBe('Unavailable');
+    transferService.getTransfers.and.returnValue(of([]));
+    transferUpdates.next();
+    expect(component.summaryFor('transfer').headline).toBe('No records');
+    component.ngOnDestroy();
+  });
+
+  it('ignores an older response after a newer update starts', () => {
+    const oldRequest = new Subject<TransferRecord[]>();
+    const newRequest = new Subject<TransferRecord[]>();
+    const record = { dateOfTransfer: '01-Jan-26', receivedDate: '01-Jan-26', amountTransferredAUD: 1, conversionRate: 1, amountReceivedINR: 1 };
+    transferService.getTransfers.and.returnValues(oldRequest, newRequest);
+    pfDataService.getPfData.and.returnValue(of({ id: '2', name: '', description: '', pfRecords: [] }));
+    gratuityDataService.getGratuityData.and.returnValue(of({
+      id: '4', name: '', title: '', description: '', type: '', gratuityRecords: []
+    }));
+    salaryDataService.getSalaryData.and.returnValue(of({
+      id: '8', name: '', title: '', description: '', type: '', salaryRecords: []
+    }));
+    component.ngOnInit();
+    transferUpdates.next();
+    newRequest.next([{ ...record, amountReceivedINR: 250 }]);
+    oldRequest.next([{ ...record, amountReceivedINR: 100 }]);
+    expect(component.summaryFor('transfer').headline).toContain('250');
+    component.ngOnDestroy();
   });
 
   it('converts transfer dates and calculates received INR before saving', async () => {

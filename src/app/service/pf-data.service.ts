@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { map, Observable, tap } from 'rxjs';
+import { map, Observable, Subject, tap } from 'rxjs';
 import { PfApiDocument, PfRecord } from '../model/pf-record';
 import { TotalBalanceService } from './total-balance.service';
 
@@ -54,6 +54,8 @@ export function parsePfDataResponse(response: unknown, fallbackName = 'Kumar'): 
 })
 export class PfDataService {
   private readonly cache = new Map<PfResourceId, PfApiDocument>();
+  private readonly updated = new Subject<PfResourceId>();
+  readonly pfUpdated$ = this.updated.asObservable();
 
   constructor(private http: HttpClient, private totalBalanceService: TotalBalanceService) {}
 
@@ -74,6 +76,7 @@ export class PfDataService {
       tap((updated) => {
         this.cache.set(resourceId, updated);
         this.totalBalanceService.syncTotals();
+        this.updated.next(resourceId);
       })
     );
   }

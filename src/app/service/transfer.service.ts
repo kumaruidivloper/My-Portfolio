@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { map, Observable } from 'rxjs';
+import { map, Observable, Subject, tap } from 'rxjs';
 
 import { TransferApiDocument, TransferRecord } from '../model/transfer';
 
@@ -40,6 +40,9 @@ export function parseTransferResponse(response: unknown): TransferRecord[] {
   providedIn: 'root'
 })
 export class TransferService {
+  private readonly updated = new Subject<void>();
+  readonly transferUpdated$ = this.updated.asObservable();
+
   constructor(private http: HttpClient) {}
 
   getTransfers(): Observable<TransferRecord[]> {
@@ -51,7 +54,8 @@ export class TransferService {
   updateTransfers(transfers: TransferRecord[]): Observable<TransferRecord[]> {
     const document: TransferApiDocument = { transfers };
     return this.http.put<unknown>(TRANSFERS_RESOURCE_URL, document).pipe(
-      map(parseTransferResponse)
+      map(parseTransferResponse),
+      tap(() => this.updated.next())
     );
   }
 }

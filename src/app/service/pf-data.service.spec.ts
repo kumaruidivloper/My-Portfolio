@@ -80,12 +80,25 @@ describe('PfDataService', () => {
       pfRecords: [{ date: "Sep'26", pfAmount: 2589327, difference: 27641 }]
     };
 
+    const updated = jasmine.createSpy('updated');
+    service.pfUpdated$.subscribe(updated);
     service.updatePfData(document, '3').subscribe((data) => expect(data).toEqual(document));
 
     const request = http.expectOne(VASUKI_PF_DATA_API_URL);
     expect(request.request.method).toBe('PUT');
     expect(request.request.body).toEqual(document);
+    expect(updated).not.toHaveBeenCalled();
     request.flush(document);
+    expect(updated).toHaveBeenCalledOnceWith('3');
+  });
+
+  it('does not publish an update when saving fails', () => {
+    const updated = jasmine.createSpy('updated');
+    service.pfUpdated$.subscribe(updated);
+    service.updatePfData({ id: '2', name: '', description: '', pfRecords: [] })
+      .subscribe({ error: () => undefined });
+    http.expectOne(PF_DATA_API_URL).flush('Unavailable', { status: 500, statusText: 'Unavailable' });
+    expect(updated).not.toHaveBeenCalled();
   });
 });
 

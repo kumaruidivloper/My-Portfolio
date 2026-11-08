@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { map, Observable, tap } from 'rxjs';
+import { map, Observable, Subject, tap } from 'rxjs';
 import { GratuityApiDocument, GratuityRecord } from '../model/gratuity-record';
 import { TotalBalanceService } from './total-balance.service';
 
@@ -83,6 +83,8 @@ export function parseGratuityDataResponse(
 })
 export class GratuityDataService {
   private readonly cache = new Map<GratuityResourceId, GratuityApiDocument>();
+  private readonly updated = new Subject<GratuityResourceId>();
+  readonly gratuityUpdated$ = this.updated.asObservable();
 
   constructor(private http: HttpClient, private totalBalanceService: TotalBalanceService) {}
 
@@ -120,6 +122,7 @@ export class GratuityDataService {
       tap((updated) => {
         this.cache.set(resourceId, updated);
         this.totalBalanceService.syncTotals();
+        this.updated.next(resourceId);
       })
     );
   }

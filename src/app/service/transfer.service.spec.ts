@@ -28,6 +28,8 @@ describe('TransferService', () => {
       amountReceivedINR: 535200
     }];
     let result: typeof updatedTransfers | undefined;
+    const updated = jasmine.createSpy('updated');
+    service.transferUpdated$.subscribe(updated);
 
     service.updateTransfers(updatedTransfers).subscribe((transfers) => {
       result = transfers;
@@ -36,9 +38,19 @@ describe('TransferService', () => {
     const request = http.expectOne(TRANSFERS_RESOURCE_URL);
     expect(request.request.method).toBe('PUT');
     expect(request.request.body).toEqual({ transfers: updatedTransfers });
+    expect(updated).not.toHaveBeenCalled();
     request.flush({ transfers: updatedTransfers });
 
     expect(result).toEqual(updatedTransfers);
+    expect(updated).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not publish an update when saving fails', () => {
+    const updated = jasmine.createSpy('updated');
+    service.transferUpdated$.subscribe(updated);
+    service.updateTransfers([]).subscribe({ error: () => undefined });
+    http.expectOne(TRANSFERS_RESOURCE_URL).flush('Unavailable', { status: 500, statusText: 'Unavailable' });
+    expect(updated).not.toHaveBeenCalled();
   });
 });
 
