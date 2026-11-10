@@ -250,6 +250,22 @@ app-counter {
   }
 }
 
+.intro-years {
+  color: var(--green);
+  display: inline-block;
+  font-style: italic;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-inline: 0.2rem;
+  vertical-align: middle;
+
+  app-counter {
+    display: inline-block;
+    font-size: inherit;
+    line-height: inherit;
+  }
+}
+
 .plus-mark {
   color: var(--green);
   display: inline-block;

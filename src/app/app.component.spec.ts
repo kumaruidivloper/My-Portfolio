@@ -18,8 +18,18 @@ describe('AppComponent', () => {
     jasmine.clock().uninstall();
   });
 
+  it('splits the dynamic experience years out of the intro text for styling', () => {
+    const years = component.addExperienceCount(2007, 0);
+    expect(component.introParts('For the last 15 years I have worked')).toEqual({
+      before: 'For the last ', years: String(years), after: ' years I have worked'
+    });
+    expect(component.introParts('No number here')).toEqual({ before: 'No number here', years: '', after: '' });
+  });
+
   it('removes the legacy experience prefix from intro text', () => {
     expect(component.introText('16+ years of experience')).toBe('years of experience');
+    const years = component.addExperienceCount(2007, 0);
+    expect(component.introText('For the last 15 years I have dedicated my life')).toBe(`For the last ${years} years I have dedicated my life`);
   });
 
   it('formats progress values as percentages', () => {

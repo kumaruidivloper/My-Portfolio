@@ -55,7 +55,8 @@
   gap: 0.04em;
 }
 
-:host-context(.experience-highlight) .digit-window {
+:host-context(.experience-highlight) .digit-window,
+:host-context(.intro-years) .digit-window {
   --digit-side-padding: 4px;
   font-style: normal;
 }

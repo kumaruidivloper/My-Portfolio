@@ -173,10 +173,18 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   
+  introParts(value: string): { before: string; years: string; after: string } {
+    const text = this.introText(value);
+    const match = /^(.*?last\s+)(\d+)(\s+years.*)$/is.exec(text);
+    return match ? { before: match[1], years: match[2], after: match[3] } : { before: text, years: '', after: '' };
+  }
+
   introText(value: string) {
       // console.log(value);
-      let updatedText = value.replace(/16\+\s*/, ''); // removes '16+ ' (with optional space)
-      return updatedText
+      const years = this.addExperienceCount(2007, 0);
+      return value
+        .replace(/16\+\s*/, '') // removes '16+ ' (with optional space)
+        .replace(/(last\s+)\d+\+?(\s+years)/i, `$1${years}$2`);
   }
 
   /* Slow invoking*/
