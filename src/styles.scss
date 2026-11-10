@@ -1072,6 +1072,18 @@ html body app-responsive-table .responsive-grid-page-controls button svg {
     border-radius: .5rem;
 }
 
+.home .share .claude-link{
+    align-items: center;
+    display: inline-flex;
+    justify-content: center;
+    vertical-align: bottom;
+}
+
+.home .share .claude-icon{
+    height: 2.4rem;
+    width: 2.4rem;
+}
+
 .home .share a:hover{
     box-shadow: var(--box-shadow-inset);
     color:var(--green);

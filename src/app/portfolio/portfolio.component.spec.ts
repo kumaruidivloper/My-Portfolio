@@ -47,6 +47,8 @@ describe('PortfolioComponent', () => {
 
   it('should show the number of project cards', () => {
     const cards = fixture.nativeElement.querySelectorAll('.box');
-    expect(cards.length).toBe(10);
+    expect(cards.length).toBe(12);
+    expect(cards[10].textContent).toContain('Claude');
+    expect(cards[11].textContent).toContain('Generative AI');
   });
 });
