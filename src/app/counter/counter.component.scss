@@ -55,10 +55,36 @@
   gap: 0.04em;
 }
 
-:host-context(.experience-highlight) .digit-window,
-:host-context(.intro-years) .digit-window {
+:host-context(.experience-highlight) .digit-window {
   --digit-side-padding: 4px;
   font-style: normal;
+}
+
+/* Animation only: render the rolling digits as plain inline text */
+:host-context(.intro-years) {
+  /* The clipped window's baseline is its bottom edge, so drop it to sit on the text baseline */
+  .counter-element {
+    vertical-align: -0.33em;
+  }
+
+  .digit-window {
+    --digit-side-padding: 0;
+    background: none;
+    box-shadow: none;
+    font: inherit;
+    width: 1ch;
+  }
+
+  .digit-window::after {
+    display: none;
+  }
+
+  .digit-tile {
+    background: none;
+    border: 0;
+    box-shadow: none;
+    color: inherit;
+  }
 }
 
 .digit-tile {
