@@ -18,6 +18,7 @@ import { environment } from '../environments/environment';
 })
 export class AppComponent implements OnInit, OnDestroy {
   readonly dashboardCodeDigits = Array.from({ length: 14 }, () => '');
+  dashboardBlurEnabled = true;
   isDashboardPromptOpen = false;
   dashboardCodeError = '';
 
@@ -93,6 +94,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private confirmationCodeService: ConfirmationCodeService
     ) {
       this.renderer.removeClass(document.body, 'active');
+      this.setDashboardBlur(this.dashboardBlurEnabled);
     }
 
   ngOnInit(): void {
@@ -136,6 +138,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.dataSubscription?.unsubscribe();
     clearTimeout(this.loadedTimeout);
     this.renderer.removeClass(this.document.body, 'scrollOff');
+    this.renderer.removeClass(this.document.body, 'dashboard-values-blurred');
     if (this.barAnimationTimeout) {
       clearTimeout(this.barAnimationTimeout);
     }
@@ -300,6 +303,15 @@ export class AppComponent implements OnInit, OnDestroy {
     this.dashboardCodeDigits.fill('');
     this.dashboardCodeError = '';
     this.isDashboardPromptOpen = true;
+  }
+
+  setDashboardBlur(enabled: boolean): void {
+    this.dashboardBlurEnabled = enabled;
+    if (enabled) {
+      this.renderer.addClass(this.document.body, 'dashboard-values-blurred');
+    } else {
+      this.renderer.removeClass(this.document.body, 'dashboard-values-blurred');
+    }
   }
 
   closeDashboardPrompt(): void {

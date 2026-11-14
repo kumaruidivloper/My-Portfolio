@@ -1,6 +1,15 @@
 /// <reference types="jasmine" />
 
+import { CommonModule } from '@angular/common';
+import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { AppComponent } from './app.component';
+import { DataService } from './service/data.service';
+import { DashboardAccessGuard } from './service/dashboard-access.guard';
+import { ConfirmationCodeService } from './service/confirmation-code.service';
+import { TimeService } from './service/time.service';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -77,6 +86,115 @@ describe('AppComponent', () => {
     expect(grantOneTimeAccess).toHaveBeenCalled();
     expect(navigateByUrl).toHaveBeenCalledWith('/dashboard');
     expect(component.isDashboardPromptOpen).toBeFalse();
+  });
+
+  it('shows an enabled blur switch beside the dashboard link without triggering navigation', async () => {
+    const navigateByUrl = jasmine.createSpy('navigateByUrl');
+    const grantOneTimeAccess = jasmine.createSpy('grantOneTimeAccess');
+    spyOn(AppComponent.prototype, 'ngOnInit');
+    TestBed.configureTestingModule({
+      declarations: [AppComponent],
+      imports: [CommonModule, FormsModule],
+      schemas: [NO_ERRORS_SCHEMA],
+      providers: [
+        { provide: Router, useValue: { url: '/', navigateByUrl } },
+        { provide: DashboardAccessGuard, useValue: { grantOneTimeAccess } },
+        { provide: DataService, useValue: {} },
+        { provide: TimeService, useValue: {} },
+        { provide: ConfirmationCodeService, useValue: {} }
+      ]
+    });
+    const fixture = TestBed.createComponent(AppComponent);
+    document.body.appendChild(fixture.nativeElement);
+    try {
+      fixture.componentInstance.isDataLoaded = true;
+      fixture.componentInstance.data = { intro: [{}], themeMode: [{}], aboutMe: {}, content: { intro: '' } };
+      fixture.detectChanges();
+      const row = fixture.nativeElement.querySelector('.dashboard-nav-item') as HTMLElement;
+      const toggle = row.querySelector('input[role="switch"]') as HTMLInputElement;
+      const track = row.querySelector('.toggle-switch') as HTMLElement;
+      const thumb = track.querySelector('.toggle-switch-thumb') as HTMLElement;
+      const hint = track.querySelector('.dashboard-blur-hint') as SVGElement;
+      const link = row.querySelector('a') as HTMLAnchorElement;
+      expect(toggle.getAttribute('aria-label')).toBe('Blur dashboard values');
+      expect(row.textContent?.trim()).toBe('My Dashboard');
+      expect(track.getBoundingClientRect().width).toBeGreaterThan(4 * parseFloat(getComputedStyle(document.documentElement).fontSize));
+      expect(toggle.checked).toBeTrue();
+      expect(track.querySelectorAll('.toggle-switch-thumb svg path').length).toBe(2);
+      expect(track.querySelectorAll('.dashboard-blur-hint path').length).toBe(1);
+      await Promise.all(thumb.getAnimations().map((animation) => animation.finished));
+      expect(getComputedStyle(track, '::before').opacity).toBe('0');
+      expect(hint.getBoundingClientRect().right).toBeLessThan(thumb.getBoundingClientRect().left);
+      expect(document.body.classList.contains('dashboard-values-blurred')).toBeTrue();
+      expect(link.getBoundingClientRect().right).toBeLessThanOrEqual(toggle.getBoundingClientRect().left);
+      expect(toggle.getBoundingClientRect().right).toBeLessThanOrEqual(row.getBoundingClientRect().right);
+      toggle.click();
+      fixture.detectChanges();
+      expect(toggle.checked).toBeFalse();
+      expect(track.querySelectorAll('.toggle-switch-thumb svg path').length).toBe(1);
+      expect(track.querySelectorAll('.dashboard-blur-hint path').length).toBe(2);
+      await Promise.all(thumb.getAnimations().map((animation) => animation.finished));
+      expect(getComputedStyle(track, '::before').opacity).toBe('0');
+      expect(thumb.getBoundingClientRect().right).toBeLessThan(hint.getBoundingClientRect().left);
+      expect(document.body.classList.contains('dashboard-values-blurred')).toBeFalse();
+      expect(navigateByUrl).not.toHaveBeenCalled();
+      toggle.click();
+      fixture.detectChanges();
+      expect(document.body.classList.contains('dashboard-values-blurred')).toBeTrue();
+      expect(track.querySelectorAll('.toggle-switch-thumb svg path').length).toBe(2);
+      expect(track.querySelectorAll('.dashboard-blur-hint path').length).toBe(1);
+      toggle.click();
+      fixture.detectChanges();
+      link.click();
+      expect(grantOneTimeAccess).toHaveBeenCalled();
+      expect(navigateByUrl).toHaveBeenCalledWith('/dashboard');
+      expect(fixture.componentInstance.isDashboardPromptOpen).toBeFalse();
+    } finally {
+      fixture.destroy();
+      fixture.nativeElement.remove();
+    }
+  });
+
+  it('applies and removes the dashboard blur setting', async () => {
+    const dashboard = document.createElement('main');
+    dashboard.className = 'dashboard-page';
+    dashboard.innerHTML = `
+      <div class="summary-card"><h2>123456</h2><p>Total</p></div>
+      <table><tbody><tr><td><span class="responsive-grid-value">123456</span></td></tr></tbody></table>
+      <div class="chart-container">123456</div>
+      <input type="number" value="123456">
+      <button type="button">Action</button>`;
+    document.body.appendChild(dashboard);
+    Object.assign(component, {
+      document,
+      renderer: {
+        addClass: (element: HTMLElement, name: string) => element.classList.add(name),
+        removeClass: (element: HTMLElement, name: string) => element.classList.remove(name)
+      }
+    });
+    try {
+      const value = dashboard.querySelector('.responsive-grid-value')!;
+      const card = dashboard.querySelector('.summary-card h2')!;
+      const chart = dashboard.querySelector('.chart-container')!;
+      const input = dashboard.querySelector('input')!;
+      const action = dashboard.querySelector('button')!;
+      expect(getComputedStyle(value).filter).toBe('none');
+      component.setDashboardBlur(true);
+      expect(component.dashboardBlurEnabled).toBeTrue();
+      expect(document.body.classList.contains('dashboard-values-blurred')).toBeTrue();
+      for (const element of [value, card, chart, input]) {
+        expect(getComputedStyle(element).filter).toBe('blur(12px)');
+      }
+      expect(getComputedStyle(action).filter).toBe('none');
+      component.setDashboardBlur(false);
+      expect(component.dashboardBlurEnabled).toBeFalse();
+      expect(document.body.classList.contains('dashboard-values-blurred')).toBeFalse();
+      await new Promise((resolve) => setTimeout(resolve, 250));
+      expect(getComputedStyle(value).filter).toBe('none');
+    } finally {
+      dashboard.remove();
+      document.body.classList.remove('dashboard-values-blurred');
+    }
   });
 
   it('routes to the dashboard only after code verification succeeds', async () => {

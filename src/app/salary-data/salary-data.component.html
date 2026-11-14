@@ -279,7 +279,7 @@
           </app-form-stepper>
         </form>
       } @else {
-        <p>Delete the salary record for {{ monthLabel(records[deletingIndex!].date) }}? This cannot be undone.</p>
+        <p>Delete the salary record for <span class="dashboard-data-value">{{ monthLabel(records[deletingIndex!].date) }}</span>? This cannot be undone.</p>
         <ng-container [ngTemplateOutlet]="codeEntry"></ng-container>
         @if (saveError) { <p class="gratuity-field-error" role="alert">{{ saveError }}</p> }
         <footer class="gratuity-modal-actions">

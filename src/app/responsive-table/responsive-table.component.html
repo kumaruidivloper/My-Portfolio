@@ -36,7 +36,7 @@
                   [ngTemplateOutletContext]="{ $implicit: row, index: row.actionIndex ?? (activePageIndex * pageSize + rowIndex) }">
                 </ng-container>
               } @else {
-                {{ row[column.key] }}
+                <span class="responsive-grid-value">{{ row[column.key] }}</span>
               }
             </td>
           }

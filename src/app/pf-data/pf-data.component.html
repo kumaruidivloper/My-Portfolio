@@ -130,7 +130,7 @@
         <div class="summary-grid pf-summary-grid" aria-label="PF summary">
           <article class="summary-card">
             <h3>{{ formatRupees(latestBalance ?? 0) }}</h3>
-            <p>Latest PF balance · {{ formatMonth(records[0].date) }}</p>
+            <p>Latest PF balance · <span class="dashboard-data-value">{{ formatMonth(records[0].date) }}</span></p>
           </article>
           <article class="summary-card">
             <h3>{{ formatRupees(latestDifference ?? 0) }}</h3>
@@ -259,7 +259,7 @@
         </button>
       </header>
       <p [id]="'pf-delete-description-' + resourceId">
-        Delete the PF record for {{ formatMonth(records[pendingDeleteRecordIndex].date) }}?
+        Delete the PF record for <span class="dashboard-data-value">{{ formatMonth(records[pendingDeleteRecordIndex].date) }}</span>?
       </p>
       <dl class="pf-delete-details">
         <div>

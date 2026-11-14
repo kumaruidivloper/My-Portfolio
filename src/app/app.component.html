@@ -21,7 +21,31 @@
         <a [attr.href]="'#'+item" (click)="selectedOption(item)">{{item}}</a>
       }
       <a href="#" class="javascript-ref-nav-link" (click)="$event.preventDefault(); getNote()">JavaScript Q&A</a>
-      <a href="#" class="dashboard-nav-link" (click)="$event.preventDefault(); openDashboardPrompt()">My Dashboard</a>
+      <div class="dashboard-nav-item">
+        <a href="#" class="dashboard-nav-link" (click)="$event.preventDefault(); openDashboardPrompt()">My Dashboard</a>
+        <label class="dashboard-blur-option" title="Blur dashboard values">
+          <input type="checkbox" role="switch" aria-label="Blur dashboard values" [checked]="dashboardBlurEnabled"
+            (change)="setDashboardBlur($any($event.target).checked)">
+          <span class="toggle-switch" aria-hidden="true">
+            <svg class="dashboard-blur-hint" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+              @if (!dashboardBlurEnabled) {
+                <path d="M4 4 20 20"></path>
+              }
+            </svg>
+            <span class="toggle-switch-thumb">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+                @if (dashboardBlurEnabled) {
+                  <path d="M4 4 20 20"></path>
+                }
+              </svg>
+            </span>
+          </span>
+        </label>
+      </div>
     </nav>
   </header>
   <!-- header section ends -->

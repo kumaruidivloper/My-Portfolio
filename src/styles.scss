@@ -756,6 +756,120 @@ body.night .ngx-charts-tooltip-content .chart-value-tooltip span {
     margin-top: .5rem;
 }
 
+.dashboard-blur-option {
+    align-items: center;
+    display: flex;
+    cursor: pointer;
+    flex: none;
+    height: 4.4rem;
+    justify-content: center;
+    position: relative;
+    width: 5.4rem;
+}
+
+.dashboard-blur-option input {
+    cursor: pointer;
+    height: 100%;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    position: absolute;
+    width: 100%;
+    z-index: 2;
+}
+
+.dashboard-blur-option .toggle-switch {
+    height: 2.6rem;
+    width: 5rem;
+}
+
+.dashboard-blur-option .toggle-switch-thumb {
+    align-items: center;
+    color: var(--green);
+    display: flex;
+    height: 2rem;
+    justify-content: center;
+    width: 2rem;
+}
+
+.dashboard-blur-option svg {
+    height: 1.5rem;
+    width: 1.5rem;
+}
+
+.dashboard-blur-hint {
+    color: var(--metal-ink);
+    opacity: .7;
+    position: absolute;
+    right: .25rem;
+    top: .4rem;
+    z-index: 1;
+}
+
+.dashboard-blur-option input:checked + .toggle-switch .dashboard-blur-hint {
+    left: .25rem;
+    right: auto;
+}
+
+.dashboard-blur-option input:checked + .toggle-switch .toggle-switch-thumb {
+    transform: translateX(2.4rem);
+}
+
+.dashboard-blur-option input:focus-visible + .toggle-switch {
+    outline: .2rem solid var(--green);
+    outline-offset: .3rem;
+}
+
+.dashboard-blur-option:hover .toggle-switch-thumb {
+    outline: .25rem solid color-mix(in srgb, var(--green) 35%, transparent);
+}
+
+body.dashboard-values-blurred {
+    .dashboard-page {
+        .responsive-grid-value,
+        .dashboard-data-value,
+        .preview-value,
+        .preview-change,
+        .preview-range > span,
+        .summary-total,
+        .summary-trend,
+        .summary-detail,
+        .date-picker-trigger > span,
+        .date-range-handle-label > strong,
+        .summary-card small,
+        .overall-preview strong {
+            display: inline-block;
+            filter: blur(12px);
+            transition: none;
+            user-select: none;
+        }
+
+        .summary-card > h2,
+        .summary-card > h3,
+        .gratuity-summary-card > h3,
+        .gratuity-summary-card > p,
+        .sum-of-value-summary-card > h3,
+        .sum-of-value-summary-card > p,
+        .preview-plot,
+        .chart-container,
+        .overall-summary tbody tr,
+        .overall-preview-grid h4,
+        .salary-range-axis,
+        dl dd,
+        input[type="number"] {
+            filter: blur(12px);
+            transition: none;
+            user-select: none;
+        }
+    }
+
+    .ngx-charts-tooltip-content .chart-value-tooltip {
+        filter: blur(12px);
+        transition: none;
+        user-select: none;
+    }
+}
+
 .dashboard-code-modal .dashboard-code-inputs {
     display: flex;
     flex-wrap: nowrap;
@@ -898,6 +1012,34 @@ body.night .ngx-charts-tooltip-content .chart-value-tooltip span {
 .header .navbar a:hover{
     box-shadow: var(--box-shadow-inset);
     color: var(--green);
+}
+
+.header .navbar .dashboard-nav-item {
+    align-items: center;
+    border-radius: 5rem;
+    box-shadow: var(--box-shadow);
+    display: flex;
+    gap: .5rem;
+    margin: 1.5rem 0;
+    padding: .1rem 1rem;
+}
+
+.header .navbar .dashboard-nav-link {
+    box-shadow: none;
+    flex: 1;
+    font-size: 1.7rem;
+    margin: 0;
+    min-width: 0;
+    padding: .3rem 0;
+}
+
+.header .navbar .dashboard-nav-link:hover {
+    box-shadow: none;
+}
+
+.header .navbar .dashboard-nav-link:focus-visible {
+    outline: .2rem solid var(--green);
+    outline-offset: .2rem;
 }
 
 #menu-btn{
