@@ -90,7 +90,7 @@
     }
 
     <div class="dashboard-widget-grid" #widgetGrid>
-    <section class="transfer-data-accordion widget-full" aria-labelledby="transfer-data-title">
+    <section class="transfer-data-accordion widget-full" data-record-category="transfer" aria-labelledby="transfer-data-title">
       <header class="records-heading transfer-accordion-header">
         <div class="records-toggle-copy transfer-accordion-copy">
           <h2 class="records-title transfer-flag-title" id="transfer-data-title" aria-label="Australia to India Transfers">
@@ -339,14 +339,26 @@
 
     @if (!isAllDetailsModalOpen) {
       <!-- Cards below the first render (and fetch their data) only when scrolled near. -->
-      <app-pf-data resourceId="2" ownerName="Kumar"></app-pf-data>
-      <app-pf-data class="owner-vasuki" resourceId="3" ownerName="Vasuki" *appRenderInView></app-pf-data>
+      <app-pf-data resourceId="2" ownerName="Kumar" data-record-category="kumarPf"></app-pf-data>
+      <ng-template appRenderInView #vasukiPfInView="appRenderInView">
+        <app-pf-data class="owner-vasuki" resourceId="3" ownerName="Vasuki" data-record-category="vasukiPf"></app-pf-data>
+      </ng-template>
       <app-sum-of-value class="widget-full" *appRenderInView="'widget-full'"></app-sum-of-value>
-      <app-kumar-gratuity *appRenderInView></app-kumar-gratuity>
-      <app-vasuki-gratuity class="owner-vasuki" *appRenderInView></app-vasuki-gratuity>
-      <app-vasuki-super class="widget-full owner-vasuki" *appRenderInView="'widget-full'"></app-vasuki-super>
-      <app-salary-data resourceId="8" ownerName="Kumar" *appRenderInView></app-salary-data>
-      <app-salary-data class="owner-vasuki" resourceId="9" ownerName="Vasuki" *appRenderInView></app-salary-data>
+      <ng-template appRenderInView #kumarGratuityInView="appRenderInView">
+        <app-kumar-gratuity data-record-category="kumarGratuity"></app-kumar-gratuity>
+      </ng-template>
+      <ng-template appRenderInView #vasukiGratuityInView="appRenderInView">
+        <app-vasuki-gratuity class="owner-vasuki" data-record-category="vasukiGratuity"></app-vasuki-gratuity>
+      </ng-template>
+      <ng-template [appRenderInView]="'widget-full'" #superInView="appRenderInView">
+        <app-vasuki-super class="widget-full owner-vasuki" data-record-category="vasukiSuper"></app-vasuki-super>
+      </ng-template>
+      <ng-template appRenderInView #kumarSalaryInView="appRenderInView">
+        <app-salary-data resourceId="8" ownerName="Kumar" data-record-category="kumarSalary"></app-salary-data>
+      </ng-template>
+      <ng-template appRenderInView #vasukiSalaryInView="appRenderInView">
+        <app-salary-data class="owner-vasuki" resourceId="9" ownerName="Vasuki" data-record-category="vasukiSalary"></app-salary-data>
+      </ng-template>
       <app-salary-data class="widget-full" [combined]="true" *appRenderInView="'widget-full'"></app-salary-data>
       <app-total-balance class="widget-full" *appRenderInView="'widget-full'"></app-total-balance>
     }
@@ -354,7 +366,7 @@
   </div>
 
   @if (isCentralRecordFormOpen) {
-    <app-central-record-form (cancel)="isCentralRecordFormOpen = false"></app-central-record-form>
+    <app-central-record-form (cancel)="isCentralRecordFormOpen = false" (openHistory)="openRecordHistory($event)"></app-central-record-form>
   }
 
   @if (isAllDetailsModalOpen) {

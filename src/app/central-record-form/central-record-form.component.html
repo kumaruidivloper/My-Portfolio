@@ -13,10 +13,13 @@
         #stepper
         [labels]="['Details', 'Review']"
         [stepValid]="canReview"
+        [nextDisabled]="!category"
+        [firstStepBackEnabled]="!!category"
         [saving]="isSaving"
         [submitLabel]="isSaving ? 'Saving…' : 'Add record'"
         [submitDisabled]="isSaving"
         (invalidNext)="onInvalidNext()"
+        (firstStepBack)="changeCategory(null)"
         (cancel)="cancel.emit()">
         <div [hidden]="stepper.step !== 0">
           @if (successMessage) { <p class="form-success" role="status">{{ successMessage }}</p> }
@@ -32,11 +35,12 @@
                     @for (item of group.items; track item.value) {
                       <div class="record-type-item">
                         @if (group.items.length > 1) {
-                          <div class="summary-row">
+                          <button type="button" class="summary-row summary-button" [disabled]="isSaving" (click)="openHistory.emit(item.value)">
+                            <span class="visually-hidden">Open {{ item.label }} history.</span>
                             @if (summaryFor(item.value).loading) { <app-dashboard-loader inline label="Loading latest record"></app-dashboard-loader> } @else { <strong class="summary-total">{{ summaryFor(item.value).headline }}</strong> }
                             @if (summaryFor(item.value).trend) { <span class="summary-trend" [class.up]="summaryFor(item.value).trend === 'up'" [class.down]="summaryFor(item.value).trend === 'down'"><span aria-hidden="true">{{ summaryFor(item.value).trend === 'up' ? '▲' : summaryFor(item.value).trend === 'down' ? '▼' : '▬' }}</span> {{ summaryFor(item.value).change }}</span> }
-                        @if (summaryFor(item.value).detail) { <small class="summary-detail">{{ summaryFor(item.value).detail }}</small> }
-                          </div>
+                            @if (summaryFor(item.value).detail) { <small class="summary-detail">{{ summaryFor(item.value).detail }}</small> }
+                          </button>
                         }
                         <label class="record-type-option" [class.selected]="category === item.value">
                           <input
@@ -55,12 +59,109 @@
                   </div>
                   @if (group.items.length === 1) {
                     <div class="record-type-summary">
-                      <div class="summary-row">
+                      <button type="button" class="summary-row summary-button" [disabled]="isSaving" (click)="openHistory.emit(group.items[0].value)">
+                        <span class="visually-hidden">Open {{ group.items[0].label }} history.</span>
                         @if (summaryFor(group.items[0].value).loading) { <app-dashboard-loader inline label="Loading latest record"></app-dashboard-loader> } @else { <strong class="summary-total">{{ summaryFor(group.items[0].value).headline }}</strong> }
                         @if (summaryFor(group.items[0].value).trend) { <span class="summary-trend" [class.up]="summaryFor(group.items[0].value).trend === 'up'" [class.down]="summaryFor(group.items[0].value).trend === 'down'"><span aria-hidden="true">{{ summaryFor(group.items[0].value).trend === 'up' ? '▲' : summaryFor(group.items[0].value).trend === 'down' ? '▼' : '▬' }}</span> {{ summaryFor(group.items[0].value).change }}</span> }
                         @if (summaryFor(group.items[0].value).detail) { <small class="summary-detail">{{ summaryFor(group.items[0].value).detail }}</small> }
-                      </div>
+                      </button>
                     </div>
+                  }
+                  @if (group.items[0].value === 'transfer') {
+                    <section class="overall-summary" aria-label="Saved overall balance comparison">
+                      <h3>Overall balance this month</h3>
+                      @if (overallSummary.status === 'loading') {
+                        <p>Loading overall balance…</p>
+                      } @else if (overallSummary.status === 'unavailable') {
+                        <p role="alert">Overall balance is unavailable.</p>
+                      } @else if (overallSummary.status === 'empty') {
+                        <p>No overall balance records yet.</p>
+                      } @else if (overallSummary.status === 'ready') {
+                        @if (!overallSummary.current && !overallSummary.previousMonths.length) {
+                          <p>No overall balance records in the last three months.</p>
+                        } @else {
+                        <div class="overall-table-scroll" role="region" aria-label="Monthly balance comparison" tabindex="0">
+                        <table aria-label="Saved overall monthly balances and differences">
+                          <thead>
+                            <tr><th scope="col">Month</th><th scope="col">Total</th><th scope="col">Difference</th><th scope="col" title="This month difference minus previous month difference">Month change</th></tr>
+                          </thead>
+                          <tbody>
+                            @if (overallSummary.current; as current) {
+                            <tr>
+                              <th scope="row">{{ formatReviewMonth(overallSummary.currentMonth) }}</th>
+                                <td data-label="Total">{{ formatReviewCurrency(current.total, 'INR') }}</td>
+                                <td data-label="Difference">
+                                  @let change = trendOf(current.difference, 'INR');
+                                  <span class="summary-trend" [class.up]="change.trend === 'up'" [class.down]="change.trend === 'down'"
+                                    [attr.aria-label]="'Monthly difference ' + (change.trend === 'up' ? 'increased by ' : change.trend === 'down' ? 'decreased by ' : 'unchanged at ') + change.change">
+                                    <span aria-hidden="true">{{ change.trend === 'up' ? '▲' : change.trend === 'down' ? '▼' : '▬' }}</span> {{ change.change }}
+                                  </span>
+                                </td>
+                                <td data-label="Month change">
+                                  @let monthChange = overallSummary.monthChanges[current.date];
+                                  @if (monthChange !== undefined) {
+                                    @let change = trendOf(monthChange, 'INR');
+                                    <span class="summary-trend" [class.up]="change.trend === 'up'" [class.down]="change.trend === 'down'"
+                                      [attr.aria-label]="'This month difference minus previous month difference: ' + (change.trend === 'up' ? 'positive ' : change.trend === 'down' ? 'negative ' : '') + change.change">
+                                      <span aria-hidden="true">{{ change.trend === 'up' ? '▲' : change.trend === 'down' ? '▼' : '▬' }}</span> {{ change.change }}
+                                    </span>
+                                  } @else {
+                                    <span aria-label="Previous month difference unavailable">—</span>
+                                  }
+                                </td>
+                            </tr>
+                            }
+                            @for (previousMonth of overallSummary.previousMonths; track previousMonth.date) {
+                              <tr>
+                                <th scope="row">{{ formatReviewMonth(previousMonth.date) }}</th>
+                                <td data-label="Total">{{ formatReviewCurrency(previousMonth.total, 'INR') }}</td>
+                                <td data-label="Difference">
+                                  @let change = trendOf(previousMonth.difference, 'INR');
+                                  <span class="summary-trend" [class.up]="change.trend === 'up'" [class.down]="change.trend === 'down'"
+                                    [attr.aria-label]="'Monthly difference ' + (change.trend === 'up' ? 'increased by ' : change.trend === 'down' ? 'decreased by ' : 'unchanged at ') + change.change">
+                                    <span aria-hidden="true">{{ change.trend === 'up' ? '▲' : change.trend === 'down' ? '▼' : '▬' }}</span> {{ change.change }}
+                                  </span>
+                                </td>
+                                <td data-label="Month change">
+                                  @let monthChange = overallSummary.monthChanges[previousMonth.date];
+                                  @if (monthChange !== undefined) {
+                                    @let change = trendOf(monthChange, 'INR');
+                                    <span class="summary-trend" [class.up]="change.trend === 'up'" [class.down]="change.trend === 'down'"
+                                      [attr.aria-label]="'This month difference minus previous month difference: ' + (change.trend === 'up' ? 'positive ' : change.trend === 'down' ? 'negative ' : '') + change.change">
+                                      <span aria-hidden="true">{{ change.trend === 'up' ? '▲' : change.trend === 'down' ? '▼' : '▬' }}</span> {{ change.change }}
+                                    </span>
+                                  } @else {
+                                    <span aria-label="Previous month difference unavailable">—</span>
+                                  }
+                                </td>
+                              </tr>
+                            }
+                          </tbody>
+                        </table>
+                        </div>
+                        }
+                        @if (overallSummary.current; as current) {
+                          @if (overallSummary.previous; as previous) {
+                            @let balanceChange = trendOf(current.total - previous.total, 'INR');
+                            @let differenceChange = trendOf(current.difference - previous.difference, 'INR');
+                            <div class="overall-changes" [attr.aria-label]="'Changes from ' + formatReviewMonth(previous.date)">
+                              <span>Balance
+                                <span class="summary-trend" [class.up]="balanceChange.trend === 'up'" [class.down]="balanceChange.trend === 'down'"
+                                  [attr.aria-label]="'Balance ' + (balanceChange.trend === 'up' ? 'increased by ' : balanceChange.trend === 'down' ? 'decreased by ' : 'unchanged at ') + balanceChange.change">
+                                  <span aria-hidden="true">{{ balanceChange.trend === 'up' ? '▲' : balanceChange.trend === 'down' ? '▼' : '▬' }}</span> {{ balanceChange.change }}
+                                </span>
+                              </span>
+                              <span>Difference
+                                <span class="summary-trend" [class.up]="differenceChange.trend === 'up'" [class.down]="differenceChange.trend === 'down'"
+                                  [attr.aria-label]="'Monthly difference ' + (differenceChange.trend === 'up' ? 'increased by ' : differenceChange.trend === 'down' ? 'decreased by ' : 'unchanged at ') + differenceChange.change">
+                                  <span aria-hidden="true">{{ differenceChange.trend === 'up' ? '▲' : differenceChange.trend === 'down' ? '▼' : '▬' }}</span> {{ differenceChange.change }}
+                                </span>
+                              </span>
+                            </div>
+                          }
+                        }
+                      }
+                    </section>
                   }
                   @if (group.items.some(groupItem => groupItem.value === category)) {
                     <div class="record-type-fields">
@@ -97,6 +198,36 @@
                 @if (isGratuityRecord && gratuityHistoryError) { <small class="field-error" role="alert">{{ gratuityHistoryError }}</small> }
               </label>
             </div>
+            @if (category === 'vasukiSuper') {
+              <section class="overall-preview" aria-label="Overall balance preview">
+                <h3>Overall balance preview</h3>
+                @if (isLoadingOverallPreview || isLoadingGratuityHistory) {
+                  <p class="field-hint">Loading balance history…</p>
+                } @else if (overallPreviewError) {
+                  <p class="field-error" role="alert">{{ overallPreviewError }}</p>
+                } @else if (gratuityHistoryError) {
+                  <p class="field-error" role="alert">Overall preview is unavailable without Super history.</p>
+                } @else if (superOverallPreview; as preview) {
+                  <p class="field-hint">Includes PF, gratuity and Super. Missing current-month records use their latest earlier balance.</p>
+                  <div class="overall-preview-grid">
+                    <div>
+                      <h4>{{ formatReviewMonth(preview.previousMonth) }} · saved</h4>
+                      <p>Total: <strong>{{ formatReviewCurrency(preview.previous.total, 'INR') }}</strong></p>
+                      <p>Monthly difference: <strong>{{ formatReviewCurrency(preview.previous.difference, 'INR') }}</strong></p>
+                    </div>
+                    <div>
+                      <h4>{{ formatReviewMonth(preview.currentMonth) }} · preview</h4>
+                      <p>Total: <strong>{{ formatReviewCurrency(preview.current.total, 'INR') }}</strong></p>
+                      <p>Monthly difference: <strong>{{ formatReviewCurrency(preview.current.difference, 'INR') }}</strong></p>
+                    </div>
+                  </div>
+                  <p>Change in overall balance: <strong>{{ formatReviewCurrency(preview.current.total - preview.previous.total, 'INR') }}</strong></p>
+                  <p>Change in monthly difference: <strong>{{ formatReviewCurrency(preview.current.difference - preview.previous.difference, 'INR') }}</strong></p>
+                } @else {
+                  <p class="field-hint">Choose a new Super month and enter a valid balance. Both months need enough history for an overall comparison.</p>
+                }
+              </section>
+            }
           }
 
           @if (isSalary) {

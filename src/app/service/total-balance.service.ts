@@ -6,7 +6,7 @@ import { TotalApiDocument, TotalRecord } from '../model/total-record';
 const TOTAL_API_URL = 'https://64b76091df0839c97e168d79.mockapi.io/taskList';
 const TOTAL_RESOURCE_ID = '7';
 
-interface SourceEntry {
+export interface SourceEntry {
   date: string;
   amount: number;
   difference: number;
@@ -45,7 +45,8 @@ function toEntries(response: unknown, listKey: string, amountKey: string): Sourc
     const record = item as Record<string, unknown>;
     const amount = record[amountKey];
     const difference = record['difference'];
-    if (typeof record['date'] !== 'string' || typeof amount !== 'number' || typeof difference !== 'number') {
+    if (typeof record['date'] !== 'string' || typeof amount !== 'number' || !Number.isFinite(amount)
+        || typeof difference !== 'number' || !Number.isFinite(difference)) {
       throw new Error('Invalid record while calculating the overall balance.');
     }
     return { date: record['date'], amount, difference };
@@ -120,6 +121,15 @@ export class TotalBalanceService {
         };
       })
     );
+  }
+
+  getOtherBalanceSources(): Observable<SourceEntry[][]> {
+    const sources = SOURCES.filter((source) => source.id !== '6');
+    return forkJoin(sources.map((source) =>
+      this.http.get<unknown>(`${TOTAL_API_URL}/${source.id}`).pipe(
+        map((response) => toEntries(response, source.listKey, source.amountKey))
+      )
+    ));
   }
 
   // Fire-and-forget: recalculates resource 7 after any source resource changes.

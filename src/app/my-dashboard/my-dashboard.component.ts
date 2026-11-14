@@ -22,6 +22,8 @@ import { SalaryDataService } from '../service/salary-data.service';
 import { combineSalaryRecords } from '../model/combined-salary';
 import { SalaryField, salaryFields, salaryMonthKey, salaryMonthLabel } from '../model/salary-record';
 import { DashboardRecordRefreshService } from '../service/dashboard-record-refresh.service';
+import { RenderInViewDirective } from '../render-in-view/render-in-view.directive';
+import type { RecordCategory } from '../central-record-form/central-record-form.component';
 
 type DashboardChartType = ChartType;
 type SalaryMetric = `${'kumar' | 'vasuki'}Salary_${SalaryField}`;
@@ -196,6 +198,12 @@ function monthDetails(value: string): { key: string; label: string } | null {
 })
 export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('widgetGrid') private widgetGrid?: ElementRef<HTMLElement>;
+  @ViewChild('superInView') private superInView?: RenderInViewDirective;
+  @ViewChild('vasukiPfInView') private vasukiPfInView?: RenderInViewDirective;
+  @ViewChild('kumarGratuityInView') private kumarGratuityInView?: RenderInViewDirective;
+  @ViewChild('vasukiGratuityInView') private vasukiGratuityInView?: RenderInViewDirective;
+  @ViewChild('kumarSalaryInView') private kumarSalaryInView?: RenderInViewDirective;
+  @ViewChild('vasukiSalaryInView') private vasukiSalaryInView?: RenderInViewDirective;
 
   readonly editForm = new FormGroup({
     dateOfTransfer: new FormControl('', {
@@ -304,6 +312,7 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     { originX: 'end', originY: 'top', overlayX: 'end', overlayY: 'bottom', offsetY: -8 }
   ];
   private isDestroyed = false;
+  private recordHistoryTimer?: ReturnType<typeof setTimeout>;
   pendingDeleteIndex: number | null = null;
   isDeleteCodeVerifying = false;
   isDeleteCodeVerified = false;
@@ -384,8 +393,41 @@ export class MyDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     this.widgetGrid?.nativeElement.addEventListener('click', this.onWidgetGridClick, true);
   }
 
+  openRecordHistory(category: RecordCategory): void {
+    this.isCentralRecordFormOpen = false;
+    clearTimeout(this.recordHistoryTimer);
+    this.recordHistoryTimer = setTimeout(() => {
+      if (this.isDestroyed) { return; }
+      const lazyWidgets: Record<Exclude<RecordCategory, 'transfer' | 'kumarPf'>, RenderInViewDirective | undefined> = {
+        vasukiPf: this.vasukiPfInView,
+        kumarGratuity: this.kumarGratuityInView,
+        vasukiGratuity: this.vasukiGratuityInView,
+        vasukiSuper: this.superInView,
+        kumarSalary: this.kumarSalaryInView,
+        vasukiSalary: this.vasukiSalaryInView
+      };
+      if (category !== 'transfer' && category !== 'kumarPf') {
+        const lazyWidget = lazyWidgets[category];
+        if (!lazyWidget) { throw new Error(`Dashboard widget for ${category} is unavailable.`); }
+        lazyWidget.render();
+      }
+      this.changeDetectorRef.detectChanges();
+      const widget = this.widgetGrid?.nativeElement.querySelector<HTMLElement>(`[data-record-category="${category}"]`);
+      if (!widget) { throw new Error(`Dashboard widget for ${category} is unavailable.`); }
+      const toggle = widget.querySelector<HTMLButtonElement>('.accordion-toggle');
+      if (!toggle) { throw new Error(`Dashboard accordion for ${category} is unavailable.`); }
+      if (toggle.getAttribute('aria-expanded') !== 'true') {
+        toggle.click();
+        this.changeDetectorRef.detectChanges();
+      }
+      toggle.focus({ preventScroll: true });
+      this.pinWidgetToTop(widget, true);
+    });
+  }
+
   ngOnDestroy(): void {
     this.isDestroyed = true;
+    clearTimeout(this.recordHistoryTimer);
     this.widgetGrid?.nativeElement.removeEventListener('click', this.onWidgetGridClick, true);
     this.toastTimeout?.unsubscribe();
     this.amountCalculation?.unsubscribe();

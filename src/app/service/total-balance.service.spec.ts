@@ -1,4 +1,7 @@
-import { calculateTotals } from './total-balance.service';
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { TestBed } from '@angular/core/testing';
+import { calculateTotals, TotalBalanceService } from './total-balance.service';
 
 describe('calculateTotals', () => {
   const entry = (date: string, amount: number, difference: number) => ({ date, amount, difference });
@@ -12,6 +15,31 @@ describe('calculateTotals', () => {
       { date: "Sep'26", total: 300, difference: 30 },
       { date: "Aug'26", total: 270, difference: 27 }
     ]);
+  });
+
+  describe('TotalBalanceService preview sources', () => {
+    it('loads the four non-Super balance sources without updating totals', () => {
+      TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+      const http = TestBed.inject(HttpTestingController);
+      let result: { date: string; amount: number; difference: number }[][] | undefined;
+      TestBed.inject(TotalBalanceService).getOtherBalanceSources().subscribe((sources) => result = sources);
+
+      for (const id of ['2', '3', '4', '5']) {
+        const request = http.expectOne((req) => req.url.endsWith(`/taskList/${id}`));
+        expect(request.request.method).toBe('GET');
+        request.flush(id === '2' || id === '3'
+          ? { pfRecords: [{ date: "Dec'26", pfAmount: 100, difference: 10 }] }
+          : { gratuityRecords: [{ date: "Dec'26", gratuity: 200, difference: 20 }] });
+      }
+
+      expect(result).toEqual([
+        [{ date: "Dec'26", amount: 100, difference: 10 }],
+        [{ date: "Dec'26", amount: 100, difference: 10 }],
+        [{ date: "Dec'26", amount: 200, difference: 20 }],
+        [{ date: "Dec'26", amount: 200, difference: 20 }]
+      ]);
+      http.verify();
+    });
   });
 
   it('keeps older months complete-only and sums a new partial month once per month', () => {

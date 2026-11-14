@@ -1,4 +1,5 @@
-import { ChangeDetectorRef } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Output } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
 import { MyDashboardComponent } from './my-dashboard.component';
 import { TransferRecord } from '../model/transfer';
 import { TransferService } from '../service/transfer.service';
@@ -10,6 +11,31 @@ import { of, Subject, throwError } from 'rxjs';
 import { ColorHelper, ScaleType } from '@swimlane/ngx-charts';
 import ExcelJS from 'exceljs';
 import { SalaryDataService } from '../service/salary-data.service';
+import { RenderInViewDirective } from '../render-in-view/render-in-view.directive';
+import type { RecordCategory } from '../central-record-form/central-record-form.component';
+
+@Component({
+  selector: 'app-test-accordion',
+  template: '<button class="accordion-toggle" [attr.aria-expanded]="isExpanded" (click)="toggleExpanded()">Open</button>',
+  standalone: false
+})
+class HistoryStubComponent {
+  isExpanded = false;
+  toggleExpanded(): void { this.isExpanded = !this.isExpanded; }
+}
+
+@Component({
+  selector: 'app-central-record-form',
+  template: '@for (category of categories; track category) { <button type="button" [attr.data-category]="category" (click)="openHistory.emit(category)">{{ category }}</button> }',
+  standalone: false
+})
+class CentralFormStubComponent {
+  @Output() openHistory = new EventEmitter<RecordCategory>();
+  readonly categories: RecordCategory[] = [
+    'transfer', 'kumarPf', 'vasukiPf', 'kumarGratuity',
+    'vasukiGratuity', 'vasukiSuper', 'kumarSalary', 'vasukiSalary'
+  ];
+}
 
 describe('MyDashboardComponent', () => {
   let component: MyDashboardComponent;
@@ -101,6 +127,96 @@ describe('MyDashboardComponent', () => {
     component.validateDeleteConfirmationCode();
     await Promise.resolve();
   }
+
+  it('closes the form and opens each corresponding accordion, including lazy widgets', async () => {
+    const realObserver = window.IntersectionObserver;
+    transferService.getTransfers.and.returnValue(new Subject<TransferRecord[]>());
+    window.IntersectionObserver = class {
+      observe(): void {}
+      disconnect(): void {}
+    } as unknown as typeof IntersectionObserver;
+    TestBed.configureTestingModule({
+      declarations: [MyDashboardComponent, RenderInViewDirective, HistoryStubComponent, CentralFormStubComponent],
+      providers: [
+        { provide: TransferService, useValue: transferService },
+        { provide: ConfirmationCodeService, useValue: confirmationCodeService },
+        { provide: PfDataService, useValue: pfDataService },
+        { provide: GratuityDataService, useValue: gratuityDataService },
+        { provide: TotalBalanceService, useValue: totalBalanceService },
+        { provide: SalaryDataService, useValue: salaryDataService }
+      ]
+    });
+    TestBed.overrideComponent(MyDashboardComponent, {
+      set: {
+        template: `<div class="dashboard-widget-grid" #widgetGrid>
+          <app-test-accordion data-record-category="transfer"></app-test-accordion>
+          <app-test-accordion data-record-category="kumarPf"></app-test-accordion>
+          <ng-template appRenderInView #vasukiPfInView="appRenderInView">
+            <app-test-accordion data-record-category="vasukiPf"></app-test-accordion>
+          </ng-template>
+          <ng-template appRenderInView #kumarGratuityInView="appRenderInView">
+            <app-test-accordion data-record-category="kumarGratuity"></app-test-accordion>
+          </ng-template>
+          <ng-template appRenderInView #vasukiGratuityInView="appRenderInView">
+            <app-test-accordion data-record-category="vasukiGratuity"></app-test-accordion>
+          </ng-template>
+          <ng-template [appRenderInView]="'widget-full'" #superInView="appRenderInView">
+            <app-test-accordion data-record-category="vasukiSuper"></app-test-accordion>
+          </ng-template>
+          <ng-template appRenderInView #kumarSalaryInView="appRenderInView">
+            <app-test-accordion data-record-category="kumarSalary"></app-test-accordion>
+          </ng-template>
+          <ng-template appRenderInView #vasukiSalaryInView="appRenderInView">
+            <app-test-accordion data-record-category="vasukiSalary"></app-test-accordion>
+          </ng-template>
+        </div>
+        @if (isCentralRecordFormOpen) {
+          <app-central-record-form (openHistory)="openRecordHistory($event)"></app-central-record-form>
+        }`
+      }
+    });
+    const fixture = TestBed.createComponent(MyDashboardComponent);
+    document.body.appendChild(fixture.nativeElement);
+    try {
+      fixture.detectChanges();
+      const categories: RecordCategory[] = [
+        'transfer', 'kumarPf', 'vasukiPf', 'kumarGratuity',
+        'vasukiGratuity', 'vasukiSuper', 'kumarSalary', 'vasukiSalary'
+      ];
+      for (const category of categories) {
+        if (category !== 'transfer' && category !== 'kumarPf') {
+          expect(fixture.nativeElement.querySelector(`[data-record-category="${category}"]`)).toBeNull();
+        }
+        fixture.componentInstance.isCentralRecordFormOpen = true;
+        fixture.changeDetectorRef.markForCheck();
+        fixture.detectChanges();
+        fixture.nativeElement.querySelector(`app-central-record-form button[data-category="${category}"]`).click();
+        fixture.detectChanges();
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        fixture.detectChanges();
+
+        const toggle: HTMLButtonElement = fixture.nativeElement.querySelector(`[data-record-category="${category}"] .accordion-toggle`);
+        expect(fixture.nativeElement.querySelector('app-central-record-form')).toBeNull();
+        expect(toggle.getAttribute('aria-expanded')).toBe('true');
+        expect(document.activeElement).toBe(toggle);
+      }
+      expect(fixture.nativeElement.querySelector('.widget-placeholder')).toBeNull();
+
+      fixture.componentInstance.isCentralRecordFormOpen = true;
+      fixture.changeDetectorRef.markForCheck();
+      fixture.detectChanges();
+      fixture.nativeElement.querySelector('app-central-record-form button[data-category="vasukiSuper"]').click();
+      fixture.detectChanges();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('[data-record-category="vasukiSuper"] .accordion-toggle').getAttribute('aria-expanded')).toBe('true');
+      expect(fixture.nativeElement.querySelectorAll('[data-record-category="vasukiSuper"]').length).toBe(1);
+    } finally {
+      fixture.destroy();
+      fixture.nativeElement.remove();
+      window.IntersectionObserver = realObserver;
+    }
+  });
 
   it('dismisses dashboard options on outside clicks but lets the trigger handle its own clicks', () => {
     const button = document.createElement('button');

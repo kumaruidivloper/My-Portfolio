@@ -1,6 +1,6 @@
 /// <reference types="jasmine" />
 
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { RenderInViewDirective } from './render-in-view.directive';
@@ -9,7 +9,9 @@ import { RenderInViewDirective } from './render-in-view.directive';
   template: `<div class="host"><span class="card" *appRenderInView>Card</span></div>`,
   standalone: false
 })
-class HostComponent {}
+class HostComponent {
+  @ViewChild(RenderInViewDirective) directive!: RenderInViewDirective;
+}
 
 @Component({
   template: `<div class="host"><span class="card" *appRenderInView="'widget-full'">Card</span></div>`,
@@ -79,5 +81,19 @@ describe('RenderInViewDirective', () => {
 
     expect(disconnect).toHaveBeenCalled();
     expect(host.querySelector('.widget-placeholder')).toBeNull();
+  });
+
+  it('renders on demand only once, including after an intersection callback', () => {
+    const fixture = TestBed.createComponent(HostComponent);
+    fixture.detectChanges();
+    const host: HTMLElement = fixture.nativeElement.querySelector('.host');
+
+    fixture.componentInstance.directive.render();
+    intersect(true);
+    fixture.detectChanges();
+
+    expect(host.querySelector('.widget-placeholder')).toBeNull();
+    expect(host.querySelectorAll('.card').length).toBe(1);
+    expect(disconnect).toHaveBeenCalled();
   });
 });

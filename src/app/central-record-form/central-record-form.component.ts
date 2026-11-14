@@ -5,6 +5,7 @@ import { GratuityApiDocument, GratuityRecord } from '../model/gratuity-record';
 import { PfApiDocument, PfRecord } from '../model/pf-record';
 import { SalaryRecord, salaryMonthKey, salaryMonthLabel } from '../model/salary-record';
 import { TransferRecord } from '../model/transfer';
+import { TotalRecord } from '../model/total-record';
 import { GratuityDataService, GratuityResourceId } from '../service/gratuity-data.service';
 import { PfDataService, PfResourceId } from '../service/pf-data.service';
 import { SalaryDataService } from '../service/salary-data.service';
@@ -12,10 +13,14 @@ import { DashboardRecordRefreshService } from '../service/dashboard-record-refre
 import { TransferService } from '../service/transfer.service';
 import { isOverlayOpen } from '../service/escape-dismiss';
 import { FormStepperComponent } from '../form-stepper/form-stepper.component';
+import { calculateTotals, SourceEntry, TotalBalanceService } from '../service/total-balance.service';
 
-type RecordCategory = 'transfer' | 'kumarPf' | 'vasukiPf' | 'kumarGratuity' | 'vasukiGratuity' | 'vasukiSuper' | 'kumarSalary' | 'vasukiSalary';
+export type RecordCategory = 'transfer' | 'kumarPf' | 'vasukiPf' | 'kumarGratuity' | 'vasukiGratuity' | 'vasukiSuper' | 'kumarSalary' | 'vasukiSalary';
 interface ItemSummary { headline: string; detail: string; loading?: boolean; trend?: 'up' | 'down' | 'flat'; change?: string }
 interface CategoryOption { value: RecordCategory; label: string; group: string; short: string }
+type OverallSummary =
+  | { status: 'loading' | 'unavailable' | 'empty' }
+  | { status: 'ready'; currentMonth: string; current: TotalRecord | null; previous: TotalRecord | null; previousMonths: TotalRecord[]; monthChanges: Record<string, number> };
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -31,6 +36,30 @@ function monthRecordKey(value: string): string {
   const month = MONTHS.findIndex((name) => name.toLowerCase() === match[1].slice(0, 3).toLowerCase());
   const year = match[2].length === 2 ? `20${match[2]}` : match[2];
   return month < 0 ? value : `${year}-${String(month + 1).padStart(2, '0')}`;
+}
+
+function previousMonthKey(value: string): string {
+  const [year, month] = value.split('-').map(Number);
+  const previous = new Date(year, month - 2, 1);
+  return `${previous.getFullYear()}-${String(previous.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function findPreviousRecord<T>(records: T[], value: string, recordDate: (record: T) => string): T | undefined {
+  const match = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(value);
+  if (!match) { return undefined; }
+
+  for (const offset of [0, 1, 2]) {
+    const previous = new Date(Number(match[1]), Number(match[2]) - 1 - offset, 1);
+    const key = `${previous.getFullYear()}-${String(previous.getMonth() + 1).padStart(2, '0')}`;
+    const record = records.find((entry) => monthRecordKey(recordDate(entry)) === key);
+    if (record) { return record; }
+  }
+  return undefined;
+}
+
+function currentMonthKey(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 }
 
 function backendDate(value: string): string {
@@ -52,6 +81,7 @@ function backendDate(value: string): string {
 export class CentralRecordFormComponent implements OnInit, OnDestroy {
   @Output() cancel = new EventEmitter<void>();
   @Output() saved = new EventEmitter<void>();
+  @Output() openHistory = new EventEmitter<RecordCategory>();
   @ViewChild(FormStepperComponent) stepper?: FormStepperComponent;
 
   readonly categories: CategoryOption[] = [
@@ -71,6 +101,7 @@ export class CentralRecordFormComponent implements OnInit, OnDestroy {
   }, []);
   category: RecordCategory | null = null;
   summaries: Partial<Record<RecordCategory, ItemSummary>> = {};
+  overallSummary: OverallSummary = { status: 'loading' };
   private readonly summarySubscription = new Subscription();
   isSaving = false;
   errorMessage = '';
@@ -86,6 +117,10 @@ export class CentralRecordFormComponent implements OnInit, OnDestroy {
   private gratuityDocument: GratuityApiDocument | null = null;
   private gratuityLoadAttempt = 0;
   private gratuityDataSubscription?: Subscription;
+  private otherBalanceSources: SourceEntry[][] | null = null;
+  private otherBalanceSubscription?: Subscription;
+  isLoadingOverallPreview = false;
+  overallPreviewError = '';
   private readonly formSubscription: Subscription;
   readonly form = new FormGroup({
     date: new FormControl('', { nonNullable: true }),
@@ -109,6 +144,7 @@ export class CentralRecordFormComponent implements OnInit, OnDestroy {
     private pfDataService: PfDataService,
     private gratuityDataService: GratuityDataService,
     private salaryDataService: SalaryDataService,
+    private totalBalanceService: TotalBalanceService,
     private refreshService: DashboardRecordRefreshService,
     private host: ElementRef<HTMLElement>,
     private changeDetector: ChangeDetectorRef
@@ -120,6 +156,7 @@ export class CentralRecordFormComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.loadOverallSummary();
     this.loadSummary(() => this.transferService.getTransfers(), this.transferService.transferUpdated$, 'transfer', (transfers) => {
       if (!transfers.length) { return { headline: 'No records', detail: '' }; }
       const sent = transfers.reduce((sum, record) => sum + record.amountTransferredAUD, 0);
@@ -151,6 +188,47 @@ export class CentralRecordFormComponent implements OnInit, OnDestroy {
     }
   }
 
+  private loadOverallSummary(): void {
+    this.summarySubscription.add(this.totalBalanceService.totalsUpdated$.pipe(
+      startWith(null),
+      switchMap(() => this.totalBalanceService.getTotals().pipe(
+        map((document): OverallSummary => {
+          const records = document.totalRecords.map((record) => {
+            if (!record || typeof record.date !== 'string' || !Number.isFinite(record.total) || !Number.isFinite(record.difference)) {
+              throw new Error('Invalid overall balance record.');
+            }
+            const date = monthRecordKey(record.date);
+            if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(date)) {
+              throw new Error('Invalid overall balance month.');
+            }
+            return { ...record, date };
+          }).sort((a, b) => b.date.localeCompare(a.date));
+          if (!records.length) { return { status: 'empty' }; }
+          const month = currentMonthKey();
+          const current = records.find((record) => record.date === month) ?? null;
+          const [year, monthNumber] = month.split('-').map(Number);
+          const previousMonths = [1, 2].map((offset) => {
+            const date = new Date(year, monthNumber - 1 - offset, 1);
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+          }).map((previousMonth) => records.find((record) => record.date === previousMonth))
+            .filter((record): record is TotalRecord => record !== undefined);
+          const monthChanges: Record<string, number> = {};
+          for (const record of [current, ...previousMonths]) {
+            if (!record) { continue; }
+            const previousRecord = records.find((candidate) => candidate.date === previousMonthKey(record.date));
+            if (previousRecord) { monthChanges[record.date] = record.difference - previousRecord.difference; }
+          }
+          return { status: 'ready', currentMonth: month, current, previous: previousMonths[0] ?? null, previousMonths, monthChanges };
+        }),
+        catchError(() => of<OverallSummary>({ status: 'unavailable' })),
+        startWith<OverallSummary>({ status: 'loading' })
+      ))
+    ).subscribe((summary) => {
+      this.overallSummary = summary;
+      this.changeDetector.markForCheck();
+    }));
+  }
+
   summaryFor(category: string): ItemSummary {
     return this.summaries[category as RecordCategory] ?? { headline: '', detail: '', loading: true };
   }
@@ -180,7 +258,7 @@ export class CentralRecordFormComponent implements OnInit, OnDestroy {
     };
   }
 
-  private trendOf(difference: number, currency: 'AUD' | 'INR'): Pick<ItemSummary, 'trend' | 'change'> {
+  trendOf(difference: number, currency: 'AUD' | 'INR'): Pick<ItemSummary, 'trend' | 'change'> {
     return {
       trend: difference > 0 ? 'up' : difference < 0 ? 'down' : 'flat',
       change: this.formatReviewCurrency(Math.abs(difference), currency)
@@ -193,6 +271,7 @@ export class CentralRecordFormComponent implements OnInit, OnDestroy {
     this.pfDataSubscription?.unsubscribe();
     this.gratuityLoadAttempt++;
     this.gratuityDataSubscription?.unsubscribe();
+    this.otherBalanceSubscription?.unsubscribe();
     this.formSubscription.unsubscribe();
   }
 
@@ -206,6 +285,34 @@ export class CentralRecordFormComponent implements OnInit, OnDestroy {
   get isVasukiSalary(): boolean { return this.category === 'vasukiSalary'; }
   get monthlyDifferenceLabel(): string {
     return this.isBalanceRecord || this.isGratuityRecord ? 'Monthly difference (INR)' : 'Monthly difference';
+  }
+
+  get superOverallPreview(): { previous: TotalRecord; current: TotalRecord; previousMonth: string; currentMonth: string } | null {
+    const date = this.form.controls.date.value;
+    const amount = this.form.controls.amount.value;
+    const match = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(date);
+    if (this.category !== 'vasukiSuper' || !match || !this.otherBalanceSources || !this.gratuityDocument
+        || !Number.isFinite(amount) || amount < 0
+        || this.gratuityDocument.gratuityRecords.some((record) => monthRecordKey(record.date) === date)) {
+      return null;
+    }
+
+    const previousMonth = previousMonthKey(date);
+    if (!this.gratuityDocument.gratuityRecords.some((record) => monthRecordKey(record.date) === previousMonth)) {
+      return null;
+    }
+    const superEntries: SourceEntry[] = this.gratuityDocument.gratuityRecords.map((record) => ({
+      date: record.date, amount: record.gratuity, difference: record.difference
+    }));
+    superEntries.push({
+      date: monthInputToRecordDate(date),
+      amount,
+      difference: this.form.controls.difference.value
+    });
+    const totals = calculateTotals([...this.otherBalanceSources, superEntries]);
+    const current = totals.find((record) => monthRecordKey(record.date) === date);
+    const previous = totals.find((record) => monthRecordKey(record.date) === previousMonth);
+    return current && previous ? { current, previous, currentMonth: date, previousMonth } : null;
   }
   get receivedAmount(): number {
     const { amountTransferredAUD, conversionRate } = this.form.getRawValue();
@@ -302,12 +409,16 @@ export class CentralRecordFormComponent implements OnInit, OnDestroy {
     this.pfDataSubscription?.unsubscribe();
     this.gratuityLoadAttempt++;
     this.gratuityDataSubscription?.unsubscribe();
+    this.otherBalanceSubscription?.unsubscribe();
     this.pfDocument = null;
     this.isLoadingPfHistory = false;
     this.pfHistoryError = '';
     this.gratuityDocument = null;
     this.isLoadingGratuityHistory = false;
     this.gratuityHistoryError = '';
+    this.otherBalanceSources = null;
+    this.isLoadingOverallPreview = false;
+    this.overallPreviewError = '';
     this.category = value as RecordCategory | null;
     this.form.reset();
     this.errorMessage = '';
@@ -319,6 +430,9 @@ export class CentralRecordFormComponent implements OnInit, OnDestroy {
     } else if (this.isGratuityRecord) {
       const resourceId: GratuityResourceId = this.category === 'kumarGratuity' ? '4' : this.category === 'vasukiGratuity' ? '5' : '6';
       this.loadGratuityHistory(resourceId);
+      if (this.category === 'vasukiSuper') {
+        this.loadOverallPreviewSources();
+      }
     }
     this.focusFirstField();
   }
@@ -467,7 +581,7 @@ export class CentralRecordFormComponent implements OnInit, OnDestroy {
     this.requireAmounts(this.isVasukiSalary ? [...salaryFields, value.ausHealthInsurance] : salaryFields);
   }
 
-  private formatReviewMonth(value: string): string {
+  formatReviewMonth(value: string): string {
     const match = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(value);
     return match ? `${MONTHS[Number(match[2]) - 1]} ${match[1]}` : value || 'Not set';
   }
@@ -477,13 +591,29 @@ export class CentralRecordFormComponent implements OnInit, OnDestroy {
     return match ? `${match[3]} ${MONTHS[Number(match[2]) - 1]} ${match[1]}` : value || 'Not set';
   }
 
-  private formatReviewCurrency(value: number, currency: 'AUD' | 'INR'): string {
+  formatReviewCurrency(value: number, currency: 'AUD' | 'INR'): string {
     return new Intl.NumberFormat(currency === 'AUD' ? 'en-AU' : 'en-IN', {
       style: 'currency',
       currency,
       minimumFractionDigits: currency === 'AUD' ? 2 : 0,
       maximumFractionDigits: currency === 'AUD' ? 2 : 2
     }).format(value).replace('₹', '₹ ');
+  }
+
+  private loadOverallPreviewSources(): void {
+    this.isLoadingOverallPreview = true;
+    this.otherBalanceSubscription = this.totalBalanceService.getOtherBalanceSources().subscribe({
+      next: (sources) => {
+        this.otherBalanceSources = sources;
+        this.isLoadingOverallPreview = false;
+        this.changeDetector.markForCheck();
+      },
+      error: () => {
+        this.isLoadingOverallPreview = false;
+        this.overallPreviewError = 'Unable to load overall balance data. Select Super again to retry.';
+        this.changeDetector.markForCheck();
+      }
+    });
   }
 
   private loadPfHistory(resourceId: PfResourceId): void {
@@ -522,9 +652,7 @@ export class CentralRecordFormComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const previousMonth = new Date(Number(match[1]), Number(match[2]) - 2, 1);
-    const previousKey = `${previousMonth.getFullYear()}-${String(previousMonth.getMonth() + 1).padStart(2, '0')}`;
-    const previousRecord = this.pfDocument.pfRecords.find((record) => monthRecordKey(record.date) === previousKey);
+    const previousRecord = findPreviousRecord(this.pfDocument.pfRecords, this.form.controls.date.value, (record) => record.date);
     const difference = previousRecord ? this.form.controls.amount.value - previousRecord.pfAmount : 0;
     this.form.controls.difference.setValue(difference, { emitEvent: false });
   }
@@ -548,11 +676,13 @@ export class CentralRecordFormComponent implements OnInit, OnDestroy {
         this.isLoadingGratuityHistory = false;
         this.gratuityHistoryError = '';
         this.syncGratuityDifference();
+        this.changeDetector.markForCheck();
       },
       error: () => {
         if (attempt !== this.gratuityLoadAttempt) { return; }
         this.isLoadingGratuityHistory = false;
         this.gratuityHistoryError = 'Unable to load previous gratuity records. Try selecting the owner again.';
+        this.changeDetector.markForCheck();
       }
     });
   }
@@ -565,9 +695,7 @@ export class CentralRecordFormComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const previousMonth = new Date(Number(match[1]), Number(match[2]) - 2, 1);
-    const previousKey = `${previousMonth.getFullYear()}-${String(previousMonth.getMonth() + 1).padStart(2, '0')}`;
-    const previousRecord = this.gratuityDocument.gratuityRecords.find((record) => monthRecordKey(record.date) === previousKey);
+    const previousRecord = findPreviousRecord(this.gratuityDocument.gratuityRecords, this.form.controls.date.value, (record) => record.date);
     const previousValue = previousRecord?.gratuity ?? 0;
     this.form.controls.difference.setValue(this.form.controls.amount.value - previousValue, { emitEvent: false });
   }

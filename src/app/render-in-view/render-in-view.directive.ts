@@ -7,6 +7,7 @@ import { DestroyRef, Directive, ElementRef, Input, NgZone, OnInit, Renderer2, Te
  */
 @Directive({
   selector: '[appRenderInView]',
+  exportAs: 'appRenderInView',
   standalone: false
 })
 export class RenderInViewDirective implements OnInit {
@@ -18,10 +19,13 @@ export class RenderInViewDirective implements OnInit {
   private readonly anchor = inject(ElementRef<Comment>);
   private readonly zone = inject(NgZone);
   private readonly destroyRef = inject(DestroyRef);
+  private observer?: IntersectionObserver;
+  private placeholder?: HTMLElement;
+  private rendered = false;
 
   ngOnInit(): void {
     if (typeof IntersectionObserver === 'undefined') {
-      this.viewContainer.createEmbeddedView(this.template);
+      this.render();
       return;
     }
 
@@ -33,20 +37,27 @@ export class RenderInViewDirective implements OnInit {
     }
     this.renderer.setAttribute(placeholder, 'aria-hidden', 'true');
     this.renderer.insertBefore(this.renderer.parentNode(anchor), placeholder, anchor);
+    this.placeholder = placeholder;
 
-    const observer = new IntersectionObserver((entries) => {
+    this.observer = new IntersectionObserver((entries) => {
       if (!entries.some((entry) => entry.isIntersecting)) {
         return;
       }
-      observer.disconnect();
-      placeholder.remove();
-      this.zone.run(() => this.viewContainer.createEmbeddedView(this.template));
+      this.zone.run(() => this.render());
     }, { rootMargin: '200px 0px' });
-    observer.observe(placeholder);
+    this.observer.observe(placeholder);
 
     this.destroyRef.onDestroy(() => {
-      observer.disconnect();
-      placeholder.remove();
+      this.observer?.disconnect();
+      this.placeholder?.remove();
     });
+  }
+
+  render(): void {
+    if (this.rendered) { return; }
+    this.rendered = true;
+    this.observer?.disconnect();
+    this.placeholder?.remove();
+    this.viewContainer.createEmbeddedView(this.template);
   }
 }

@@ -11,11 +11,14 @@ export class FormStepperComponent implements OnInit {
   @Input() labels: readonly string[] = [];
   @Input() startStep = 0;
   @Input() stepValid = true;
+  @Input() nextDisabled = false;
+  @Input() firstStepBackEnabled = false;
   @Input() submitLabel = 'Save';
   @Input() submitClass = 'primary-action';
   @Input() submitDisabled = false;
   @Input() saving = false;
   @Output() cancel = new EventEmitter<void>();
+  @Output() firstStepBack = new EventEmitter<void>();
   @Output() invalidNext = new EventEmitter<number>();
 
   step = 0;
@@ -33,7 +36,7 @@ export class FormStepperComponent implements OnInit {
   }
 
   next(): void {
-    if (this.isLast) {
+    if (this.isLast || this.nextDisabled) {
       return;
     }
     if (!this.stepValid) {

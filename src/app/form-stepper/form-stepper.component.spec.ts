@@ -26,6 +26,33 @@ describe('FormStepperComponent', () => {
     expect(component.step).toBe(1);
   });
 
+  it('disables Next and prevents keyboard or programmatic advancement when requested', () => {
+    fixture.componentRef.setInput('nextDisabled', true);
+    component.stepValid = false;
+    const invalidNext = jasmine.createSpy('invalidNext');
+    component.invalidNext.subscribe(invalidNext);
+    fixture.changeDetectorRef.markForCheck();
+    fixture.detectChanges();
+
+    const button: HTMLButtonElement = fixture.nativeElement.querySelector('.stepper-actions .primary-action');
+    expect(button.disabled).toBeTrue();
+    component.next();
+    const input = document.createElement('input');
+    const event = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    fixture.nativeElement.appendChild(input);
+    input.dispatchEvent(event);
+    expect(event.defaultPrevented).toBeTrue();
+    expect(component.step).toBe(0);
+    expect(invalidNext).not.toHaveBeenCalled();
+
+    fixture.componentRef.setInput('nextDisabled', false);
+    fixture.changeDetectorRef.markForCheck();
+    fixture.detectChanges();
+    expect(button.disabled).toBeFalse();
+    button.click();
+    expect(invalidNext).toHaveBeenCalledOnceWith(0);
+  });
+
   it('goes back and stops at the last step', () => {
     component.next();
     component.next();
