@@ -120,6 +120,13 @@ describe('AppComponent', () => {
       expect(row.textContent?.trim()).toBe('My Dashboard');
       expect(track.getBoundingClientRect().width).toBeGreaterThan(4 * parseFloat(getComputedStyle(document.documentElement).fontSize));
       expect(toggle.checked).toBeTrue();
+      fixture.componentInstance.isDashboardPromptOpen = true;
+      fixture.changeDetectorRef.markForCheck();
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('#dashboard-visibility-notice')).toBeNull();
+      fixture.componentInstance.closeDashboardPrompt();
+      fixture.changeDetectorRef.markForCheck();
+      fixture.detectChanges();
       expect(track.querySelectorAll('.toggle-switch-thumb svg path').length).toBe(2);
       expect(track.querySelectorAll('.dashboard-blur-hint path').length).toBe(1);
       await Promise.all(thumb.getAnimations().map((animation) => animation.finished));
@@ -138,6 +145,24 @@ describe('AppComponent', () => {
       expect(thumb.getBoundingClientRect().right).toBeLessThan(hint.getBoundingClientRect().left);
       expect(document.body.classList.contains('dashboard-values-blurred')).toBeFalse();
       expect(navigateByUrl).not.toHaveBeenCalled();
+      fixture.componentInstance.isDashboardPromptOpen = true;
+      fixture.changeDetectorRef.markForCheck();
+      fixture.detectChanges();
+      const notice = fixture.nativeElement.querySelector('#dashboard-visibility-notice') as HTMLElement;
+      expect(notice.textContent).toContain('All dashboard values will be visible');
+      const modal = fixture.nativeElement.querySelector('.dashboard-code-modal') as HTMLElement;
+      expect(modal.getAttribute('aria-describedby')).toBe('dashboard-visibility-notice');
+      expect(getComputedStyle(notice).textAlign).toBe('center');
+      for (const width of ['60rem', '25rem']) {
+        modal.style.width = width;
+        const modalRect = modal.getBoundingClientRect();
+        const noticeRect = notice.getBoundingClientRect();
+        expect(Math.abs((modalRect.left + modalRect.right - noticeRect.left - noticeRect.right) / 2)).toBeLessThan(1);
+        expect(noticeRect.width).toBeLessThanOrEqual(modalRect.width);
+      }
+      fixture.componentInstance.closeDashboardPrompt();
+      fixture.changeDetectorRef.markForCheck();
+      fixture.detectChanges();
       toggle.click();
       fixture.detectChanges();
       expect(document.body.classList.contains('dashboard-values-blurred')).toBeTrue();

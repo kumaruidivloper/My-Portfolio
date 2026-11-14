@@ -54,7 +54,7 @@ The About skill bars supplement API-provided skills with Claude / Claude Code (8
 
 Dashboard access and edit/delete confirmations require the configured 14-digit code. Dashboard entry automatically verifies after all 14 digits are entered; pasted codes also fill all 14 fields.
 
-The eye switch beside My Dashboard is on by default and visually obscures dashboard values, charts, and entry fields; a crossed-out eye indicates blur is on. Switch it off before opening the dashboard to show values. This is a visual aid, not data protection: accessible text, browser tools, and exports can still expose the data.
+The eye switch beside My Dashboard is on by default and visually obscures dashboard values, charts, and entry fields; a crossed-out eye indicates blur is on. Switch it off before opening the dashboard to show values; the code dialog then warns that values will be visible. This is a visual aid, not data protection: accessible text, browser tools, and exports can still expose the data.
 
 ```bash
 npm install
@@ -107,6 +107,8 @@ This runs:
 ```bash
 ng build --configuration production
 ```
+
+Production builds warn above 550 kB for the initial bundle or 9 kB for an individual component stylesheet. The corresponding error limits are 1 MB and 10 kB.
 
 ## 4. Deploy to GitHub Pages
 

@@ -186,10 +186,14 @@
       role="dialog"
       aria-modal="true"
       aria-labelledby="dashboard-code-title"
+      [attr.aria-describedby]="dashboardBlurEnabled ? null : 'dashboard-visibility-notice'"
       (click)="$event.stopPropagation()"
       (keydown.escape)="closeDashboardPrompt()">
       <h2 id="dashboard-code-title">Enter dashboard code</h2>
       <p>Enter the 14-digit code to continue.</p>
+      @if (!dashboardBlurEnabled) {
+        <p id="dashboard-visibility-notice" class="dashboard-visibility-notice">Blur is off. All dashboard values will be visible.</p>
+      }
       <div>
         <div class="dashboard-code-inputs">
           @for (digit of dashboardCodeDigits; track $index; let i = $index) {
