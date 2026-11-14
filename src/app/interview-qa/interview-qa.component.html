@@ -1,3 +1,4 @@
+<app-scroll-progress [scrollContainer]="qaBody" [resizeTarget]="qaContent"></app-scroll-progress>
 <div class="qa-header">
   <h2 class="qa-title"><i class="fas fa-comments" aria-hidden="true"></i> Interview <span>Q&amp;A</span></h2>
   <div class="qa-actions">
@@ -9,10 +10,12 @@
     </button>
   </div>
 </div>
-<div class="qa-body">
-  @if (menus(); as menus) {
-    <app-accordion [options]="options" [menus]="menus"></app-accordion>
-  } @else {
-    <p class="qa-loading" role="status"><i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Loading questions…</p>
-  }
+<div class="qa-body" #qaBody>
+  <div #qaContent>
+    @if (menus(); as menus) {
+      <app-accordion [options]="options" [menus]="menus"></app-accordion>
+    } @else {
+      <p class="qa-loading" role="status"><i class="fas fa-spinner fa-spin" aria-hidden="true"></i> Loading questions…</p>
+    }
+  </div>
 </div>

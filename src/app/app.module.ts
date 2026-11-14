@@ -13,6 +13,7 @@ import { WorkHoursComponent } from './work-hours/work-hours.component';
 import { AboutSkillsComponent } from './about-skills/about-skills.component';
 import { WorkExperienceComponent } from './work-experience/work-experience.component';
 import { PortfolioComponent } from './portfolio/portfolio.component';
+import { ScrollProgressComponent } from './scroll-progress/scroll-progress.component';
 
 @NgModule({ declarations: [
         AppComponent,
@@ -26,5 +27,6 @@ import { PortfolioComponent } from './portfolio/portfolio.component';
     ],
     bootstrap: [AppComponent], imports: [BrowserModule,
         AppRoutingModule,
-        FormsModule], providers: [provideHttpClient(withXhr(), withInterceptorsFromDi()), provideAnimationsAsync()] })
+        FormsModule,
+        ScrollProgressComponent], providers: [provideHttpClient(withXhr(), withInterceptorsFromDi()), provideAnimationsAsync()] })
 export class AppModule { }

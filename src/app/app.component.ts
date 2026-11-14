@@ -64,10 +64,10 @@ export class AppComponent implements OnInit, OnDestroy {
     input?.nativeElement.focus();
   }
 
-  @HostListener('window:scroll', ['$event']) 
-    scrollHandler(event: any): void {
-      this.menubtn.nativeElement.classList.remove('fa-time');
-      this.header.nativeElement.classList.remove('active');
+  @HostListener('window:scroll')
+    scrollHandler(): void {
+      this.menubtn?.nativeElement.classList.remove('fa-time');
+      this.header?.nativeElement.classList.remove('active');
       if(window.pageYOffset === 0) {
         this.isScrollBottom = true  ;
       }

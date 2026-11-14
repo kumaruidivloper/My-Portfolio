@@ -4,6 +4,9 @@
 </div>
 }
 @if (isDataLoaded) {
+  @if (showAutoScroll) {
+    <app-scroll-progress></app-scroll-progress>
+  }
   @if (false) {
     <app-stopwatch></app-stopwatch>
   }

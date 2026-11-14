@@ -8,6 +8,10 @@
   z-index: 99999;
 }
 
+app-scroll-progress {
+  position: absolute;
+}
+
 .qa-header {
   align-items: center;
   background: var(--bg-color);

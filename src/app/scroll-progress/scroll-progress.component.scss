@@ -1,0 +1,23 @@
+.scroll-progress {
+  position: fixed;
+  inset: 0 0 auto;
+  height: 4px;
+  background: var(--bg-color);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  pointer-events: none;
+  z-index: 10000;
+}
+
+.scroll-progress-fill {
+  width: 100%;
+  height: 100%;
+  background: var(--green);
+  transform-origin: left center;
+  transition: transform 0.1s linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-progress-fill {
+    transition: none;
+  }
+}

@@ -2,9 +2,11 @@
 
 import { TestBed } from '@angular/core/testing';
 import { Router, provideRouter } from '@angular/router';
+import { By } from '@angular/platform-browser';
 
 import { InterviewQaModule } from './interview-qa.module';
 import { InterviewQaComponent } from './interview-qa.component';
+import { ScrollProgressComponent } from '../scroll-progress/scroll-progress.component';
 
 describe('InterviewQaComponent', () => {
   beforeEach(() => {
@@ -50,6 +52,29 @@ describe('InterviewQaComponent', () => {
 
     expect(navigate).toHaveBeenCalledTimes(2);
     expect(navigate).toHaveBeenCalledWith('/');
+    fixture.destroy();
+  });
+
+  it('tracks scrolling in the interview content', () => {
+    const fixture = render();
+    const progress = fixture.debugElement.query(By.directive(ScrollProgressComponent)).componentInstance as ScrollProgressComponent;
+    const body: HTMLElement = fixture.nativeElement.querySelector('.qa-body');
+    let scrollTop = 500;
+    spyOnProperty(body, 'scrollHeight', 'get').and.returnValue(1500);
+    spyOnProperty(body, 'clientHeight', 'get').and.returnValue(500);
+    spyOnProperty(body, 'scrollTop', 'get').and.callFake(() => scrollTop);
+
+    expect(progress.scrollContainer).toBe(body);
+    expect(progress.resizeTarget).toBe(body.querySelector<HTMLDivElement>('div')!);
+    body.dispatchEvent(new Event('scroll'));
+    fixture.detectChanges();
+    const fill: HTMLElement = fixture.nativeElement.querySelector('.scroll-progress-fill');
+    expect(fill.style.transform).toBe('scaleX(0.5)');
+    scrollTop = 1000;
+    body.dispatchEvent(new Event('scroll'));
+    fixture.detectChanges();
+    expect(fill.style.transform).toBe('scaleX(1)');
+
     fixture.destroy();
   });
 });

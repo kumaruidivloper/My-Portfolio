@@ -23,6 +23,7 @@ import { DashboardLoaderComponent } from '../dashboard-loader/dashboard-loader.c
 import { RenderInViewDirective } from '../render-in-view/render-in-view.directive';
 import { SalaryDataComponent } from '../salary-data/salary-data.component';
 import { CentralRecordFormComponent } from '../central-record-form/central-record-form.component';
+import { ScrollProgressComponent } from '../scroll-progress/scroll-progress.component';
 
 @NgModule({
   declarations: [
@@ -50,6 +51,7 @@ import { CentralRecordFormComponent } from '../central-record-form/central-recor
     ScrollingModule,
     NgxChartsModule,
     ReactiveFormsModule,
+    ScrollProgressComponent,
     RouterModule.forChild([{ path: '', component: MyDashboardComponent }])
   ]
 })

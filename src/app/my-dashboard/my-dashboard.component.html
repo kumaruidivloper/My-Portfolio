@@ -1,5 +1,6 @@
-<main class="dashboard-page">
-  <div class="dashboard-content">
+<main class="dashboard-page" #dashboardPage>
+  <app-scroll-progress [scrollContainer]="dashboardPage" [resizeTarget]="dashboardContent"></app-scroll-progress>
+  <div class="dashboard-content" #dashboardContent>
     <div class="dashboard-top-actions">
       <a routerLink="/" class="btn back-button icon-action" aria-label="Back to portfolio" title="Back to portfolio">
         <svg aria-hidden="true" viewBox="0 0 24 24">

@@ -8,6 +8,11 @@
   z-index: 1001;
 }
 
+app-scroll-progress {
+  position: relative;
+  z-index: 1;
+}
+
 .dashboard-content {
   margin: 0 auto;
   max-width: 110rem;
