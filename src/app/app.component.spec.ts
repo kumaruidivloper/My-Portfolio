@@ -149,7 +149,11 @@ describe('AppComponent', () => {
       fixture.changeDetectorRef.markForCheck();
       fixture.detectChanges();
       const notice = fixture.nativeElement.querySelector('#dashboard-visibility-notice') as HTMLElement;
-      expect(notice.textContent).toContain('All dashboard values will be visible');
+      expect(notice.textContent?.trim()).toBe('Blur is off');
+      const noticeText = notice.querySelector('span') as HTMLElement;
+      const noticeIcon = notice.querySelector('svg') as SVGElement;
+      expect(noticeIcon.getAttribute('aria-hidden')).toBe('true');
+      expect(noticeIcon.getBoundingClientRect().top).toBeGreaterThan(noticeText.getBoundingClientRect().bottom);
       const modal = fixture.nativeElement.querySelector('.dashboard-code-modal') as HTMLElement;
       expect(modal.getAttribute('aria-describedby')).toBe('dashboard-visibility-notice');
       expect(getComputedStyle(notice).textAlign).toBe('center');

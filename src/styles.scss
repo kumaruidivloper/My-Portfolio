@@ -767,6 +767,14 @@ body.night .ngx-charts-tooltip-content .chart-value-tooltip span {
     width: fit-content;
 }
 
+.dashboard-visibility-notice svg {
+    color: var(--green);
+    display: block;
+    height: 2.2rem;
+    margin: .5rem auto 0;
+    width: 2.2rem;
+}
+
 .dashboard-blur-option {
     align-items: center;
     display: flex;
