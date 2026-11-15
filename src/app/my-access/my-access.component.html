@@ -8,8 +8,11 @@
     <section class="my-access-card" aria-labelledby="my-access-title">
       <h1 id="my-access-title">My Access</h1>
       <p class="my-access-description">Bank and account access details</p>
-      @if (saveSuccess) {
-        <p class="my-access-success" role="status">{{ saveSuccess }}</p>
+      @if (toastMessage) {
+        <div class="dashboard-toast" role="status" aria-live="polite">
+          <span>{{ toastMessage }}</span>
+          <button type="button" aria-label="Dismiss notification" (click)="dismissToast()">&times;</button>
+        </div>
       }
 
       @if (isLoading) {
@@ -114,9 +117,15 @@
           @for (field of editFields; track field.key) {
             <div class="access-form-field">
               <label [for]="'access-input-' + field.key">{{ field.label }}{{ field.required ? ' *' : '' }}</label>
-              <div class="access-form-input" [class.has-bank-icon]="field.key === 'bankName'" [class.has-toggle]="(field.key === 'password' || field.key === 'profilePassword') && editForm.controls[field.key].value !== 'NA'">
+              <div class="access-form-input" [class.has-bank-icon]="field.key === 'bankName'"
+                [class.has-bank-logo]="field.key === 'bankName' && bankLogoUrl(editForm.controls.bankName.value, editForm.controls.type.value)"
+                [class.has-toggle]="(field.key === 'password' || field.key === 'profilePassword') && editForm.controls[field.key].value !== 'NA'">
                 @if (field.key === 'bankName') {
-                  <svg class="access-input-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 9h18M5 9v9m4-9v9m6-9v9m4-9v9M3 21h18M2 9l10-6 10 6"></path></svg>
+                  @if (bankLogoUrl(editForm.controls.bankName.value, editForm.controls.type.value); as logoUrl) {
+                    <img class="access-input-icon access-input-logo" [src]="logoUrl" alt="">
+                  } @else {
+                    <svg class="access-input-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 9h18M5 9v9m4-9v9m6-9v9m4-9v9M3 21h18M2 9l10-6 10 6"></path></svg>
+                  }
                 }
                 <input [type]="(field.key === 'password' || field.key === 'profilePassword') && editForm.controls[field.key].value !== 'NA' && !isEditPasswordVisible(field.key) ? 'password' : 'text'"
                   [id]="'access-input-' + field.key" [formControlName]="field.key" [attr.aria-required]="field.required ? 'true' : null"

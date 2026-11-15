@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { Subscription, timer } from 'rxjs';
 import { ConfirmationCodeService } from '../service/confirmation-code.service';
 import { UnmaskCodeService } from '../service/unmask-code.service';
 import { AccessDetails, AccessRecordChangedError, BankAccessDetail, MyAccessDataService } from './my-access-data.service';
@@ -78,7 +78,7 @@ export class MyAccessComponent implements OnInit, OnDestroy {
   editingIndex: number | null = null;
   isSaving = false;
   saveError = '';
-  saveSuccess = '';
+  toastMessage = '';
   isCodeVerifying = false;
   isCodeVerified = false;
   isCodeIncorrect = false;
@@ -91,6 +91,7 @@ export class MyAccessComponent implements OnInit, OnDestroy {
   private readonly visibleEditPasswords = new Set<keyof BankAccessDetail>();
   private request?: Subscription;
   private saveRequest?: Subscription;
+  private toastTimeout?: Subscription;
   private readonly codeSubscription: Subscription;
   private codeAttempt = 0;
   private verifiedCode = '';
@@ -113,6 +114,7 @@ export class MyAccessComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.request?.unsubscribe();
     this.saveRequest?.unsubscribe();
+    this.toastTimeout?.unsubscribe();
     this.codeAttempt++;
     this.unmaskAttempt++;
     this.codeSubscription.unsubscribe();
@@ -128,7 +130,6 @@ export class MyAccessComponent implements OnInit, OnDestroy {
     this.editForm.reset(record);
     this.resetCode();
     this.saveError = '';
-    this.saveSuccess = '';
   }
 
   @HostListener('document:keydown.escape')
@@ -149,6 +150,12 @@ export class MyAccessComponent implements OnInit, OnDestroy {
     this.editingOriginal = undefined;
     this.saveError = '';
     this.resetCode();
+  }
+
+  dismissToast(): void {
+    this.toastTimeout?.unsubscribe();
+    this.toastTimeout = undefined;
+    this.toastMessage = '';
   }
 
   get canSaveChanges(): boolean {
@@ -305,7 +312,7 @@ export class MyAccessComponent implements OnInit, OnDestroy {
         this.revealedFields.clear();
         this.isSaving = false;
         this.closeEdit();
-        this.saveSuccess = 'Access record updated successfully.';
+        this.showToast('Access record updated successfully.');
         this.changeDetector.markForCheck();
       },
       error: (error: unknown) => {
@@ -399,6 +406,16 @@ export class MyAccessComponent implements OnInit, OnDestroy {
 
   private displayValue(value: string): string {
     return value === 'NA' ? 'Not applicable' : value || '—';
+  }
+
+  private showToast(message: string): void {
+    this.toastTimeout?.unsubscribe();
+    this.toastMessage = message;
+    this.toastTimeout = timer(4000).subscribe(() => {
+      this.toastTimeout = undefined;
+      this.toastMessage = '';
+      this.changeDetector.markForCheck();
+    });
   }
 
   private openUnmask(target: UnmaskTarget): void {

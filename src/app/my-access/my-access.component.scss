@@ -272,12 +272,6 @@
   display: block;
 }
 
-.my-access-success {
-  color: var(--green);
-  font-size: 1.4rem;
-  margin-top: 1.5rem;
-}
-
 .access-modal-backdrop {
   align-items: center;
   background: rgb(0 0 0 / 58%);
@@ -412,6 +406,10 @@
     &.has-bank-icon input {
       padding-left: 4rem;
     }
+
+    &.has-bank-logo input {
+      padding-left: 6rem;
+    }
   }
 
   .access-input-icon {
@@ -429,6 +427,14 @@
     transform: translateY(-50%);
     width: 1.8rem;
     z-index: 1;
+  }
+
+  .access-input-logo {
+    height: auto;
+    max-height: 2.4rem;
+    max-width: 4.5rem;
+    object-fit: contain;
+    width: auto;
   }
 
   .access-input-toggle {

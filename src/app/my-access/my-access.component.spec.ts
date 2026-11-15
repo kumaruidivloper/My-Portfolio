@@ -143,6 +143,36 @@ describe('MyAccessComponent', () => {
     expect(cards[6].querySelector('.access-bank-value img')?.getAttribute('src')).toBe('assets/img/banks/epfo.png');
   });
 
+  it('updates the Bank / service form icon to match the entered bank or EPFO service', async () => {
+    fixture.detectChanges();
+    (fixture.nativeElement.querySelector('.access-edit') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    const bankNameInput = fixture.nativeElement.querySelector('#access-input-bankName') as HTMLInputElement;
+    expect(bankNameInput.parentElement?.querySelector('.access-input-icon[aria-hidden="true"]')).not.toBeNull();
+
+    bankNameInput.value = 'ICICI Bank';
+    bankNameInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.editForm.controls.bankName.value).toBe('ICICI Bank');
+    expect(fixture.componentInstance.bankLogoUrl('ICICI Bank', 'Bank')).toBe('assets/img/banks/icici-bank.png');
+    const bankInput = bankNameInput.closest('.access-form-input') as HTMLElement;
+    expect(bankInput.querySelector('.access-input-logo')?.getAttribute('src'))
+      .toBe('assets/img/banks/icici-bank.png');
+    expect(bankInput.classList.contains('has-bank-logo')).toBeTrue();
+
+    const typeInput = fixture.nativeElement.querySelector('#access-input-type') as HTMLInputElement;
+    typeInput.value = 'PF';
+    typeInput.dispatchEvent(new Event('input', { bubbles: true }));
+    bankNameInput.value = 'PF';
+    bankNameInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(bankNameInput.parentElement?.querySelector('.access-input-logo')?.getAttribute('src'))
+      .toBe('assets/img/banks/epfo.png');
+  });
+
   it('loads records and keeps sensitive values masked until explicitly revealed', async () => {
     fixture.detectChanges();
 
@@ -376,7 +406,12 @@ describe('MyAccessComponent', () => {
     expect(fixture.nativeElement.querySelector('[role="dialog"]')).toBeNull();
     expect(fixture.nativeElement.textContent).toContain('Updated Bank');
     expect(fixture.nativeElement.textContent).toContain('Sample Bank');
-    expect(fixture.nativeElement.textContent).toContain('Access record updated successfully.');
+    const toast = fixture.nativeElement.querySelector('.dashboard-toast') as HTMLElement;
+    expect(toast.getAttribute('role')).toBe('status');
+    expect(toast.textContent).toContain('Access record updated successfully.');
+    (toast.querySelector('button') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.dashboard-toast')).toBeNull();
   });
 
   it('keeps the form open and shows a conflict when the record changes elsewhere', async () => {
