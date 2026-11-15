@@ -5,7 +5,7 @@ import { booleanAttribute, ChangeDetectionStrategy, Component, Input } from '@an
   templateUrl: './dashboard-loader.component.html',
   styleUrls: ['./dashboard-loader.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  standalone: true,
   host: {
     role: 'status',
     '[class.inline]': 'inline',

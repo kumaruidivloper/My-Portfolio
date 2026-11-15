@@ -26,8 +26,8 @@ describe('PfDataComponent (Vasuki)', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [CommonModule, NgxChartsModule, ReactiveFormsModule],
-      declarations: [PfDataComponent, WidgetPreviewChartComponent, DashboardLoaderComponent],
+      imports: [CommonModule, NgxChartsModule, ReactiveFormsModule, DashboardLoaderComponent],
+      declarations: [PfDataComponent, WidgetPreviewChartComponent],
       providers: [
         { provide: PfDataService, useValue: pfDataService },
         { provide: ConfirmationCodeService, useValue: confirmationCodeService }

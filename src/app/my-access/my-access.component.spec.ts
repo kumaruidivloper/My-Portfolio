@@ -4,7 +4,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { of, Subject, throwError } from 'rxjs';
+import { DashboardLoaderComponent } from '../dashboard-loader/dashboard-loader.component';
 import { ConfirmationCodeService } from '../service/confirmation-code.service';
+import { UnmaskCodeService } from '../service/unmask-code.service';
 import { AccessDetails, AccessRecordChangedError, MyAccessDataService } from './my-access-data.service';
 import { MyAccessComponent } from './my-access.component';
 
@@ -31,18 +33,22 @@ describe('MyAccessComponent', () => {
   let fixture: ComponentFixture<MyAccessComponent>;
   let accessData: jasmine.SpyObj<MyAccessDataService>;
   let codes: jasmine.SpyObj<ConfirmationCodeService>;
+  let unmaskCodes: jasmine.SpyObj<UnmaskCodeService>;
 
   beforeEach(() => {
     accessData = jasmine.createSpyObj<MyAccessDataService>('MyAccessDataService', ['getAccessDetails', 'updateAccessRecord']);
     accessData.getAccessDetails.and.returnValue(of(accessDetails));
     codes = jasmine.createSpyObj<ConfirmationCodeService>('ConfirmationCodeService', ['verify']);
     codes.verify.and.resolveTo(true);
+    unmaskCodes = jasmine.createSpyObj<UnmaskCodeService>('UnmaskCodeService', ['verify']);
+    unmaskCodes.verify.and.resolveTo(true);
     TestBed.configureTestingModule({
       declarations: [MyAccessComponent],
-      imports: [A11yModule, CommonModule, ReactiveFormsModule, RouterModule.forRoot([])],
+      imports: [A11yModule, CommonModule, DashboardLoaderComponent, ReactiveFormsModule, RouterModule.forRoot([])],
       providers: [
         { provide: MyAccessDataService, useValue: accessData },
-        { provide: ConfirmationCodeService, useValue: codes }
+        { provide: ConfirmationCodeService, useValue: codes },
+        { provide: UnmaskCodeService, useValue: unmaskCodes }
       ]
     });
     fixture = TestBed.createComponent(MyAccessComponent);
@@ -56,7 +62,30 @@ describe('MyAccessComponent', () => {
     fixture.detectChanges();
   }
 
-  it('loads records and keeps sensitive values masked until explicitly revealed', () => {
+  async function verifyUnmask(code = '12345678'): Promise<void> {
+    fixture.detectChanges();
+    const input = fixture.nativeElement.querySelector('.access-unmask-code-entry') as HTMLInputElement;
+    input.value = code;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    await fixture.whenStable();
+    fixture.detectChanges();
+  }
+
+  it('shows the shared loader while access details are loading', () => {
+    const response = new Subject<AccessDetails>();
+    accessData.getAccessDetails.and.returnValue(response);
+    fixture.detectChanges();
+
+    const loader = fixture.nativeElement.querySelector('app-dashboard-loader') as HTMLElement;
+    expect(loader.getAttribute('aria-label')).toBe('Loading access details');
+    expect(loader.getAttribute('role')).toBe('status');
+
+    response.next(accessDetails);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-dashboard-loader')).toBeNull();
+  });
+
+  it('loads records and keeps sensitive values masked until explicitly revealed', async () => {
     fixture.detectChanges();
 
     expect(accessData.getAccessDetails).toHaveBeenCalledTimes(1);
@@ -69,11 +98,18 @@ describe('MyAccessComponent', () => {
     const revealPassword = fixture.nativeElement.querySelector('[aria-label="Show Password"]') as HTMLButtonElement;
     revealPassword.click();
     fixture.detectChanges();
+    expect(fixture.componentInstance.pendingUnmask).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.access-unmask-modal')).not.toBeNull();
+    expect(fixture.nativeElement.textContent).not.toContain('sample-password');
+    await verifyUnmask();
     expect(fixture.nativeElement.textContent).toContain('sample-password');
 
     revealPassword.click();
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).not.toContain('sample-password');
+    revealPassword.click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.access-unmask-modal')).not.toBeNull();
   });
 
   it('displays unavailable sensitive values without masking or reveal controls', () => {
@@ -91,6 +127,61 @@ describe('MyAccessComponent', () => {
     }
     expect(fieldFor('UPI ID').querySelector('dd')?.textContent?.trim()).toBe('—');
     expect(fieldFor('UPI ID').querySelector('button')).toBeNull();
+  });
+
+  it('captures an 8-character text code in one input rendered as eight slots', async () => {
+    fixture.detectChanges();
+    (fixture.nativeElement.querySelector('[aria-label="Show Password"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector('.access-unmask-code-entry') as HTMLInputElement;
+    expect(fixture.nativeElement.querySelectorAll('.access-unmask-code-slot').length).toBe(8);
+    expect(input.inputMode).toBe('');
+    expect(input.maxLength).toBe(8);
+    expect(document.activeElement).toBe(input);
+    input.value = '4a';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(fixture.componentInstance.unmaskCode.value).toBe('4a');
+    expect(fixture.componentInstance.activeUnmaskCodeDigit).toBe(2);
+
+    for (const value of ['1234567', '123456789']) {
+      fixture.componentInstance.unmaskCode.setValue(value);
+      fixture.componentInstance.verifyUnmask();
+      expect(fixture.componentInstance.unmaskCode.invalid).toBeTrue();
+    }
+    expect(unmaskCodes.verify).not.toHaveBeenCalled();
+
+    fixture.componentInstance.unmaskCode.setValue('Ab-12xyz');
+    expect(fixture.componentInstance.unmaskCode.valid).toBeTrue();
+    await verifyUnmask('Ab-12xyz');
+    expect(unmaskCodes.verify).toHaveBeenCalledOnceWith('Ab-12xyz');
+  });
+
+  it('keeps text editable while verification is pending and ignores the stale result', async () => {
+    const resolveAttempts: Array<(valid: boolean) => void> = [];
+    unmaskCodes.verify.and.callFake(() => new Promise<boolean>((done) => resolveAttempts.push(done)));
+    fixture.detectChanges();
+    (fixture.nativeElement.querySelector('[aria-label="Show Password"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector('.access-unmask-code-entry') as HTMLInputElement;
+    input.value = 'Ab12-cde';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(fixture.componentInstance.isUnmaskVerifying).toBeTrue();
+    expect(input.readOnly).toBeFalse();
+
+    input.value = 'Zb12-cde';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(fixture.componentInstance.unmaskCode.value).toBe('Zb12-cde');
+    expect(fixture.componentInstance.isUnmaskVerifying).toBeTrue();
+    expect(unmaskCodes.verify).toHaveBeenCalledTimes(2);
+
+    resolveAttempts[0](true);
+    resolveAttempts[1](false);
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).not.toContain('sample-password');
+    expect(fixture.nativeElement.querySelector('.access-unmask-modal')).not.toBeNull();
   });
 
   it('shows a load error and retries the request', () => {
@@ -125,6 +216,7 @@ describe('MyAccessComponent', () => {
     expect(profile.type).toBe('password');
 
     (dialog.querySelector('[aria-label="Show Password"]') as HTMLButtonElement).click();
+    await verifyUnmask();
     (dialog.querySelector('[aria-label="Show confirmation code"]') as HTMLButtonElement).click();
     fixture.detectChanges();
     expect(password.type).toBe('text');
@@ -132,7 +224,7 @@ describe('MyAccessComponent', () => {
     expect(code.type).toBe('text');
     expect((dialog.querySelector('[aria-label="Hide Password"]') as HTMLButtonElement).getAttribute('aria-pressed')).toBe('true');
     (dialog.querySelector('[aria-label="Show Profile password"]') as HTMLButtonElement).click();
-    fixture.detectChanges();
+    await verifyUnmask();
     expect(profile.type).toBe('text');
     await verifyCode();
     expect(code.value).toBe('12345678901234');
@@ -148,6 +240,40 @@ describe('MyAccessComponent', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('#access-input-password').type).toBe('password');
     expect(fixture.nativeElement.querySelector('#access-confirmation-code').type).toBe('password');
+  });
+
+  it('leaves passwords masked for incorrect codes and does not prompt for other fields', async () => {
+    unmaskCodes.verify.and.resolveTo(false);
+    fixture.detectChanges();
+    (fixture.nativeElement.querySelector('[aria-label="Show Account number"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('1234567890');
+    expect(fixture.nativeElement.querySelector('.access-unmask-modal')).toBeNull();
+
+    (fixture.nativeElement.querySelector('[aria-label="Show Password"]') as HTMLButtonElement).click();
+    await verifyUnmask();
+    expect(fixture.nativeElement.querySelector('.access-unmask-modal [role="alert"]')?.textContent).toContain('code is incorrect');
+    expect(fixture.nativeElement.textContent).not.toContain('sample-password');
+    (fixture.nativeElement.querySelector('.access-unmask-modal footer button[type="button"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.access-unmask-modal')).toBeNull();
+  });
+
+  it('ignores a verification result after the reveal dialog is cancelled', async () => {
+    let resolve!: (valid: boolean) => void;
+    unmaskCodes.verify.and.returnValue(new Promise<boolean>((done) => resolve = done));
+    fixture.detectChanges();
+    (fixture.nativeElement.querySelector('[aria-label="Show Password"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
+    fixture.componentInstance.unmaskCode.setValue('12345678');
+    fixture.componentInstance.verifyUnmask();
+    fixture.detectChanges();
+    (fixture.nativeElement.querySelector('.access-unmask-modal footer button[type="button"]') as HTMLButtonElement).click();
+    resolve(true);
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).not.toContain('sample-password');
+    expect(fixture.nativeElement.querySelector('.access-unmask-modal')).toBeNull();
   });
 
   it('validates required fields and saves the selected card without changing the others', async () => {
@@ -182,6 +308,8 @@ describe('MyAccessComponent', () => {
     fixture.detectChanges();
     expect(accessData.updateAccessRecord).toHaveBeenCalledOnceWith(1, second, updated);
     expect(fixture.nativeElement.querySelector('.access-save').disabled).toBeTrue();
+    expect(fixture.nativeElement.querySelector('.access-save app-dashboard-loader')?.getAttribute('aria-label'))
+      .toBe('Saving access changes');
     fixture.componentInstance.closeEdit();
     expect(fixture.componentInstance.editingIndex).toBe(1);
 

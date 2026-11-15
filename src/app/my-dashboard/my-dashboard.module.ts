@@ -39,7 +39,6 @@ import { ScrollProgressComponent } from '../scroll-progress/scroll-progress.comp
     VasukiSuperComponent,
     ResponsiveTableComponent,
     WidgetPreviewChartComponent,
-    DashboardLoaderComponent,
     RenderInViewDirective,
     SalaryDataComponent,
     CentralRecordFormComponent
@@ -51,6 +50,7 @@ import { ScrollProgressComponent } from '../scroll-progress/scroll-progress.comp
     ScrollingModule,
     NgxChartsModule,
     ReactiveFormsModule,
+    DashboardLoaderComponent,
     ScrollProgressComponent,
     RouterModule.forChild([{ path: '', component: MyDashboardComponent }])
   ]

@@ -3,7 +3,7 @@ import { DashboardLoaderComponent } from './dashboard-loader.component';
 
 describe('DashboardLoaderComponent', () => {
   beforeEach(() => {
-    TestBed.configureTestingModule({ declarations: [DashboardLoaderComponent] });
+    TestBed.configureTestingModule({ imports: [DashboardLoaderComponent] });
   });
 
   it('renders an accessible spinner without visible text', () => {

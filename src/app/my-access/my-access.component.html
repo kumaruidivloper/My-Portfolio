@@ -13,7 +13,7 @@
       }
 
       @if (isLoading) {
-        <p class="my-access-message" role="status">Loading access details…</p>
+        <app-dashboard-loader label="Loading access details"></app-dashboard-loader>
       } @else if (errorMessage) {
         <div class="my-access-error" role="alert">
           <p>{{ errorMessage }}</p>
@@ -129,6 +129,7 @@
               }
             </div>
           }
+
         </fieldset>
         <div class="access-form-field access-code-field">
           <label for="access-confirmation-code">Enter confirmation code to save changes</label>
@@ -179,7 +180,61 @@
         }
         <footer class="access-modal-actions">
           <button type="button" [disabled]="isSaving" (click)="closeEdit()">Cancel</button>
-          <button type="submit" class="access-save" [disabled]="!canSaveChanges">{{ isSaving ? 'Saving…' : 'Save changes' }}</button>
+          <button type="submit" class="access-save" [disabled]="!canSaveChanges">
+            @if (isSaving) {
+              <app-dashboard-loader inline label="Saving access changes"></app-dashboard-loader>
+            } @else {
+              Save changes
+            }
+          </button>
+        </footer>
+      </form>
+    </section>
+  </div>
+}
+
+@if (pendingUnmask) {
+  <div class="access-modal-backdrop access-unmask-backdrop" (click)="closeUnmask()">
+    <section class="access-edit-modal access-unmask-modal" role="dialog" aria-modal="true" aria-labelledby="access-unmask-title"
+      cdkTrapFocus (click)="$event.stopPropagation()">
+      <header class="access-modal-heading">
+        <div>
+          <p>MY ACCESS</p>
+          <h2 id="access-unmask-title">Reveal password</h2>
+        </div>
+        <button type="button" class="access-modal-close" aria-label="Close dialog" (click)="closeUnmask()">&times;</button>
+      </header>
+      <form (submit)="$event.preventDefault(); verifyUnmask()">
+        <div class="access-form-field">
+          <label for="access-unmask-code">Enter reveal code</label>
+          <div class="access-unmask-code-inputs" role="group" aria-label="8-character reveal code"
+            aria-describedby="access-unmask-code-help">
+            @for (digit of unmaskCodeDigits; track $index; let i = $index) {
+              <span class="access-unmask-code-slot" [class.active]="i === activeUnmaskCodeDigit">{{ digit }}</span>
+            }
+            <input #firstUnmaskCodeInput id="access-unmask-code" class="access-unmask-code-entry"
+              type="text" maxlength="8" autocomplete="off" autocapitalize="off"
+              spellcheck="false" [formControl]="unmaskCode" aria-label="8-character reveal code"
+              [attr.aria-invalid]="(unmaskCode.touched && unmaskCode.invalid) || unmaskError ? 'true' : null"
+              (input)="onUnmaskCodeInput($event)" (paste)="onUnmaskCodePaste($event)"
+              (focus)="focusUnmaskCode($event)">
+          </div>
+          <small id="access-unmask-code-help">Enter the 8-character code to continue. You can paste the code.</small>
+          @if (isUnmaskVerifying) {
+            <small role="status">Verifying code…</small>
+          }
+          @if (unmaskCode.touched && unmaskCode.invalid) {
+            <small class="access-field-error">Enter an 8-character reveal code.</small>
+          }
+        </div>
+        @if (unmaskError) {
+          <p class="access-save-error access-code-error" role="alert">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v6m0 4h.01"></path></svg>
+            {{ unmaskError }}
+          </p>
+        }
+        <footer class="access-modal-actions">
+          <button type="button" (click)="closeUnmask()">Cancel</button>
         </footer>
       </form>
     </section>

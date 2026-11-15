@@ -56,6 +56,8 @@ Dashboard access and edit/delete confirmations require the configured 14-digit c
 
 My Access loads bank and account records from the configured MockAPI access-details resource. Sensitive-looking values are masked until individually revealed. Like the dashboard, it requires the 14-digit code in production but opens directly in local development. This is a client-side gate, not server-side authorization; do not use it to protect real credentials.
 
+Revealing a password or profile password on a card or in the edit form requires a separate mock reveal code each time; other masked fields are unchanged. This check is also browser-side and does not protect the data from browser tools or network access.
+
 Each My Access card has an edit dialog. Required fields cannot be blank; optional fields may be empty or set to `NA`. Password and confirmation-code fields have individual show/hide controls and are masked again when the dialog reopens. Saving requires the same 14-digit confirmation code as dashboard edits, verified in the browser in both local and production environments. Saving refreshes the records first and checks whether the edited card changed since the dialog opened.
 
 The code check also works on local-network HTTP URLs without Web Crypto. HTTP and browser-side code checks do not protect sensitive data; use HTTPS and server-side authorization for real credentials.

@@ -272,6 +272,59 @@
   width: 100%;
 }
 
+.access-unmask-backdrop {
+  z-index: 1101;
+}
+
+.access-unmask-modal {
+  max-width: 46rem;
+}
+
+.access-unmask-code-inputs {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: clamp(.2rem, 1vw, .8rem);
+  justify-content: center;
+  margin: 1.2rem 0 .4rem;
+  position: relative;
+
+  .access-unmask-code-slot {
+    background: var(--bg-color);
+    border-radius: .6rem;
+    box-shadow: var(--box-shadow-inset);
+    color: var(--black);
+    flex: 0 1 4rem;
+    font-size: clamp(1.2rem, 3vw, 2rem);
+    height: 4.5rem;
+    min-width: 0;
+    padding: .5rem;
+    text-align: center;
+    width: 100%;
+    pointer-events: none;
+  }
+
+  &:focus-within .access-unmask-code-slot.active {
+    outline: .2rem solid var(--green);
+  }
+
+  .access-unmask-code-entry {
+    box-sizing: border-box;
+    caret-color: transparent;
+    cursor: text;
+    height: 100%;
+    inset: 0;
+    opacity: 0;
+    position: absolute;
+    width: 100%;
+    z-index: 1;
+  }
+
+  .access-unmask-code-entry:focus-visible {
+    outline: none;
+  }
+
+}
+
 .access-modal-heading {
   align-items: flex-start;
   display: flex;
@@ -490,5 +543,11 @@
 
   .access-form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .access-unmask-code-inputs {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 4rem));
+    gap: .8rem;
   }
 }

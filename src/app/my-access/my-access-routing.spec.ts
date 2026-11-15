@@ -6,6 +6,7 @@ import { AppRoutingModule } from '../app-routing.module';
 import { MyAccessComponent } from './my-access.component';
 import { DashboardAccessGuard } from '../service/dashboard-access.guard';
 import { ConfirmationCodeService } from '../service/confirmation-code.service';
+import { UnmaskCodeService } from '../service/unmask-code.service';
 import { environment } from '../../environments/environment';
 
 describe('My Access routing', () => {
@@ -36,7 +37,11 @@ describe('My Access routing', () => {
     const router = TestBed.inject(Router);
 
     await harness.navigateByUrl('/my-access');
-    TestBed.inject(HttpTestingController).expectOne(endpoint).flush(accessDetails);
+    const request = TestBed.inject(HttpTestingController).expectOne(endpoint);
+    const loader = harness.routeNativeElement?.querySelector('app-dashboard-loader');
+    expect(loader?.getAttribute('aria-label')).toBe('Loading access details');
+    expect(loader?.querySelector('.loader-ring')).not.toBeNull();
+    request.flush(accessDetails);
     await harness.fixture.whenStable();
     harness.detectChanges();
     expect(router.url).toBe('/my-access');
@@ -92,6 +97,33 @@ describe('My Access routing', () => {
     http.expectOne(endpoint).flush(accessDetails);
     harness.detectChanges();
     expect(harness.routeNativeElement?.textContent).toContain('Sample Bank');
+  });
+
+  it('reveals only the requested password after an 8-digit code is verified', async () => {
+    const unmaskCodes = jasmine.createSpyObj<UnmaskCodeService>('UnmaskCodeService', ['verify']);
+    unmaskCodes.verify.and.resolveTo(true);
+    TestBed.configureTestingModule({
+      imports: [AppRoutingModule, HttpClientTestingModule],
+      providers: [{ provide: UnmaskCodeService, useValue: unmaskCodes }]
+    });
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/my-access');
+    TestBed.inject(HttpTestingController).expectOne(endpoint).flush(accessDetails);
+    harness.detectChanges();
+
+    harness.routeNativeElement?.querySelector<HTMLButtonElement>('[aria-label="Show Password"]')?.click();
+    harness.detectChanges();
+    expect(harness.routeNativeElement?.textContent).not.toContain('sample-password');
+    const input = harness.routeNativeElement?.querySelector<HTMLInputElement>('.access-unmask-code-entry');
+    expect(input).not.toBeNull();
+    input!.value = '12345678';
+    input!.dispatchEvent(new Event('input', { bubbles: true }));
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    expect(unmaskCodes.verify).toHaveBeenCalledOnceWith('12345678');
+    expect(harness.routeNativeElement?.querySelector('.access-unmask-modal')).toBeNull();
+    expect(harness.routeNativeElement?.textContent).toContain('sample-password');
+    expect(harness.routeNativeElement?.textContent).not.toContain('1234567890');
   });
 
   it('saves an edited card through the routed form', async () => {

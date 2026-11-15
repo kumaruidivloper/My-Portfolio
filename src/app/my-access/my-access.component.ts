@@ -1,7 +1,8 @@
-import { ChangeDetectorRef, Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { ConfirmationCodeService } from '../service/confirmation-code.service';
+import { UnmaskCodeService } from '../service/unmask-code.service';
 import { AccessDetails, AccessRecordChangedError, BankAccessDetail, MyAccessDataService } from './my-access-data.service';
 
 interface AccessField {
@@ -29,14 +30,24 @@ const ACCESS_FIELDS: AccessField[] = [
 const nonBlank: ValidatorFn = (control) =>
   typeof control.value === 'string' && control.value.trim().length > 0 ? null : { required: true };
 
+type PasswordField = 'password' | 'profilePassword';
+type UnmaskTarget =
+  | { location: 'card'; index: number; field: PasswordField }
+  | { location: 'form'; field: PasswordField };
+
 @Component({
   selector: 'app-my-access',
   templateUrl: './my-access.component.html',
   styleUrls: ['./my-access.component.scss'],
-  host: { '[class.my-access-editing]': 'editingIndex !== null' },
+  host: { '[class.my-access-editing]': 'editingIndex !== null || pendingUnmask !== null' },
   standalone: false
 })
 export class MyAccessComponent implements OnInit, OnDestroy {
+  @ViewChild('firstUnmaskCodeInput')
+  set firstUnmaskCodeInput(input: ElementRef<HTMLInputElement> | undefined) {
+    input?.nativeElement.focus();
+  }
+
   readonly editFields = ACCESS_FIELDS;
   readonly editForm = new FormGroup({
     type: new FormControl('', { nonNullable: true, validators: [nonBlank] }),
@@ -56,6 +67,11 @@ export class MyAccessComponent implements OnInit, OnDestroy {
     nonNullable: true,
     validators: [Validators.required, Validators.pattern(/^\d{14}$/)]
   });
+  readonly unmaskCode = new FormControl('', {
+    nonNullable: true,
+    validators: [Validators.required, Validators.minLength(8), Validators.maxLength(8)]
+  });
+  readonly unmaskCodeDigits = Array.from({ length: 8 }, () => '');
   details: AccessDetails | null = null;
   isLoading = false;
   errorMessage = '';
@@ -68,6 +84,10 @@ export class MyAccessComponent implements OnInit, OnDestroy {
   isCodeIncorrect = false;
   codeError = '';
   showConfirmationCode = false;
+  pendingUnmask: UnmaskTarget | null = null;
+  isUnmaskVerifying = false;
+  unmaskError = '';
+  private unmaskAttempt = 0;
   private readonly visibleEditPasswords = new Set<keyof BankAccessDetail>();
   private request?: Subscription;
   private saveRequest?: Subscription;
@@ -80,7 +100,8 @@ export class MyAccessComponent implements OnInit, OnDestroy {
   constructor(
     private readonly accessData: MyAccessDataService,
     private readonly changeDetector: ChangeDetectorRef,
-    private readonly confirmationCodeService: ConfirmationCodeService
+    private readonly confirmationCodeService: ConfirmationCodeService,
+    private readonly unmaskCodeService: UnmaskCodeService
   ) {
     this.codeSubscription = this.confirmationCode.valueChanges.subscribe(() => this.verifyCode());
   }
@@ -93,6 +114,7 @@ export class MyAccessComponent implements OnInit, OnDestroy {
     this.request?.unsubscribe();
     this.saveRequest?.unsubscribe();
     this.codeAttempt++;
+    this.unmaskAttempt++;
     this.codeSubscription.unsubscribe();
   }
 
@@ -110,11 +132,20 @@ export class MyAccessComponent implements OnInit, OnDestroy {
   }
 
   @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.pendingUnmask) {
+      this.closeUnmask();
+    } else if (this.editingIndex !== null) {
+      this.closeEdit();
+    }
+  }
+
   closeEdit(): void {
     if (this.isSaving) {
       return;
     }
     this.editingIndex = null;
+    this.closeUnmask();
     this.editingOriginal = undefined;
     this.saveError = '';
     this.resetCode();
@@ -133,9 +164,92 @@ export class MyAccessComponent implements OnInit, OnDestroy {
   toggleEditPassword(field: keyof BankAccessDetail): void {
     if (this.visibleEditPasswords.has(field)) {
       this.visibleEditPasswords.delete(field);
-    } else {
-      this.visibleEditPasswords.add(field);
+    } else if (field === 'password' || field === 'profilePassword') {
+      this.openUnmask({ location: 'form', field });
     }
+  }
+
+  closeUnmask(): void {
+    this.unmaskAttempt++;
+    this.pendingUnmask = null;
+    this.unmaskCodeDigits.fill('');
+    this.unmaskCode.reset('');
+    this.isUnmaskVerifying = false;
+    this.unmaskError = '';
+  }
+
+  get activeUnmaskCodeDigit(): number {
+    return Math.min(this.unmaskCode.value.length, this.unmaskCodeDigits.length - 1);
+  }
+
+  onUnmaskCodeInput(event: Event): void {
+    this.cancelPendingUnmaskVerification();
+    const input = event.target as HTMLInputElement;
+    const code = input.value.slice(0, this.unmaskCodeDigits.length);
+    input.value = code;
+    this.unmaskCode.setValue(code);
+    this.updateUnmaskCodeDigits(code);
+    this.unmaskError = '';
+
+    if (code.length === this.unmaskCodeDigits.length) {
+      void this.verifyUnmask();
+    }
+  }
+
+  onUnmaskCodePaste(event: ClipboardEvent): void {
+    event.preventDefault();
+    this.cancelPendingUnmaskVerification();
+    const code = event.clipboardData?.getData('text').slice(0, this.unmaskCodeDigits.length) ?? '';
+    this.unmaskCode.setValue(code);
+    this.updateUnmaskCodeDigits(code);
+    this.unmaskError = '';
+    const input = event.target as HTMLInputElement;
+    input.value = code;
+    input.focus();
+    input.setSelectionRange(code.length, code.length);
+    if (code.length === this.unmaskCodeDigits.length) {
+      void this.verifyUnmask();
+    }
+  }
+
+  focusUnmaskCode(event: FocusEvent): void {
+    const input = event.target as HTMLInputElement;
+    input.setSelectionRange(input.value.length, input.value.length);
+  }
+
+  verifyUnmask(): void {
+    if (!this.pendingUnmask || this.isUnmaskVerifying || this.unmaskCode.invalid) {
+      this.unmaskCode.markAsTouched();
+      return;
+    }
+    const target = this.pendingUnmask;
+    const attempt = ++this.unmaskAttempt;
+    this.isUnmaskVerifying = true;
+    this.unmaskError = '';
+    void this.unmaskCodeService.verify(this.unmaskCode.value).then((valid) => {
+      if (attempt !== this.unmaskAttempt) {
+        return;
+      }
+      this.isUnmaskVerifying = false;
+      if (!valid) {
+        this.unmaskError = 'The code is incorrect. Please try again.';
+      } else {
+        if (target.location === 'card') {
+          this.revealedFields.add(`${target.index}:${target.field}`);
+        } else {
+          this.visibleEditPasswords.add(target.field);
+        }
+        this.closeUnmask();
+      }
+      this.changeDetector.markForCheck();
+    }).catch(() => {
+      if (attempt !== this.unmaskAttempt) {
+        return;
+      }
+      this.isUnmaskVerifying = false;
+      this.unmaskError = 'Code verification is unavailable. Please try again.';
+      this.changeDetector.markForCheck();
+    });
   }
 
   verifyCode(): void {
@@ -235,6 +349,8 @@ export class MyAccessComponent implements OnInit, OnDestroy {
     const key = `${index}:${field}`;
     if (this.revealedFields.has(key)) {
       this.revealedFields.delete(key);
+    } else if (field === 'password' || field === 'profilePassword') {
+      this.openUnmask({ location: 'card', index, field });
     } else {
       this.revealedFields.add(key);
     }
@@ -256,6 +372,25 @@ export class MyAccessComponent implements OnInit, OnDestroy {
 
   private displayValue(value: string): string {
     return value === 'NA' ? 'Not applicable' : value || '—';
+  }
+
+  private openUnmask(target: UnmaskTarget): void {
+    this.closeUnmask();
+    this.pendingUnmask = target;
+    this.changeDetector.markForCheck();
+  }
+
+  private updateUnmaskCodeDigits(code: string): void {
+    this.unmaskCodeDigits.forEach((_, index) => {
+      this.unmaskCodeDigits[index] = code[index] ? '•' : '';
+    });
+  }
+
+  private cancelPendingUnmaskVerification(): void {
+    if (this.isUnmaskVerifying) {
+      this.unmaskAttempt++;
+      this.isUnmaskVerifying = false;
+    }
   }
 
   private resetCode(): void {
