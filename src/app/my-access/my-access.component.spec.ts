@@ -3,11 +3,13 @@ import { A11yModule } from '@angular/cdk/a11y';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { By } from '@angular/platform-browser';
 import { of, Subject, throwError } from 'rxjs';
 import { DashboardLoaderComponent } from '../dashboard-loader/dashboard-loader.component';
+import { ScrollProgressComponent } from '../scroll-progress/scroll-progress.component';
 import { ConfirmationCodeService } from '../service/confirmation-code.service';
 import { UnmaskCodeService } from '../service/unmask-code.service';
-import { AccessDetails, AccessRecordChangedError, MyAccessDataService } from './my-access-data.service';
+import { AccessDetails, AccessRecordChangedError, MyAccessDataService } from '../service/my-access-data.service';
 import { MyAccessComponent } from './my-access.component';
 
 const accessDetails = {
@@ -44,7 +46,7 @@ describe('MyAccessComponent', () => {
     unmaskCodes.verify.and.resolveTo(true);
     TestBed.configureTestingModule({
       declarations: [MyAccessComponent],
-      imports: [A11yModule, CommonModule, DashboardLoaderComponent, ReactiveFormsModule, RouterModule.forRoot([])],
+      imports: [A11yModule, CommonModule, DashboardLoaderComponent, ReactiveFormsModule, RouterModule.forRoot([]), ScrollProgressComponent],
       providers: [
         { provide: MyAccessDataService, useValue: accessData },
         { provide: ConfirmationCodeService, useValue: codes },
@@ -83,6 +85,15 @@ describe('MyAccessComponent', () => {
     response.next(accessDetails);
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('app-dashboard-loader')).toBeNull();
+  });
+
+  it('tracks scroll progress on the My Access host and content', () => {
+    fixture.detectChanges();
+
+    const progress = fixture.debugElement.query(By.directive(ScrollProgressComponent))
+      .componentInstance as ScrollProgressComponent;
+    expect(progress.scrollContainer).toBe(fixture.nativeElement);
+    expect(progress.resizeTarget).toBe(fixture.nativeElement.querySelector('.my-access-content'));
   });
 
   it('centers access action icons in their buttons and card headings', () => {

@@ -3,7 +3,7 @@ import { FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms'
 import { Subscription, timer } from 'rxjs';
 import { ConfirmationCodeService } from '../service/confirmation-code.service';
 import { UnmaskCodeService } from '../service/unmask-code.service';
-import { AccessDetails, AccessRecordChangedError, BankAccessDetail, MyAccessDataService } from './my-access-data.service';
+import { AccessDetails, AccessRecordChangedError, BankAccessDetail, MyAccessDataService } from '../service/my-access-data.service';
 
 interface AccessField {
   key: keyof BankAccessDetail;
@@ -97,13 +97,16 @@ export class MyAccessComponent implements OnInit, OnDestroy {
   private verifiedCode = '';
   private editingOriginal?: BankAccessDetail;
   private readonly revealedFields = new Set<string>();
+  readonly scrollContainer: HTMLElement;
 
   constructor(
     private readonly accessData: MyAccessDataService,
     private readonly changeDetector: ChangeDetectorRef,
+    elementRef: ElementRef<HTMLElement>,
     private readonly confirmationCodeService: ConfirmationCodeService,
     private readonly unmaskCodeService: UnmaskCodeService
   ) {
+    this.scrollContainer = elementRef.nativeElement;
     this.codeSubscription = this.confirmationCode.valueChanges.subscribe(() => this.verifyCode());
   }
 
