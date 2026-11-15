@@ -360,6 +360,33 @@ export class MyAccessComponent implements OnInit, OnDestroy {
     return this.revealedFields.has(`${index}:${field}`);
   }
 
+  bankLogoUrl(bankName: string, recordType = ''): string | null {
+    const name = bankName.toLowerCase();
+    if (/\b(epfo|pf|uan)\b|employees[’']?\s+provident\s+fund\s+organi[sz]ation/.test(name)
+      || /\b(pf|uan)\b/i.test(recordType)) {
+      return 'assets/img/banks/epfo.png';
+    }
+    if (/\b(sbi|state bank of india)\b/.test(name)) {
+      return 'assets/img/banks/sbi.png';
+    }
+    if (/\bicici\b/.test(name)) {
+      return 'assets/img/banks/icici-bank.png';
+    }
+    if (/\bcanara\b/.test(name)) {
+      return 'assets/img/banks/canara-bank.png';
+    }
+    return null;
+  }
+
+  displayAccessLabel(value: string): string {
+    return value.trim().toLowerCase() === 'pf' ? 'EPFO' : value;
+  }
+
+  showsBankNameInHeading(entry: BankAccessDetail): boolean {
+    return !this.bankLogoUrl(entry.bankName, entry.type)
+      || /\b(sbi|state bank of india)\b/i.test(entry.bankName);
+  }
+
   maskValue(value: string, field: keyof BankAccessDetail): string {
     if (!value || value === 'NA') {
       return this.displayValue(value);

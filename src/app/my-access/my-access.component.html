@@ -1,6 +1,6 @@
 <main class="my-access-page">
   <div class="my-access-content">
-    <a routerLink="/" class="my-access-back" aria-label="Back to portfolio">
+    <a routerLink="/" class="my-access-back" aria-label="Back to portfolio" title="Back to portfolio">
       <svg aria-hidden="true" viewBox="0 0 24 24">
         <path d="m15 18-6-6 6-6M9 12h12"></path>
       </svg>
@@ -29,14 +29,22 @@
               <article class="access-record-card">
                 <header class="access-record-heading">
                   <span class="access-record-icon" aria-hidden="true">
-                    @if (entry.type === 'Bank') {
+                    @if (bankLogoUrl(entry.bankName, entry.type); as logoUrl) {
+                      <img [src]="logoUrl" alt="">
+                    } @else if (entry.type === 'Bank') {
                       <svg viewBox="0 0 24 24"><path d="M3 9h18M5 9v9m4-9v9m6-9v9m4-9v9M3 21h18M2 9l10-6 10 6"></path></svg>
                     } @else {
                       <svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"></rect><path d="M8 8h8M8 12h8M8 16h4"></path></svg>
                     }
                   </span>
                   <div>
-                    <h2>{{ entry.bankName }} <span>· {{ entry.type }}</span></h2>
+                    <h2 [attr.aria-label]="displayAccessLabel(entry.bankName) + ', ' + displayAccessLabel(entry.type)">
+                      @if (showsBankNameInHeading(entry)) {
+                        {{ displayAccessLabel(entry.bankName) }} <span>· {{ displayAccessLabel(entry.type) }}</span>
+                      } @else {
+                        <span>{{ displayAccessLabel(entry.type) }}</span>
+                      }
+                    </h2>
                     <p>{{ entry.customerName }} · {{ entry.accountType }}</p>
                   </div>
                   <button type="button" class="access-edit" [attr.aria-label]="'Edit ' + entry.bankName + ' access for ' + entry.customerName"
@@ -52,8 +60,11 @@
                         @if (!field.sensitive) {
                           @if (field.key === 'bankName') {
                             <span class="access-bank-value">
-                              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3 9h18M5 9v9m4-9v9m6-9v9m4-9v9M3 21h18M2 9l10-6 10 6"></path></svg>
-                              {{ field.value }}
+                              @if (bankLogoUrl(field.value, entry.type); as logoUrl) {
+                                <img [src]="logoUrl" alt="">
+                              } @else {
+                                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3 9h18M5 9v9m4-9v9m6-9v9m4-9v9M3 21h18M2 9l10-6 10 6"></path></svg>
+                              }
                             </span>
                           } @else {
                             {{ field.value }}

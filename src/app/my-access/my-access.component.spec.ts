@@ -85,13 +85,71 @@ describe('MyAccessComponent', () => {
     expect(fixture.nativeElement.querySelector('app-dashboard-loader')).toBeNull();
   });
 
+  it('centers access action icons in their buttons and card headings', () => {
+    fixture.detectChanges();
+
+    const buttons = Array.from(fixture.nativeElement.querySelectorAll('.access-edit, .access-record-field .access-reveal')) as HTMLButtonElement[];
+    expect(buttons.length).toBeGreaterThan(1);
+    for (const button of buttons) {
+      expect(getComputedStyle(button).display).toBe('grid');
+      const icon = button.querySelector('svg')!;
+      const buttonBounds = button.getBoundingClientRect();
+      const iconBounds = icon.getBoundingClientRect();
+      expect(Math.abs(buttonBounds.left + buttonBounds.width / 2 - iconBounds.left - iconBounds.width / 2)).toBeLessThan(1);
+      expect(Math.abs(buttonBounds.top + buttonBounds.height / 2 - iconBounds.top - iconBounds.height / 2)).toBeLessThan(1);
+    }
+
+    const heading = fixture.nativeElement.querySelector('.access-record-heading') as HTMLElement;
+    const editButton = heading.querySelector('.access-edit') as HTMLButtonElement;
+    const headingBounds = heading.getBoundingClientRect();
+    const editBounds = editButton.getBoundingClientRect();
+    expect(Math.abs(headingBounds.top + headingBounds.height / 2 - editBounds.top - editBounds.height / 2)).toBeLessThan(1);
+  });
+
+  it('uses local logos for supported banks and EPFO/UAN records', () => {
+    const bankNames = ['SBI', 'ICICI Bank', 'Canara Bank', 'Sample Bank'];
+    accessData.getAccessDetails.and.returnValue(of({
+      ...accessDetails,
+      bankAccessDetails: [
+        ...bankNames.map((bankName) => ({ ...accessDetails.bankAccessDetails[0], bankName })),
+        { ...accessDetails.bankAccessDetails[0], type: 'UAN', bankName: 'Universal Account' },
+        { ...accessDetails.bankAccessDetails[0], bankName: 'EPFO India' },
+        { ...accessDetails.bankAccessDetails[0], type: 'PF', bankName: 'PF' }
+      ]
+    }));
+    fixture.detectChanges();
+
+    const cards = Array.from(fixture.nativeElement.querySelectorAll('.access-record-card')) as HTMLElement[];
+    expect(cards.map((card) => card.querySelector('.access-record-icon img')?.getAttribute('src') ?? null))
+      .toEqual([
+        'assets/img/banks/sbi.png',
+        'assets/img/banks/icici-bank.png',
+        'assets/img/banks/canara-bank.png',
+        null,
+        'assets/img/banks/epfo.png',
+        'assets/img/banks/epfo.png',
+        'assets/img/banks/epfo.png'
+      ]);
+    expect(cards[3].querySelector('.access-record-icon svg')).not.toBeNull();
+    expect(cards[1].querySelector('h2')?.textContent?.trim()).toBe('Bank');
+    expect(cards[2].querySelector('h2')?.textContent?.trim()).toBe('Bank');
+    expect(cards[3].querySelector('h2')?.textContent?.trim()).toBe('Sample Bank · Bank');
+    expect(cards[4].querySelector('h2')?.textContent?.trim()).toBe('UAN');
+    expect(cards[4].querySelector('.access-record-fields')?.textContent).toContain('Bank / service');
+    expect(cards[4].querySelector('.access-bank-value img')?.getAttribute('src')).toBe('assets/img/banks/epfo.png');
+    expect(cards[5].querySelector('.access-record-icon img')?.getAttribute('src')).toBe('assets/img/banks/epfo.png');
+    expect(cards[6].querySelector('h2')?.textContent?.trim()).toBe('EPFO');
+    expect(cards[6].querySelector('.access-record-fields')?.textContent).toContain('Bank / service');
+    expect(cards[6].querySelector('.access-bank-value img')?.getAttribute('src')).toBe('assets/img/banks/epfo.png');
+  });
+
   it('loads records and keeps sensitive values masked until explicitly revealed', async () => {
     fixture.detectChanges();
 
     expect(accessData.getAccessDetails).toHaveBeenCalledTimes(1);
     expect(fixture.nativeElement.textContent).toContain('Sample Bank');
     expect(fixture.nativeElement.textContent).toContain('Test User');
-    expect(fixture.nativeElement.querySelector('.access-bank-value svg[aria-hidden="true"]')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('.access-record-icon svg')).not.toBeNull();
     expect(fixture.nativeElement.textContent).not.toContain('sample-password');
     expect(fixture.nativeElement.textContent).not.toContain('1234567890');
 

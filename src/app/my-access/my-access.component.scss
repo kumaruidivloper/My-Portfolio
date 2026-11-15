@@ -23,24 +23,27 @@
 
 .my-access-back {
   align-items: center;
-  background: var(--bg-color);
-  border-radius: 50%;
+  background: transparent;
+  border-radius: 2.6rem;
   box-shadow: var(--box-shadow);
   color: var(--black);
   display: inline-flex;
-  height: 4.4rem;
+  flex: 0 0 6.7rem;
+  height: 5.1rem;
   justify-content: center;
-  margin-bottom: 2rem;
-  width: 4.4rem;
+  margin: 0 0 2rem;
+  padding: .8rem 1.6rem;
+  width: 6.7rem;
 
   svg {
     fill: none;
-    height: 2rem;
+    flex: 0 0 3.5rem;
+    height: 3.5rem;
     stroke: currentColor;
     stroke-linecap: round;
     stroke-linejoin: round;
     stroke-width: 2;
-    width: 2rem;
+    width: 3.5rem;
   }
 
   &:hover {
@@ -85,7 +88,6 @@
 }
 
 .access-record-card {
-  background: color-mix(in srgb, var(--bg-color) 85%, var(--green));
   border-radius: 1rem;
   box-shadow: var(--box-shadow-inset);
   min-width: 0;
@@ -122,23 +124,32 @@
 
 .access-record-icon {
   align-items: center;
-  background: var(--bg-color);
-  border-radius: 50%;
-  box-shadow: var(--box-shadow);
   color: var(--green);
   display: inline-flex;
-  flex: 0 0 4rem;
+  flex: 0 0 7rem;
   height: 4rem;
   justify-content: center;
+  width: 7rem;
+
+  svg,
+  img {
+    display: block;
+    object-fit: contain;
+  }
 
   svg {
     fill: none;
-    height: 2.1rem;
+    height: 3.4rem;
     stroke: currentColor;
     stroke-linecap: round;
     stroke-linejoin: round;
     stroke-width: 1.7;
-    width: 2.1rem;
+    width: 3.4rem;
+  }
+
+  img {
+    max-height: 3.4rem;
+    max-width: 6.5rem;
   }
 }
 
@@ -180,6 +191,11 @@
   gap: .6rem;
   min-width: 0;
 
+  svg,
+  img {
+    display: block;
+  }
+
   svg {
     color: var(--green);
     fill: none;
@@ -190,6 +206,14 @@
     stroke-linejoin: round;
     stroke-width: 1.7;
     width: 1.6rem;
+  }
+
+  img {
+    flex: 0 0 auto;
+    height: auto;
+    max-height: 2rem;
+    max-width: 5rem;
+    object-fit: contain;
   }
 }
 
@@ -235,8 +259,17 @@
   line-height: 1;
 }
 
-.access-edit {
-  align-self: flex-start;
+.access-reveal,
+.access-edit,
+.access-modal-close {
+  display: grid;
+  padding: 0;
+  place-items: center;
+}
+
+.access-reveal svg,
+.access-edit svg {
+  display: block;
 }
 
 .my-access-success {
