@@ -188,4 +188,4 @@ https://jsonserver-eudl.onrender.com
 
 ## 8. Mock api
   kumaruidivloper's Mock API project:
-  https://mockapi.io/projects/64b76091df0839c97e168d7a
+  https://mockapi.io/projects/90064b76091df0839c97e168d7a
