@@ -21,6 +21,7 @@
         <a [attr.href]="'#'+item" (click)="selectedOption(item)">{{item}}</a>
       }
       <a href="#" class="javascript-ref-nav-link" (click)="$event.preventDefault(); getNote()">JavaScript Q&A</a>
+      <a href="#" class="my-access-nav-link" (click)="$event.preventDefault(); openMyAccessPrompt()">My Access</a>
       <div class="dashboard-nav-item">
         <a href="#" class="dashboard-nav-link" (click)="$event.preventDefault(); openDashboardPrompt()">My Dashboard</a>
         <label class="dashboard-blur-option" title="Blur dashboard values">
@@ -186,12 +187,12 @@
       role="dialog"
       aria-modal="true"
       aria-labelledby="dashboard-code-title"
-      [attr.aria-describedby]="dashboardBlurEnabled ? null : 'dashboard-visibility-notice'"
+      [attr.aria-describedby]="accessTarget === 'dashboard' && !dashboardBlurEnabled ? 'dashboard-visibility-notice' : null"
       (click)="$event.stopPropagation()"
       (keydown.escape)="closeDashboardPrompt()">
-      <h2 id="dashboard-code-title">Enter dashboard code</h2>
+      <h2 id="dashboard-code-title">{{ accessTarget === 'my-access' ? 'Enter My Access code' : 'Enter dashboard code' }}</h2>
       <p>Enter the 14-digit code to continue.</p>
-      @if (!dashboardBlurEnabled) {
+      @if (accessTarget === 'dashboard' && !dashboardBlurEnabled) {
         <p id="dashboard-visibility-notice" class="dashboard-visibility-notice">
           <span>Blur is off</span>
           <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

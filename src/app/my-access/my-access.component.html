@@ -1,0 +1,187 @@
+<main class="my-access-page">
+  <div class="my-access-content">
+    <a routerLink="/" class="my-access-back" aria-label="Back to portfolio">
+      <svg aria-hidden="true" viewBox="0 0 24 24">
+        <path d="m15 18-6-6 6-6M9 12h12"></path>
+      </svg>
+    </a>
+    <section class="my-access-card" aria-labelledby="my-access-title">
+      <h1 id="my-access-title">My Access</h1>
+      <p class="my-access-description">Bank and account access details</p>
+      @if (saveSuccess) {
+        <p class="my-access-success" role="status">{{ saveSuccess }}</p>
+      }
+
+      @if (isLoading) {
+        <p class="my-access-message" role="status">Loading access details…</p>
+      } @else if (errorMessage) {
+        <div class="my-access-error" role="alert">
+          <p>{{ errorMessage }}</p>
+          <button type="button" class="my-access-retry" (click)="loadAccessDetails()">Try again</button>
+        </div>
+      } @else if (details) {
+        <p class="my-access-count" role="status">{{ details.bankAccessDetails.length }} access records</p>
+        @if (details.bankAccessDetails.length === 0) {
+          <p class="my-access-message" role="status">No access records are available.</p>
+        } @else {
+          <div class="my-access-grid">
+            @for (entry of details.bankAccessDetails; track $index; let i = $index) {
+              <article class="access-record-card">
+                <header class="access-record-heading">
+                  <span class="access-record-icon" aria-hidden="true">
+                    @if (entry.type === 'Bank') {
+                      <svg viewBox="0 0 24 24"><path d="M3 9h18M5 9v9m4-9v9m6-9v9m4-9v9M3 21h18M2 9l10-6 10 6"></path></svg>
+                    } @else {
+                      <svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"></rect><path d="M8 8h8M8 12h8M8 16h4"></path></svg>
+                    }
+                  </span>
+                  <div>
+                    <h2>{{ entry.bankName }} <span>· {{ entry.type }}</span></h2>
+                    <p>{{ entry.customerName }} · {{ entry.accountType }}</p>
+                  </div>
+                  <button type="button" class="access-edit" [attr.aria-label]="'Edit ' + entry.bankName + ' access for ' + entry.customerName"
+                    (click)="openEdit(i)">
+                    <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"></path></svg>
+                  </button>
+                </header>
+                <dl class="access-record-fields">
+                  @for (field of fieldsFor(i, entry); track field.key) {
+                    <div class="access-record-field">
+                      <dt>{{ field.label }}</dt>
+                      <dd>
+                        @if (!field.sensitive) {
+                          @if (field.key === 'bankName') {
+                            <span class="access-bank-value">
+                              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3 9h18M5 9v9m4-9v9m6-9v9m4-9v9M3 21h18M2 9l10-6 10 6"></path></svg>
+                              {{ field.value }}
+                            </span>
+                          } @else {
+                            {{ field.value }}
+                          }
+                        } @else {
+                          <span>{{ field.revealed ? field.value : maskValue(entry[field.key], field.key) }}</span>
+                          @if (field.value !== '—' && field.value !== 'Not applicable') {
+                            <button type="button" class="access-reveal"
+                              [attr.aria-label]="(field.revealed ? 'Hide ' : 'Show ') + field.label"
+                              [attr.aria-pressed]="field.revealed"
+                              (click)="toggleSensitiveField(i, field.key)">
+                              @if (field.revealed) {
+                                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.2A10.7 10.7 0 0 1 12 5c6.5 0 10 7 10 7a15.7 15.7 0 0 1-3.1 3.8M6.2 6.2C3.5 8 2 12 2 12s3.5 7 10 7a10.7 10.7 0 0 0 4-.8"></path></svg>
+                              } @else {
+                                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                              }
+                            </button>
+                          }
+                        }
+                      </dd>
+                    </div>
+                  }
+                </dl>
+              </article>
+            }
+          </div>
+        }
+      }
+    </section>
+  </div>
+</main>
+
+@if (editingIndex !== null) {
+  <div class="access-modal-backdrop" (click)="closeEdit()">
+    <section class="access-edit-modal" role="dialog" aria-modal="true" aria-labelledby="access-edit-title"
+      cdkTrapFocus [cdkTrapFocusAutoCapture]="true" (click)="$event.stopPropagation()">
+      <header class="access-modal-heading">
+        <div>
+          <p>MY ACCESS</p>
+          <h2 id="access-edit-title">Edit access details</h2>
+        </div>
+        <button type="button" class="access-modal-close" aria-label="Close dialog" [disabled]="isSaving" (click)="closeEdit()">&times;</button>
+      </header>
+      <form [formGroup]="editForm" (ngSubmit)="saveEdit()">
+        <p class="access-form-hint">Fields marked * are required. Use NA when a value does not apply.</p>
+        <fieldset class="access-form-grid" [disabled]="isSaving">
+          @for (field of editFields; track field.key) {
+            <div class="access-form-field">
+              <label [for]="'access-input-' + field.key">{{ field.label }}{{ field.required ? ' *' : '' }}</label>
+              <div class="access-form-input" [class.has-bank-icon]="field.key === 'bankName'" [class.has-toggle]="(field.key === 'password' || field.key === 'profilePassword') && editForm.controls[field.key].value !== 'NA'">
+                @if (field.key === 'bankName') {
+                  <svg class="access-input-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M3 9h18M5 9v9m4-9v9m6-9v9m4-9v9M3 21h18M2 9l10-6 10 6"></path></svg>
+                }
+                <input [type]="(field.key === 'password' || field.key === 'profilePassword') && editForm.controls[field.key].value !== 'NA' && !isEditPasswordVisible(field.key) ? 'password' : 'text'"
+                  [id]="'access-input-' + field.key" [formControlName]="field.key" [attr.aria-required]="field.required ? 'true' : null"
+                  [attr.aria-invalid]="editForm.controls[field.key].touched && editForm.controls[field.key].invalid ? 'true' : null"
+                  [attr.aria-describedby]="editForm.controls[field.key].touched && editForm.controls[field.key].invalid ? 'access-error-' + field.key : null"
+                  autocomplete="off">
+                @if ((field.key === 'password' || field.key === 'profilePassword') && editForm.controls[field.key].value !== 'NA') {
+                  <button type="button" class="access-reveal access-input-toggle"
+                    [attr.aria-label]="(isEditPasswordVisible(field.key) ? 'Hide ' : 'Show ') + field.label"
+                    [attr.aria-pressed]="isEditPasswordVisible(field.key)" (click)="toggleEditPassword(field.key)">
+                    @if (isEditPasswordVisible(field.key)) {
+                      <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.2A10.7 10.7 0 0 1 12 5c6.5 0 10 7 10 7a15.7 15.7 0 0 1-3.1 3.8M6.2 6.2C3.5 8 2 12 2 12s3.5 7 10 7a10.7 10.7 0 0 0 4-.8"></path></svg>
+                    } @else {
+                      <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    }
+                  </button>
+                }
+              </div>
+              @if (editForm.controls[field.key].touched && editForm.controls[field.key].invalid) {
+                <small class="access-field-error" [id]="'access-error-' + field.key">{{ field.label }} is required.</small>
+              }
+            </div>
+          }
+        </fieldset>
+        <div class="access-form-field access-code-field">
+          <label for="access-confirmation-code">Enter confirmation code to save changes</label>
+          <div class="access-form-input has-toggle">
+            <input id="access-confirmation-code" [type]="showConfirmationCode ? 'text' : 'password'" inputmode="numeric" autocomplete="off" maxlength="14"
+              [formControl]="confirmationCode" [readonly]="isSaving" aria-describedby="access-code-help"
+              [attr.aria-invalid]="(confirmationCode.touched && confirmationCode.invalid) || isCodeIncorrect ? 'true' : null">
+            <button type="button" class="access-reveal access-input-toggle" [disabled]="isSaving"
+              [attr.aria-label]="showConfirmationCode ? 'Hide confirmation code' : 'Show confirmation code'"
+              [attr.aria-pressed]="showConfirmationCode" (click)="showConfirmationCode = !showConfirmationCode">
+              @if (showConfirmationCode) {
+                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.2A10.7 10.7 0 0 1 12 5c6.5 0 10 7 10 7a15.7 15.7 0 0 1-3.1 3.8M6.2 6.2C3.5 8 2 12 2 12s3.5 7 10 7a10.7 10.7 0 0 0 4-.8"></path></svg>
+              } @else {
+                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              }
+            </button>
+          </div>
+          <small id="access-code-help">Enter the 14-digit code to continue.</small>
+          @if (confirmationCode.touched && confirmationCode.invalid) {
+            <small class="access-field-error access-code-error">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v6m0 4h.01"></path></svg>
+              Enter a 14-digit confirmation code.
+            </small>
+          }
+          @if (isCodeVerifying) {
+            <small role="status">Verifying code…</small>
+          } @else if (isCodeVerified) {
+            <small class="access-code-verified" role="status">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="m8 12 2.5 2.5L16 9"></path></svg>
+              Code verified.
+            </small>
+          } @else if (isCodeIncorrect) {
+            <small class="access-field-error access-code-error" role="alert">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v6m0 4h.01"></path></svg>
+              The confirmation code is incorrect.
+            </small>
+          }
+        </div>
+        @if (codeError) {
+          <p class="access-save-error access-code-error" role="alert">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v6m0 4h.01"></path></svg>
+            {{ codeError }}
+          </p>
+          <button type="button" class="access-code-retry" (click)="verifyCode()">Try again</button>
+        }
+        @if (saveError) {
+          <p class="access-save-error" role="alert">{{ saveError }}</p>
+        }
+        <footer class="access-modal-actions">
+          <button type="button" [disabled]="isSaving" (click)="closeEdit()">Cancel</button>
+          <button type="submit" class="access-save" [disabled]="!canSaveChanges">{{ isSaving ? 'Saving…' : 'Save changes' }}</button>
+        </footer>
+      </form>
+    </section>
+  </div>
+}

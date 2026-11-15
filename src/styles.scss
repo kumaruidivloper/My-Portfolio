@@ -42,7 +42,9 @@ body{
 }
 
 html:has(.dashboard-page),
-body:has(.dashboard-page) {
+body:has(.dashboard-page),
+html:has(.my-access-page),
+body:has(.my-access-page) {
     overflow: hidden;
 }
 
@@ -1864,7 +1866,8 @@ body.night {
   }
 }
 
-body:has(.dashboard-page) {
+body:has(.dashboard-page),
+body:has(.my-access-page) {
   #menu-btn,
   .header .navbar {
     display: none !important;

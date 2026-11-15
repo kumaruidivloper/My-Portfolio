@@ -21,6 +21,7 @@
     "@angular/platform-browser": "^22.1.2",
     "@angular/platform-browser-dynamic": "^22.1.2",
     "@angular/router": "^22.1.2",
+    "@noble/hashes": "^2.0.1",
     "@swimlane/ngx-charts": "^25.0.2",
     "@techiediaries/ngx-qrcode": "^9.1.0",
     "angularx-qrcode": "^16.0.2",

@@ -2,25 +2,27 @@ import { Injectable } from '@angular/core';
 import { CanMatch, Route, Router, UrlSegment, UrlTree } from '@angular/router';
 import { environment } from '../../environments/environment';
 
+export type ProtectedDestination = 'dashboard' | 'my-access';
+
 @Injectable({
   providedIn: 'root'
 })
 export class DashboardAccessGuard implements CanMatch {
-  private hasOneTimeAccess = false;
+  private grantedDestination: ProtectedDestination | null = null;
 
   constructor(private router: Router) {}
 
-  grantOneTimeAccess(): void {
-    this.hasOneTimeAccess = true;
+  grantOneTimeAccess(destination: ProtectedDestination = 'dashboard'): void {
+    this.grantedDestination = destination;
   }
 
-  canMatch(_route: Route, _segments: UrlSegment[]): boolean | UrlTree {
+  canMatch(route: Route, _segments: UrlSegment[]): boolean | UrlTree {
     if (!environment.production) {
       return true;
     }
 
-    const hasAccess = this.hasOneTimeAccess;
-    this.hasOneTimeAccess = false;
+    const hasAccess = this.grantedDestination !== null && this.grantedDestination === route.path;
+    this.grantedDestination = null;
 
     return hasAccess || this.router.parseUrl('/');
   }

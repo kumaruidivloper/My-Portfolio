@@ -12,6 +12,14 @@ const routes: Routes = [
       )
   },
   {
+    path: 'my-access',
+    canMatch: [DashboardAccessGuard],
+    loadChildren: () =>
+      import('./my-access/my-access.module').then(
+        (module) => module.MyAccessModule
+      )
+  },
+  {
     path: 'interview-qa',
     loadChildren: () =>
       import('./interview-qa/interview-qa.module').then(

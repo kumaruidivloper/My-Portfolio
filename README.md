@@ -54,6 +54,12 @@ The About skill bars supplement API-provided skills with Claude / Claude Code (8
 
 Dashboard access and edit/delete confirmations require the configured 14-digit code. Dashboard entry automatically verifies after all 14 digits are entered; pasted codes also fill all 14 fields.
 
+My Access loads bank and account records from the configured MockAPI access-details resource. Sensitive-looking values are masked until individually revealed. Like the dashboard, it requires the 14-digit code in production but opens directly in local development. This is a client-side gate, not server-side authorization; do not use it to protect real credentials.
+
+Each My Access card has an edit dialog. Required fields cannot be blank; optional fields may be empty or set to `NA`. Password and confirmation-code fields have individual show/hide controls and are masked again when the dialog reopens. Saving requires the same 14-digit confirmation code as dashboard edits, verified in the browser in both local and production environments. Saving refreshes the records first and checks whether the edited card changed since the dialog opened.
+
+The code check also works on local-network HTTP URLs without Web Crypto. HTTP and browser-side code checks do not protect sensitive data; use HTTPS and server-side authorization for real credentials.
+
 The eye switch beside My Dashboard is on by default and visually obscures dashboard values, charts, and entry fields; a crossed-out eye indicates blur is on. Switch it off before opening the dashboard to show values; the code dialog then indicates blur is off. This is a visual aid, not data protection: accessible text, browser tools, and exports can still expose the data.
 
 ```bash

@@ -10,12 +10,14 @@ import { DataService } from './service/data.service';
 import { DashboardAccessGuard } from './service/dashboard-access.guard';
 import { ConfirmationCodeService } from './service/confirmation-code.service';
 import { TimeService } from './service/time.service';
+import { environment } from '../environments/environment';
 
 describe('AppComponent', () => {
   let component: AppComponent;
 
   beforeEach(() => {
     component = Object.create(AppComponent.prototype) as AppComponent;
+    Object.assign(component, { accessTarget: 'dashboard', accessPromptVersion: 0 });
   });
 
   it('calculates experience from the May anniversary', () => {
@@ -88,6 +90,102 @@ describe('AppComponent', () => {
     expect(component.isDashboardPromptOpen).toBeFalse();
   });
 
+  it('opens My Access directly without a code prompt in local development', () => {
+    const navigateByUrl = jasmine.createSpy('navigateByUrl');
+    const grantOneTimeAccess = jasmine.createSpy('grantOneTimeAccess');
+    Object.assign(component, { router: { navigateByUrl }, dashboardAccessGuard: { grantOneTimeAccess } });
+
+    component.openMyAccessPrompt();
+
+    expect(grantOneTimeAccess).toHaveBeenCalledOnceWith('my-access');
+    expect(navigateByUrl).toHaveBeenCalledOnceWith('/my-access');
+    expect(component.isDashboardPromptOpen).toBeFalse();
+  });
+
+  describe('My Access production code prompt', () => {
+    let originalProduction: boolean;
+
+    beforeEach(() => {
+      originalProduction = environment.production;
+      environment.production = true;
+    });
+
+    afterEach(() => {
+      environment.production = originalProduction;
+    });
+
+    it('requires the code for My Access and opens it only after successful verification', async () => {
+      const navigateByUrl = jasmine.createSpy('navigateByUrl');
+      const grantOneTimeAccess = jasmine.createSpy('grantOneTimeAccess');
+      const verify = jasmine.createSpy('verify').and.resolveTo(false);
+      Object.assign(component, {
+        router: { navigateByUrl },
+        dashboardAccessGuard: { grantOneTimeAccess },
+        confirmationCodeService: { verify },
+        dashboardCodeDigits: Array.from({ length: 14 }, () => '')
+      });
+
+      component.openMyAccessPrompt();
+      expect(component.isDashboardPromptOpen).toBeTrue();
+      expect(navigateByUrl).not.toHaveBeenCalled();
+      component.dashboardCodeDigits.splice(0, 14, ...'12345678901234');
+      await component.submitDashboardCode();
+      expect(component.dashboardCodeError).toContain('My Access');
+      expect(grantOneTimeAccess).not.toHaveBeenCalled();
+
+      verify.and.resolveTo(true);
+      await component.submitDashboardCode();
+      expect(grantOneTimeAccess).toHaveBeenCalledOnceWith('my-access');
+      expect(navigateByUrl).toHaveBeenCalledOnceWith('/my-access');
+      expect(component.isDashboardPromptOpen).toBeFalse();
+    });
+
+    it('does not open My Access if its code prompt is cancelled during verification', async () => {
+      let resolveVerification!: (valid: boolean) => void;
+      const verification = new Promise<boolean>((resolve) => { resolveVerification = resolve; });
+      const navigateByUrl = jasmine.createSpy('navigateByUrl');
+      const grantOneTimeAccess = jasmine.createSpy('grantOneTimeAccess');
+      Object.assign(component, {
+        router: { navigateByUrl },
+        dashboardAccessGuard: { grantOneTimeAccess },
+        confirmationCodeService: { verify: () => verification },
+        dashboardCodeDigits: Array.from({ length: 14 }, () => '')
+      });
+      component.openMyAccessPrompt();
+      component.dashboardCodeDigits.splice(0, 14, ...'12345678901234');
+      const result = component.submitDashboardCode();
+      component.closeDashboardPrompt();
+      resolveVerification(true);
+      await result;
+      expect(grantOneTimeAccess).not.toHaveBeenCalled();
+      expect(navigateByUrl).not.toHaveBeenCalled();
+    });
+
+    it('ignores a verification result after the entered code changes', async () => {
+      let resolveVerification!: (valid: boolean) => void;
+      const verification = new Promise<boolean>((resolve) => { resolveVerification = resolve; });
+      const navigateByUrl = jasmine.createSpy('navigateByUrl');
+      const grantOneTimeAccess = jasmine.createSpy('grantOneTimeAccess');
+      const verify = jasmine.createSpy('verify').and.returnValues(verification, Promise.resolve(false));
+      Object.assign(component, {
+        document,
+        router: { navigateByUrl },
+        dashboardAccessGuard: { grantOneTimeAccess },
+        confirmationCodeService: { verify },
+        dashboardCodeDigits: Array.from({ length: 14 }, () => '')
+      });
+      component.openMyAccessPrompt();
+      component.dashboardCodeDigits.splice(0, 14, ...'12345678901234');
+      const result = component.submitDashboardCode();
+      component.onDashboardCodeInput({ target: { value: '5' } } as unknown as Event, 0);
+      resolveVerification(true);
+      await result;
+      expect(verify).toHaveBeenCalledTimes(2);
+      expect(grantOneTimeAccess).not.toHaveBeenCalled();
+      expect(navigateByUrl).not.toHaveBeenCalled();
+    });
+  });
+
   it('shows an enabled blur switch beside the dashboard link without triggering navigation', async () => {
     const navigateByUrl = jasmine.createSpy('navigateByUrl');
     const grantOneTimeAccess = jasmine.createSpy('grantOneTimeAccess');
@@ -111,6 +209,14 @@ describe('AppComponent', () => {
       fixture.componentInstance.data = { intro: [{}], themeMode: [{}], aboutMe: {}, content: { intro: '' } };
       fixture.detectChanges();
       const row = fixture.nativeElement.querySelector('.dashboard-nav-item') as HTMLElement;
+      const accessLink = fixture.nativeElement.querySelector('.my-access-nav-link') as HTMLAnchorElement;
+      accessLink.click();
+      fixture.detectChanges();
+      expect(navigateByUrl).toHaveBeenCalledOnceWith('/my-access');
+      expect(fixture.componentInstance.isDashboardPromptOpen).toBeFalse();
+      navigateByUrl.calls.reset();
+      grantOneTimeAccess.calls.reset();
+      fixture.componentInstance.accessTarget = 'dashboard';
       const toggle = row.querySelector('input[role="switch"]') as HTMLInputElement;
       const track = row.querySelector('.toggle-switch') as HTMLElement;
       const thumb = track.querySelector('.toggle-switch-thumb') as HTMLElement;

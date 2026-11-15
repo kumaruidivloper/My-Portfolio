@@ -4,7 +4,7 @@ import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
 import { AppOptions } from './model/model';
 import { DataService } from './service/data.service';
-import { DashboardAccessGuard } from './service/dashboard-access.guard';
+import { DashboardAccessGuard, ProtectedDestination } from './service/dashboard-access.guard';
 import { ConfirmationCodeService } from './service/confirmation-code.service';
 import { TimeService } from './service/time.service';
 import { environment } from '../environments/environment';
@@ -21,6 +21,8 @@ export class AppComponent implements OnInit, OnDestroy {
   dashboardBlurEnabled = true;
   isDashboardPromptOpen = false;
   dashboardCodeError = '';
+  accessTarget: ProtectedDestination = 'dashboard';
+  private accessPromptVersion = 0;
 
   data: any;
   isDataLoaded: boolean = false;
@@ -48,7 +50,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private loadedTimeout?: ReturnType<typeof setTimeout>;
 
   get showAutoScroll(): boolean {
-    return !this.router.url.startsWith('/dashboard') && !this.isOverlay;
+    return !this.router.url.startsWith('/dashboard') && !this.router.url.startsWith('/my-access') && !this.isOverlay;
   }
 
   get isOverlay(): boolean {
@@ -291,12 +293,22 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   openDashboardPrompt(): void {
+    this.openProtectedPrompt('dashboard');
+  }
+
+  openMyAccessPrompt(): void {
+    this.openProtectedPrompt('my-access');
+  }
+
+  private openProtectedPrompt(target: ProtectedDestination): void {
     this.closeSideMenu();
+    this.accessTarget = target;
+    this.accessPromptVersion++;
     if (!environment.production) {
       this.isDashboardPromptOpen = false;
       this.dashboardCodeError = '';
-      this.dashboardAccessGuard.grantOneTimeAccess();
-      void this.router.navigateByUrl('/dashboard');
+      this.dashboardAccessGuard.grantOneTimeAccess(target);
+      void this.router.navigateByUrl(`/${target}`);
       return;
     }
 
@@ -315,11 +327,13 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   closeDashboardPrompt(): void {
+    this.accessPromptVersion++;
     this.isDashboardPromptOpen = false;
     this.dashboardCodeError = '';
   }
 
   onDashboardCodeInput(event: Event, index: number): void {
+    this.accessPromptVersion++;
     const input = event.target as HTMLInputElement;
     const digit = input.value.replace(/\D/g, '').slice(-1);
     this.dashboardCodeDigits[index] = digit;
@@ -349,6 +363,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   onDashboardCodePaste(event: ClipboardEvent): void {
     event.preventDefault();
+    this.accessPromptVersion++;
     const digits = event.clipboardData?.getData('text').replace(/\D/g, '').slice(0, this.dashboardCodeDigits.length) ?? '';
     this.dashboardCodeDigits.fill('');
     Array.from(digits).forEach((digit, index) => {
@@ -363,8 +378,11 @@ export class AppComponent implements OnInit, OnDestroy {
 
   async submitDashboardCode(): Promise<void> {
     const enteredCode = this.dashboardCodeDigits.join('');
+    const target = this.accessTarget;
+    const promptVersion = this.accessPromptVersion;
+    const destinationLabel = target === 'my-access' ? 'My Access' : 'the dashboard';
     if (!/^\d{14}$/.test(enteredCode)) {
-      this.dashboardCodeError = 'Enter the correct 14-digit code to open the dashboard.';
+      this.dashboardCodeError = `Enter the correct 14-digit code to open ${destinationLabel}.`;
       return;
     }
 
@@ -372,19 +390,25 @@ export class AppComponent implements OnInit, OnDestroy {
     try {
       isValid = await this.confirmationCodeService.verify(enteredCode);
     } catch {
-      this.dashboardCodeError = 'Code verification is unavailable. Please try again.';
+      if (promptVersion === this.accessPromptVersion) {
+        this.dashboardCodeError = 'Code verification is unavailable. Please try again.';
+      }
+      return;
+    }
+
+    if (promptVersion !== this.accessPromptVersion) {
       return;
     }
 
     if (!isValid) {
-      this.dashboardCodeError = 'Enter the correct 14-digit code to open the dashboard.';
+      this.dashboardCodeError = `Enter the correct 14-digit code to open ${destinationLabel}.`;
       return;
     }
 
-    this.dashboardAccessGuard.grantOneTimeAccess();
+    this.dashboardAccessGuard.grantOneTimeAccess(target);
     this.closeDashboardPrompt();
     this.closeSideMenu();
-    void this.router.navigateByUrl('/dashboard');
+    void this.router.navigateByUrl(`/${target}`);
   }
 
   private dashboardCodeInputs(): NodeListOf<HTMLInputElement> {
