@@ -58,6 +58,52 @@ describe('AppComponent', () => {
     expect(component.showAutoScroll).toBeFalse();
   });
 
+  it('generates the hero QR code on input and clears it with the reset button', async () => {
+    spyOn(AppComponent.prototype, 'ngOnInit');
+    TestBed.configureTestingModule({
+      declarations: [AppComponent],
+      imports: [CommonModule, FormsModule],
+      schemas: [NO_ERRORS_SCHEMA],
+      providers: [
+        { provide: Router, useValue: { url: '/' } },
+        { provide: DashboardAccessGuard, useValue: {} },
+        { provide: DataService, useValue: {} },
+        { provide: TimeService, useValue: {} },
+        { provide: ConfirmationCodeService, useValue: {} }
+      ]
+    });
+    const fixture = TestBed.createComponent(AppComponent);
+    try {
+      fixture.componentInstance.isDataLoaded = true;
+      fixture.componentInstance.data = { intro: [{}], themeMode: [{}], aboutMe: {}, content: { intro: '' } };
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const input = fixture.nativeElement.querySelector('#hero-qr-input') as HTMLInputElement;
+      expect(input.labels?.[0].textContent).toContain('Create a QR code');
+
+      input.value = 'https://example.com/Hello?code=Ab12';
+      input.dispatchEvent(new Event('input'));
+      fixture.changeDetectorRef.markForCheck();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+
+      expect(fixture.componentInstance.inputValue).toBe(input.value);
+      expect(fixture.componentInstance.isButtonDisabled).toBeFalse();
+      expect(fixture.nativeElement.querySelector('.qrcodeImage')).not.toBeNull();
+
+      const clear = fixture.nativeElement.querySelector('button[aria-label="Clear QR text"]') as HTMLButtonElement;
+      clear.click();
+      fixture.changeDetectorRef.markForCheck();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(input.value).toBe('');
+      expect(fixture.nativeElement.querySelector('.qrcodeImage')).toBeNull();
+    } finally {
+      fixture.destroy();
+    }
+  });
+
   it('keeps the dashboard prompt open for an incorrect code', async () => {
     const verify = jasmine.createSpy('verify').and.resolveTo(false);
     Object.assign(component, {

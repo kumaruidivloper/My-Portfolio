@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, DOCUMENT, HostListener, Inject, Input, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, DOCUMENT, EventEmitter, HostListener, Inject, Input, OnDestroy, OnInit, Output } from '@angular/core';
 
 @Component({
   selector: 'app-scroll-progress',
@@ -9,6 +9,7 @@ import { ChangeDetectorRef, Component, DOCUMENT, HostListener, Inject, Input, On
 export class ScrollProgressComponent implements OnInit, OnDestroy {
   @Input() scrollContainer?: HTMLElement;
   @Input() resizeTarget?: HTMLElement;
+  @Output() scrollProgressChange = new EventEmitter<number>();
   scrollProgress = 0;
   private scrollResizeObserver?: ResizeObserver;
   private readonly onContainerScroll = () => {
@@ -47,6 +48,7 @@ export class ScrollProgressComponent implements OnInit, OnDestroy {
     const scrollingElement = this.scrollContainer ?? this.document.scrollingElement;
     if (!scrollingElement) {
       this.scrollProgress = 0;
+      this.scrollProgressChange.emit(this.scrollProgress);
       return;
     }
     const viewportHeight = this.scrollContainer
@@ -56,5 +58,6 @@ export class ScrollProgressComponent implements OnInit, OnDestroy {
     this.scrollProgress = scrollableHeight > 0
       ? Math.min(1, Math.max(0, scrollingElement.scrollTop / scrollableHeight))
       : 0;
+    this.scrollProgressChange.emit(this.scrollProgress);
   }
 }

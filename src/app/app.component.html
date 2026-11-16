@@ -5,14 +5,16 @@
 }
 @if (isDataLoaded) {
   @if (showAutoScroll) {
-    <app-scroll-progress></app-scroll-progress>
+    <app-scroll-progress (scrollProgressChange)="profileScrollProgress = $event"></app-scroll-progress>
   }
   @if (false) {
     <app-stopwatch></app-stopwatch>
   }
   <header class="header" #header>
     <div class="user">
-      <a href="#"><img class="img-animation" [src]="data.intro[0].userImage" [alt]="data.intro[0].name" width="400" height="400" fetchpriority="high" decoding="async"></a>
+      <a href="#" class="profile-image-frame" [style.--profile-scroll-angle]="(profileScrollProgress * 360) + 'deg'" [style.--profile-scroll-opacity]="profileScrollProgress * 0.3">
+        <img class="img-animation profile-scroll-image" [src]="data.intro[0].userImage" [alt]="data.intro[0].name" width="400" height="400" fetchpriority="high" decoding="async">
+      </a>
       <h3>{{data.intro[0].name}}</h3>
       <p>{{data.intro[0].menuTitle}}</p>
     </div>
@@ -87,29 +89,43 @@
     (keydown.space)="$event.preventDefault(); themeTogglerClick()">
   </div>
   <!-- home section starts  -->
-  <section class="home" id="home">
-    <div class="content">
-      <h3>{{data.intro[0].name}}</h3>
+  <section class="home" id="home" aria-labelledby="home-title">
+    <div class="content hero-intro">
+      <span class="hero-eyebrow">Design. Code. Experience.</span>
+      <h1 id="home-title">{{data.intro[0].name}}</h1>
       <p>{{data.intro[0].title}}</p>
-      <a href="{{data.intro[0].profilePath}}" class="btn" download>{{data.intro[0].buttonName}}</a>
+      <a href="{{data.intro[0].profilePath}}" class="btn hero-download" download>
+        {{data.intro[0].buttonName}}
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m-5-5 5 5 5-5M5 16v5h14v-5"/></svg>
+      </a>
     </div>
-    <div class="content">
+    <div class="content hero-qr">
       <div class="Qr-form">
-        <span class="close fas fa-times" role="button" tabindex="0" aria-label="Clear QR text" (click)="QrReset()" (keydown.enter)="QrReset()" (keydown.space)="$event.preventDefault(); QrReset()"></span>
-        <input class="qr-input-box box" [(ngModel)]="inputValue" placeholder="Enter your text here to generate the QR code..." (keyup)="qrValueCheck()">
-        <!-- <p>You entered: {{ inputValue }}</p> -->
+        <label for="hero-qr-input">
+          Create a QR code
+        </label>
+        <div class="qr-input-wrap">
+          <input id="hero-qr-input" class="qr-input-box box" [(ngModel)]="inputValue" placeholder="Enter text or paste a link" (ngModelChange)="qrValueCheck()" aria-describedby="hero-qr-hint">
+          <svg class="qr-field-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M3 3h6v6H3zM15 3h6v6h-6zM3 15h6v6H3zM15 15h3v3h3v3h-6zM21 12v3M12 3v3M3 12h3M12 12v6"/></svg>
+          <button type="button" class="close" aria-label="Clear QR text" (click)="QrReset()">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M6 18 18 6"/></svg>
+          </button>
+        </div>
+        <small id="hero-qr-hint">Your QR code appears as you type.</small>
       </div>
       @if (!isButtonDisabled) {
         <div class="qrcodeImage">
           @if (qrCodeComponent) {
-            <ng-container *ngComponentOutlet="qrCodeComponent; inputs: { data: inputValue }"></ng-container>
+            <div class="qr-code-surface">
+              <ng-container *ngComponentOutlet="qrCodeComponent; inputs: { data: inputValue }"></ng-container>
+            </div>
           }
         </div>
       }
     </div>
-    <div class="share">
-      <a href="{{data.intro[0].gitUrl}}" class="fab fa-git" target="_blank"></a>
-      <a href="{{data.intro[0].linkedIn}}" class="fab fa-linkedin" target="_blank"></a>
+    <div class="share" role="group" aria-label="Find me online">
+      <a href="{{data.intro[0].gitUrl}}" class="fab fa-github" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub"></a>
+      <a href="{{data.intro[0].linkedIn}}" class="fab fa-linkedin-in" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn"></a>
       <a href="https://claude.ai" class="claude-link" target="_blank" rel="noopener noreferrer" aria-label="Claude" title="Claude"><svg class="claude-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 12L12.00 2.00"/><path d="M12 12L16.00 5.07"/><path d="M12 12L20.66 7.00"/><path d="M12 12L19.50 12.00"/><path d="M12 12L20.66 17.00"/><path d="M12 12L16.00 18.93"/><path d="M12 12L12.00 22.00"/><path d="M12 12L8.25 18.50"/><path d="M12 12L3.34 17.00"/><path d="M12 12L4.00 12.00"/><path d="M12 12L3.34 7.00"/><path d="M12 12L8.25 5.50"/></svg></a>
     </div>
   </section>

@@ -1006,6 +1006,35 @@ body.dashboard-values-blurred {
     box-shadow: var(--box-shadow);
 }
 
+.header .user .profile-image-frame{
+    display: inline-flex;
+    width: 18rem;
+    height: 18rem;
+    margin: 1rem 0;
+    border-radius: 50%;
+    background-color: var(--bg-color);
+    background-image: conic-gradient(from 0deg,
+        color-mix(in srgb, var(--green) calc(var(--profile-scroll-opacity, 0) * 100%), transparent) 0deg var(--profile-scroll-angle, 0deg),
+        transparent var(--profile-scroll-angle, 0deg) 360deg);
+    box-shadow: var(--box-shadow);
+}
+
+.header .user .profile-scroll-image{
+    display: block;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    background: none;
+    box-shadow: none;
+    transition: none;
+}
+
+@media (prefers-reduced-motion: reduce){
+    .header .user .profile-scroll-image{
+        animation: none;
+    }
+}
+
 .header .user h3{
     color:var(--black);
     font-size: 2.5rem;
@@ -1185,61 +1214,133 @@ html body app-responsive-table .responsive-grid-page-controls button svg {
 }
 
 .home{
+    position: relative;
+    isolation: isolate;
+    overflow: clip;
     display: flex;
     flex-flow: column;
     align-items: center;
     justify-content: center;
     text-align: center;
-    /* One uniform vertical gap between the intro, QR form and social links */
-    gap: 4rem;
+    gap: 3.6rem;
+    min-height: 100svh;
+    padding: 10rem clamp(2.4rem, 5vw, 8rem) 6rem;
+}
+
+.home::before{
+    content: "";
+    position: absolute;
+    z-index: -1;
+    pointer-events: none;
+    width: clamp(26rem, 40vw, 48rem);
+    aspect-ratio: 1;
+    top: 50%;
+    left: 50%;
+    background: radial-gradient(circle,
+        color-mix(in srgb, var(--green) 24%, transparent) 0%,
+        color-mix(in srgb, var(--green) 12%, transparent) 28%,
+        color-mix(in srgb, var(--green) 4%, transparent) 48%,
+        transparent 70%);
+    transform: translate(-50%, -50%);
+    animation: hero-spotlight-drift 19s ease-in-out -5s infinite;
+}
+
+@keyframes hero-spotlight-drift{
+    0%, 100% { transform: translate(-85%, -80%); }
+    24% { transform: translate(-5%, -105%); }
+    49% { transform: translate(-20%, -5%); }
+    73% { transform: translate(-110%, -30%); }
+}
+
+@media (prefers-reduced-motion: reduce){
+    .home::before{
+        animation: none;
+    }
 }
 
 .home .content{
     display: flex;
     flex-flow: column;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1.8rem;
+    width: 100%;
 }
 
-.home .content h3{
-    font-size: 7rem;
-    color:var(--black);
-    line-height: 1.1;
+.home .hero-eyebrow{
+    color: var(--light-color);
+    font-size: 1.15rem;
+    font-weight: 500;
+    letter-spacing: .24em;
     text-transform: uppercase;
 }
 
-.home .content p{
-    font-size: 2rem;
-    color:var(--green);
+.home .content h1{
+    max-width: 100%;
+    font-size: clamp(4.4rem, 6.2vw, 8.4rem);
+    font-weight: 700;
+    color:var(--black);
+    line-height: 1.08;
+    letter-spacing: -.045em;
+    text-transform: uppercase;
+    overflow-wrap: anywhere;
+    text-shadow: var(--box-shadow);
 }
 
-.home .content .btn{
-    margin-top: 0;
+.home .content p{
+    font-size: clamp(1.7rem, 2vw, 2.2rem);
+    color: var(--light-color);
+    text-wrap: balance;
+}
+
+.home .hero-download{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.6rem;
+    min-height: 4.8rem;
+    margin-top: 1rem;
+    padding: 1.3rem 2.6rem;
+    border: 1px solid transparent;
+    border-radius: 1.2rem;
+    background: var(--bg-color);
+    color: var(--black);
+    font-size: 1.5rem;
+    font-weight: 600;
+    box-shadow: var(--box-shadow);
+}
+
+.home .hero-download svg{
+    width: 2rem;
+    height: 2rem;
+}
+
+.home .hero-download:is(:hover, :active){
+    box-shadow: var(--box-shadow-inset);
+    color: var(--green);
 }
 
 .home .share{
-    position: relative;
-    border-radius: .5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.4rem;
+    padding: 1.4rem;
+    border-radius: 1.8rem;
+    background: var(--bg-color);
     box-shadow: var(--box-shadow);
-    padding:1rem;
 }
 
 .home .share a{
-    height: 5rem;
-    width: 5rem;
-    line-height: 5rem;
-    box-shadow: var(--box-shadow);
-    margin:.5rem;
-    font-size: 2rem;
-    color:var(--black);
-    border-radius: .5rem;
-}
-
-.home .share .claude-link{
-    align-items: center;
     display: inline-flex;
+    align-items: center;
     justify-content: center;
-    vertical-align: bottom;
+    height: max(44px, 4.8rem);
+    width: max(44px, 4.8rem);
+    font-size: 2rem;
+    color: var(--light-color);
+    border-radius: 1.4rem;
+    background: var(--bg-color);
+    box-shadow: var(--box-shadow);
 }
 
 .home .share .claude-icon{
@@ -1247,9 +1348,29 @@ html body app-responsive-table .responsive-grid-page-controls button svg {
     width: 2.4rem;
 }
 
-.home .share a:hover{
+.home .share a:is(:hover, :active){
     box-shadow: var(--box-shadow-inset);
-    color:var(--green);
+    color: var(--green);
+}
+
+.home :is(.hero-download, .share a):focus-visible{
+    outline: 2px solid var(--green);
+    outline-offset: 4px;
+}
+
+@media (max-width: 600px){
+    .home{
+        gap: 3rem;
+        padding: 12rem 2.4rem 6rem;
+    }
+
+    .home .content h1{
+        font-size: clamp(4.4rem, 10.5vw, 6.4rem);
+    }
+
+    .home .hero-download{
+        min-height: 44px;
+    }
 }
 
 .about .row{
@@ -1676,7 +1797,6 @@ html body app-responsive-table .responsive-grid-page-controls button svg {
     0% {
             //border-radius:  60% 40% 30% 70% / 60% 30% 70% 40%;
             border-width: 2.5rem;
-            background: linear-gradient(45deg, var(--primary) 0%, var(--secondary) 100%);
             //border-color: rgb(27, 160, 7);
 
     } 
@@ -1710,7 +1830,6 @@ html body app-responsive-table .responsive-grid-page-controls button svg {
     50% {
             //border-radius:  30% 60% 70% 40% / 50% 60% 30% 60%;
             border-width: 0.5rem;
-            background: linear-gradient(45deg, var(--third) 0%, var(--secondary) 100%);
             //border-color: orange;
     }
     55% {
@@ -1744,7 +1863,6 @@ html body app-responsive-table .responsive-grid-page-controls button svg {
     100% {
             border-width: 2.5rem;
             //border-radius:  60% 40% 30% 70% / 60% 30% 70% 40%;
-            background: linear-gradient(45deg, var(--primary) 0%, var(--secondary) 100%);
             //border-color: rgb(128, 0, 128);
     } 
 }

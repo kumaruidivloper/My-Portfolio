@@ -4,9 +4,11 @@ import { ScrollProgressComponent } from './scroll-progress.component';
 describe('ScrollProgressComponent', () => {
   it('tracks and clamps document scroll progress', () => {
     const scrollingElement = { scrollHeight: 2000, scrollTop: 0 };
+    const emit = jasmine.createSpy('emit');
     const component = Object.create(ScrollProgressComponent.prototype) as ScrollProgressComponent;
     Object.assign(component, {
-      document: { scrollingElement, documentElement: { clientHeight: 500 } }
+      document: { scrollingElement, documentElement: { clientHeight: 500 } },
+      scrollProgressChange: { emit }
     });
 
     component.updateScrollProgress();
@@ -23,6 +25,7 @@ describe('ScrollProgressComponent', () => {
     scrollingElement.scrollHeight = 500;
     component.updateScrollProgress();
     expect(component.scrollProgress).toBe(0);
+    expect(emit.calls.allArgs()).toEqual([[0], [0.5], [1], [0], [0]]);
   });
 
   it('updates the displayed progress on window scroll and resize', () => {
@@ -33,14 +36,18 @@ describe('ScrollProgressComponent', () => {
     spyOnProperty(scrollingElement, 'scrollTop', 'get').and.callFake(() => scrollTop);
     spyOnProperty(document.documentElement, 'clientHeight', 'get').and.returnValue(500);
     const fixture = TestBed.createComponent(ScrollProgressComponent);
+    const progressChanged = jasmine.createSpy('progressChanged');
+    fixture.componentInstance.scrollProgressChange.subscribe(progressChanged);
     fixture.detectChanges();
 
     const fill: HTMLElement = fixture.nativeElement.querySelector('.scroll-progress-fill');
     expect(fill.style.transform).toBe('scaleX(0.5)');
+    expect(progressChanged).toHaveBeenCalledWith(0.5);
     scrollTop = 1500;
     window.dispatchEvent(new Event('scroll'));
     fixture.detectChanges();
     expect(fill.style.transform).toBe('scaleX(1)');
+    expect(progressChanged).toHaveBeenCalledWith(1);
     scrollTop = 0;
     window.dispatchEvent(new Event('resize'));
     fixture.detectChanges();

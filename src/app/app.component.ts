@@ -33,6 +33,7 @@ export class AppComponent implements OnInit, OnDestroy {
   isVisible = true;
   isDarkeMode = true;
   isScrollBottom = true;
+  profileScrollProgress = 0;
   currentYear: number=new Date().getFullYear();
   currentTime: Date | undefined;
   greeting = '';
