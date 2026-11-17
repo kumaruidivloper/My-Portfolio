@@ -58,6 +58,46 @@ describe('AppComponent', () => {
     expect(component.showAutoScroll).toBeFalse();
   });
 
+  it('switches profile photos with the light and dark themes', () => {
+    spyOn(AppComponent.prototype, 'ngOnInit');
+    TestBed.configureTestingModule({
+      declarations: [AppComponent],
+      imports: [CommonModule, FormsModule],
+      schemas: [NO_ERRORS_SCHEMA],
+      providers: [
+        { provide: Router, useValue: { url: '/' } },
+        { provide: DashboardAccessGuard, useValue: {} },
+        { provide: DataService, useValue: {} },
+        { provide: TimeService, useValue: {} },
+        { provide: ConfirmationCodeService, useValue: {} }
+      ]
+    });
+    const originalBodyClasses = document.body.className;
+    const fixture = TestBed.createComponent(AppComponent);
+    document.body.appendChild(fixture.nativeElement);
+    try {
+      fixture.componentInstance.isDataLoaded = true;
+      fixture.componentInstance.data = { intro: [{ name: 'Profile', userImage: 'assets/img/user-img.jpg' }], themeMode: [{}], aboutMe: {}, content: { intro: '' } };
+      fixture.detectChanges();
+      const light = fixture.nativeElement.querySelector('.profile-image-light') as HTMLImageElement;
+      const dark = fixture.nativeElement.querySelector('.profile-image-dark') as HTMLImageElement;
+      expect(light.getAttribute('src')).toBe('assets/img/user-img.jpg');
+      expect(dark.getAttribute('src')).toBe('assets/img/user-img-dark.jpg');
+      expect(dark.alt).toBe(light.alt);
+
+      for (const theme of ['day', 'night', 'active']) {
+        document.body.classList.remove('day', 'night', 'active');
+        document.body.classList.add(theme);
+        expect(getComputedStyle(light).display).toBe(theme === 'day' ? 'block' : 'none');
+        expect(getComputedStyle(dark).display).toBe(theme === 'day' ? 'none' : 'block');
+      }
+    } finally {
+      fixture.destroy();
+      fixture.nativeElement.remove();
+      document.body.className = originalBodyClasses;
+    }
+  });
+
   it('generates the hero QR code on input and clears it with the reset button', async () => {
     spyOn(AppComponent.prototype, 'ngOnInit');
     TestBed.configureTestingModule({

@@ -1029,6 +1029,15 @@ body.dashboard-values-blurred {
     transition: none;
 }
 
+.header .user .profile-image-dark,
+body:is(.active, .night) .header .user .profile-image-light{
+    display: none;
+}
+
+body:is(.active, .night) .header .user .profile-image-dark{
+    display: block;
+}
+
 @media (prefers-reduced-motion: reduce){
     .header .user .profile-scroll-image{
         animation: none;
