@@ -18,6 +18,7 @@ import { environment } from '../environments/environment';
 })
 export class AppComponent implements OnInit, OnDestroy {
   readonly dashboardCodeDigits = Array.from({ length: 14 }, () => '');
+  showAccessCodePromptLocally = true;
   dashboardBlurEnabled = true;
   isDashboardPromptOpen = false;
   dashboardCodeError = '';
@@ -294,6 +295,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   openDashboardPrompt(): void {
+    this.setDashboardBlur(true);
     this.openProtectedPrompt('dashboard');
   }
 
@@ -305,7 +307,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.closeSideMenu();
     this.accessTarget = target;
     this.accessPromptVersion++;
-    if (!environment.production) {
+    if (!environment.production && !this.showAccessCodePromptLocally) {
       this.isDashboardPromptOpen = false;
       this.dashboardCodeError = '';
       this.dashboardAccessGuard.grantOneTimeAccess(target);

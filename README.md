@@ -54,7 +54,7 @@ The About skill bars supplement API-provided skills with Claude / Claude Code (8
 
 Dashboard access and edit/delete confirmations require the configured 14-digit code. Dashboard entry automatically verifies after all 14 digits are entered; pasted codes also fill all 14 fields.
 
-My Access loads bank and account records from the configured MockAPI access-details resource. Sensitive-looking values are masked until individually revealed. Like the dashboard, it requires the 14-digit code in production but opens directly in local development. This is a client-side gate, not server-side authorization; do not use it to protect real credentials.
+My Access loads bank and account records from the configured MockAPI access-details resource. Sensitive-looking values are masked until individually revealed. It requires the 14-digit code in production and, by default, in local development. This is a client-side gate, not server-side authorization; do not use it to protect real credentials.
 
 Revealing a password or profile password on a card or in the edit form requires a separate mock reveal code each time; other masked fields are unchanged. This check is also browser-side and does not protect the data from browser tools or network access.
 
@@ -62,7 +62,7 @@ Each My Access card has an edit dialog. Required fields cannot be blank; optiona
 
 The code check also works on local-network HTTP URLs without Web Crypto. HTTP and browser-side code checks do not protect sensitive data; use HTTPS and server-side authorization for real credentials.
 
-The eye switch beside My Dashboard is on by default and visually obscures dashboard values, charts, and entry fields; a crossed-out eye indicates blur is on. Switch it off before opening the dashboard to show values; the code dialog then indicates blur is off. This is a visual aid, not data protection: accessible text, browser tools, and exports can still expose the data.
+The dashboard code dialog contains a mask switch, enabled by default on every launch, that visually obscures dashboard values, charts, and entry fields; a crossed-out eye indicates masking is on. The title row has the status strip on the left and the switch on the right. The strip shows a green check for **Value Masked** and a red info icon for **Value Unmasked**. The 14 dashboard code boxes are tinted to match the status: green when masked and red when unmasked. The dashboard and My Access code dialogs are enabled locally by default; set `showAccessCodePromptLocally` to `false` in `src/app/app.component.ts` to bypass them locally. The dashboard still opens masked. Production always requires the dialogs. Masking is a visual aid, not data protection: accessible text, browser tools, and exports can still expose the data.
 
 ```bash
 npm install

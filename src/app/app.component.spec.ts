@@ -166,23 +166,94 @@ describe('AppComponent', () => {
     const grantOneTimeAccess = jasmine.createSpy('grantOneTimeAccess');
     Object.assign(component, {
       router: { navigateByUrl },
-      dashboardAccessGuard: { grantOneTimeAccess }
+      dashboardAccessGuard: { grantOneTimeAccess },
+      document,
+      renderer: { addClass: (element: HTMLElement, name: string) => element.classList.add(name) }
     });
 
+    component.showAccessCodePromptLocally = false;
+    component.dashboardBlurEnabled = false;
     component.openDashboardPrompt();
 
     expect(grantOneTimeAccess).toHaveBeenCalled();
     expect(navigateByUrl).toHaveBeenCalledWith('/dashboard');
     expect(component.isDashboardPromptOpen).toBeFalse();
+    expect(component.dashboardBlurEnabled).toBeTrue();
+    document.body.classList.remove('dashboard-values-blurred');
   });
 
-  it('opens My Access directly without a code prompt in local development', () => {
+  it('requires the dashboard code locally when the local prompt is enabled', async () => {
     const navigateByUrl = jasmine.createSpy('navigateByUrl');
     const grantOneTimeAccess = jasmine.createSpy('grantOneTimeAccess');
-    Object.assign(component, { router: { navigateByUrl }, dashboardAccessGuard: { grantOneTimeAccess } });
+    const verify = jasmine.createSpy('verify').and.resolveTo(false);
+    Object.assign(component, {
+      showAccessCodePromptLocally: true,
+      dashboardCodeDigits: Array.from({ length: 14 }, () => ''),
+      router: { navigateByUrl },
+      dashboardAccessGuard: { grantOneTimeAccess },
+      confirmationCodeService: { verify },
+      document,
+      renderer: { addClass: (element: HTMLElement, name: string) => element.classList.add(name) }
+    });
+
+    try {
+      component.openDashboardPrompt();
+      expect(component.isDashboardPromptOpen).toBeTrue();
+      expect(navigateByUrl).not.toHaveBeenCalled();
+      expect(grantOneTimeAccess).not.toHaveBeenCalled();
+
+      component.dashboardCodeDigits.splice(0, 14, ...'12345678901234');
+      await component.submitDashboardCode();
+      expect(component.isDashboardPromptOpen).toBeTrue();
+      expect(navigateByUrl).not.toHaveBeenCalled();
+
+      verify.and.resolveTo(true);
+      await component.submitDashboardCode();
+      expect(grantOneTimeAccess).toHaveBeenCalledOnceWith('dashboard');
+      expect(navigateByUrl).toHaveBeenCalledOnceWith('/dashboard');
+      expect(component.isDashboardPromptOpen).toBeFalse();
+    } finally {
+      document.body.classList.remove('dashboard-values-blurred');
+    }
+  });
+
+  it('opens My Access directly when the local prompt is disabled', () => {
+    const navigateByUrl = jasmine.createSpy('navigateByUrl');
+    const grantOneTimeAccess = jasmine.createSpy('grantOneTimeAccess');
+    Object.assign(component, { showAccessCodePromptLocally: false, router: { navigateByUrl }, dashboardAccessGuard: { grantOneTimeAccess } });
 
     component.openMyAccessPrompt();
 
+    expect(grantOneTimeAccess).toHaveBeenCalledOnceWith('my-access');
+    expect(navigateByUrl).toHaveBeenCalledOnceWith('/my-access');
+    expect(component.isDashboardPromptOpen).toBeFalse();
+  });
+
+  it('requires the My Access code locally when the local prompt is enabled', async () => {
+    const navigateByUrl = jasmine.createSpy('navigateByUrl');
+    const grantOneTimeAccess = jasmine.createSpy('grantOneTimeAccess');
+    const verify = jasmine.createSpy('verify').and.resolveTo(false);
+    Object.assign(component, {
+      showAccessCodePromptLocally: true,
+      dashboardCodeDigits: Array.from({ length: 14 }, () => ''),
+      router: { navigateByUrl },
+      dashboardAccessGuard: { grantOneTimeAccess },
+      confirmationCodeService: { verify }
+    });
+
+    component.openMyAccessPrompt();
+    expect(component.isDashboardPromptOpen).toBeTrue();
+    expect(component.accessTarget).toBe('my-access');
+    expect(grantOneTimeAccess).not.toHaveBeenCalled();
+    expect(navigateByUrl).not.toHaveBeenCalled();
+
+    component.dashboardCodeDigits.splice(0, 14, ...'12345678901234');
+    await component.submitDashboardCode();
+    expect(component.isDashboardPromptOpen).toBeTrue();
+    expect(navigateByUrl).not.toHaveBeenCalled();
+
+    verify.and.resolveTo(true);
+    await component.submitDashboardCode();
     expect(grantOneTimeAccess).toHaveBeenCalledOnceWith('my-access');
     expect(navigateByUrl).toHaveBeenCalledOnceWith('/my-access');
     expect(component.isDashboardPromptOpen).toBeFalse();
@@ -205,6 +276,7 @@ describe('AppComponent', () => {
       const grantOneTimeAccess = jasmine.createSpy('grantOneTimeAccess');
       const verify = jasmine.createSpy('verify').and.resolveTo(false);
       Object.assign(component, {
+        showAccessCodePromptLocally: false,
         router: { navigateByUrl },
         dashboardAccessGuard: { grantOneTimeAccess },
         confirmationCodeService: { verify },
@@ -272,9 +344,12 @@ describe('AppComponent', () => {
     });
   });
 
-  it('shows an enabled blur switch beside the dashboard link without triggering navigation', async () => {
+  it('shows the mask switch only in the dashboard code dialog and resets it on reopening', async () => {
     const navigateByUrl = jasmine.createSpy('navigateByUrl');
     const grantOneTimeAccess = jasmine.createSpy('grantOneTimeAccess');
+    const verify = jasmine.createSpy('verify').and.resolveTo(true);
+    const originalProduction = environment.production;
+    environment.production = true;
     spyOn(AppComponent.prototype, 'ngOnInit');
     TestBed.configureTestingModule({
       declarations: [AppComponent],
@@ -285,94 +360,64 @@ describe('AppComponent', () => {
         { provide: DashboardAccessGuard, useValue: { grantOneTimeAccess } },
         { provide: DataService, useValue: {} },
         { provide: TimeService, useValue: {} },
-        { provide: ConfirmationCodeService, useValue: {} }
+        { provide: ConfirmationCodeService, useValue: { verify } }
       ]
     });
     const fixture = TestBed.createComponent(AppComponent);
     document.body.appendChild(fixture.nativeElement);
     try {
+      expect(fixture.componentInstance.showAccessCodePromptLocally).toBeTrue();
+      fixture.componentInstance.showAccessCodePromptLocally = false;
       fixture.componentInstance.isDataLoaded = true;
       fixture.componentInstance.data = { intro: [{}], themeMode: [{}], aboutMe: {}, content: { intro: '' } };
       fixture.detectChanges();
-      const row = fixture.nativeElement.querySelector('.dashboard-nav-item') as HTMLElement;
-      const accessLink = fixture.nativeElement.querySelector('.my-access-nav-link') as HTMLAnchorElement;
-      accessLink.click();
+      const link = fixture.nativeElement.querySelector('.dashboard-nav-link') as HTMLAnchorElement;
+      expect(fixture.nativeElement.querySelector('.navbar input[role="switch"]')).toBeNull();
+      link.click();
+      fixture.changeDetectorRef.markForCheck();
       fixture.detectChanges();
-      expect(navigateByUrl).toHaveBeenCalledOnceWith('/my-access');
-      expect(fixture.componentInstance.isDashboardPromptOpen).toBeFalse();
-      navigateByUrl.calls.reset();
-      grantOneTimeAccess.calls.reset();
-      fixture.componentInstance.accessTarget = 'dashboard';
-      const toggle = row.querySelector('input[role="switch"]') as HTMLInputElement;
-      const track = row.querySelector('.toggle-switch') as HTMLElement;
-      const thumb = track.querySelector('.toggle-switch-thumb') as HTMLElement;
-      const hint = track.querySelector('.dashboard-blur-hint') as SVGElement;
-      const link = row.querySelector('a') as HTMLAnchorElement;
-      expect(toggle.getAttribute('aria-label')).toBe('Blur dashboard values');
-      expect(row.textContent?.trim()).toBe('My Dashboard');
-      expect(track.getBoundingClientRect().width).toBeGreaterThan(4 * parseFloat(getComputedStyle(document.documentElement).fontSize));
+      const modal = fixture.nativeElement.querySelector('.dashboard-code-modal') as HTMLElement;
+      const toggle = modal.querySelector('input[role="switch"]') as HTMLInputElement;
+      expect(toggle.getAttribute('aria-label')).toBe('Mask dashboard values');
       expect(toggle.checked).toBeTrue();
-      fixture.componentInstance.isDashboardPromptOpen = true;
-      fixture.changeDetectorRef.markForCheck();
-      fixture.detectChanges();
-      expect(fixture.nativeElement.querySelector('#dashboard-visibility-notice')).toBeNull();
-      fixture.componentInstance.closeDashboardPrompt();
-      fixture.changeDetectorRef.markForCheck();
-      fixture.detectChanges();
-      expect(track.querySelectorAll('.toggle-switch-thumb svg path').length).toBe(2);
-      expect(track.querySelectorAll('.dashboard-blur-hint path').length).toBe(1);
-      await Promise.all(thumb.getAnimations().map((animation) => animation.finished));
-      expect(getComputedStyle(track, '::before').opacity).toBe('0');
-      expect(hint.getBoundingClientRect().right).toBeLessThan(thumb.getBoundingClientRect().left);
       expect(document.body.classList.contains('dashboard-values-blurred')).toBeTrue();
-      expect(link.getBoundingClientRect().right).toBeLessThanOrEqual(toggle.getBoundingClientRect().left);
-      expect(toggle.getBoundingClientRect().right).toBeLessThanOrEqual(row.getBoundingClientRect().right);
+      const notice = modal.querySelector('#dashboard-visibility-notice') as HTMLElement;
+      expect(notice.textContent?.trim()).toBe('Value Masked');
+      expect(modal.getAttribute('data-mask-state')).toBe('masked');
       toggle.click();
+      fixture.changeDetectorRef.markForCheck();
       fixture.detectChanges();
       expect(toggle.checked).toBeFalse();
-      expect(track.querySelectorAll('.toggle-switch-thumb svg path').length).toBe(1);
-      expect(track.querySelectorAll('.dashboard-blur-hint path').length).toBe(2);
-      await Promise.all(thumb.getAnimations().map((animation) => animation.finished));
-      expect(getComputedStyle(track, '::before').opacity).toBe('0');
-      expect(thumb.getBoundingClientRect().right).toBeLessThan(hint.getBoundingClientRect().left);
       expect(document.body.classList.contains('dashboard-values-blurred')).toBeFalse();
       expect(navigateByUrl).not.toHaveBeenCalled();
-      fixture.componentInstance.isDashboardPromptOpen = true;
-      fixture.changeDetectorRef.markForCheck();
-      fixture.detectChanges();
-      const notice = fixture.nativeElement.querySelector('#dashboard-visibility-notice') as HTMLElement;
-      expect(notice.textContent?.trim()).toBe('Blur is off');
-      const noticeText = notice.querySelector('span') as HTMLElement;
-      const noticeIcon = notice.querySelector('svg') as SVGElement;
-      expect(noticeIcon.getAttribute('aria-hidden')).toBe('true');
-      expect(noticeIcon.getBoundingClientRect().top).toBeGreaterThan(noticeText.getBoundingClientRect().bottom);
-      const modal = fixture.nativeElement.querySelector('.dashboard-code-modal') as HTMLElement;
+      expect(notice.textContent?.trim()).toBe('Value Unmasked');
+      expect(modal.getAttribute('data-mask-state')).toBe('unmasked');
       expect(modal.getAttribute('aria-describedby')).toBe('dashboard-visibility-notice');
-      expect(getComputedStyle(notice).textAlign).toBe('center');
-      for (const width of ['60rem', '25rem']) {
-        modal.style.width = width;
-        const modalRect = modal.getBoundingClientRect();
-        const noticeRect = notice.getBoundingClientRect();
-        expect(Math.abs((modalRect.left + modalRect.right - noticeRect.left - noticeRect.right) / 2)).toBeLessThan(1);
-        expect(noticeRect.width).toBeLessThanOrEqual(modalRect.width);
-      }
-      fixture.componentInstance.closeDashboardPrompt();
+      expect(toggle.getAttribute('aria-describedby')).toBe('dashboard-visibility-notice');
+      expect(notice.getAttribute('role')).toBe('status');
+
+      fixture.componentInstance.dashboardCodeDigits.splice(0, 14, ...'12345678901234');
+      await fixture.componentInstance.submitDashboardCode();
+      expect(grantOneTimeAccess).toHaveBeenCalledOnceWith('dashboard');
+      expect(navigateByUrl).toHaveBeenCalledOnceWith('/dashboard');
+      expect(document.body.classList.contains('dashboard-values-blurred')).toBeFalse();
+
+      link.click();
       fixture.changeDetectorRef.markForCheck();
       fixture.detectChanges();
-      toggle.click();
-      fixture.detectChanges();
+      expect((fixture.nativeElement.querySelector('.dashboard-code-modal input[role="switch"]') as HTMLInputElement).checked).toBeTrue();
       expect(document.body.classList.contains('dashboard-values-blurred')).toBeTrue();
-      expect(track.querySelectorAll('.toggle-switch-thumb svg path').length).toBe(2);
-      expect(track.querySelectorAll('.dashboard-blur-hint path').length).toBe(1);
-      toggle.click();
+      fixture.componentInstance.closeDashboardPrompt();
+      fixture.componentInstance.openMyAccessPrompt();
+      fixture.changeDetectorRef.markForCheck();
       fixture.detectChanges();
-      link.click();
-      expect(grantOneTimeAccess).toHaveBeenCalled();
-      expect(navigateByUrl).toHaveBeenCalledWith('/dashboard');
-      expect(fixture.componentInstance.isDashboardPromptOpen).toBeFalse();
+      expect(fixture.nativeElement.querySelector('.dashboard-code-modal input[role="switch"]')).toBeNull();
+      expect(fixture.nativeElement.querySelector('#dashboard-visibility-notice')).toBeNull();
+      expect(fixture.nativeElement.querySelector('.dashboard-code-modal').hasAttribute('data-mask-state')).toBeFalse();
     } finally {
       fixture.destroy();
       fixture.nativeElement.remove();
+      environment.production = originalProduction;
     }
   });
 
