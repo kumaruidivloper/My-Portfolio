@@ -53,15 +53,14 @@
     </div>
   </div>
   @if (showAutoScroll) {
-    <div class="auto-scroll" (click)="scrollTop()">
-      @if (!isScrollBottom) {
-        <i class="fa fa-caret-up"></i>
-      }
+    <button type="button" class="auto-scroll" (click)="scrollTop()"
+      [attr.aria-label]="isScrollBottom ? 'Scroll to bottom' : 'Scroll to top'">
       @if (isScrollBottom) {
-        <i class="fa fa-caret-down"></i>
+        <i class="fa fa-caret-down" aria-hidden="true"></i>
+      } @else {
+        <i class="fa fa-caret-up" aria-hidden="true"></i>
       }
-      <i class="fa-regular fa-circle-down"></i>
-    </div>
+    </button>
   }
   <div
     id="theme-toggler"
@@ -85,6 +84,11 @@
         {{data.intro[0].buttonName}}
         <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m-5-5 5 5 5-5M5 16v5h14v-5"/></svg>
       </a>
+      <div class="share" role="group" aria-label="Find me online">
+        <a href="{{data.intro[0].gitUrl}}" class="fab fa-github" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub"></a>
+        <a href="{{data.intro[0].linkedIn}}" class="fab fa-linkedin-in" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn"></a>
+        <a href="https://claude.ai" class="claude-link" target="_blank" rel="noopener noreferrer" aria-label="Claude" title="Claude"><svg class="claude-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 12L12.00 2.00"/><path d="M12 12L16.00 5.07"/><path d="M12 12L20.66 7.00"/><path d="M12 12L19.50 12.00"/><path d="M12 12L20.66 17.00"/><path d="M12 12L16.00 18.93"/><path d="M12 12L12.00 22.00"/><path d="M12 12L8.25 18.50"/><path d="M12 12L3.34 17.00"/><path d="M12 12L4.00 12.00"/><path d="M12 12L3.34 7.00"/><path d="M12 12L8.25 5.50"/></svg></a>
+      </div>
     </div>
     <div class="content hero-qr">
       <div class="Qr-form">
@@ -109,11 +113,6 @@
           }
         </div>
       }
-    </div>
-    <div class="share" role="group" aria-label="Find me online">
-      <a href="{{data.intro[0].gitUrl}}" class="fab fa-github" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub"></a>
-      <a href="{{data.intro[0].linkedIn}}" class="fab fa-linkedin-in" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn"></a>
-      <a href="https://claude.ai" class="claude-link" target="_blank" rel="noopener noreferrer" aria-label="Claude" title="Claude"><svg class="claude-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 12L12.00 2.00"/><path d="M12 12L16.00 5.07"/><path d="M12 12L20.66 7.00"/><path d="M12 12L19.50 12.00"/><path d="M12 12L20.66 17.00"/><path d="M12 12L16.00 18.93"/><path d="M12 12L12.00 22.00"/><path d="M12 12L8.25 18.50"/><path d="M12 12L3.34 17.00"/><path d="M12 12L4.00 12.00"/><path d="M12 12L3.34 7.00"/><path d="M12 12L8.25 5.50"/></svg></a>
     </div>
   </section>
   <!-- home section ends -->

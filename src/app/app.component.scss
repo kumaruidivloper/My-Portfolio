@@ -57,21 +57,30 @@
         }
     }
 }
-.auto-scroll
-{
-    width: 39px;
-    height: 28px;
+.auto-scroll {
     position: fixed;
-    bottom: 100px;
-    right: 31px;
-    padding: 3px 5px 5px 4px;
-    border-radius: 1em;
-    text-align: center;
-    z-index: 9999;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    right: calc(16px + env(safe-area-inset-right, 0px));
+    z-index: 1001;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--bg-color);
     color: var(--black);
-    font-size: 1.5em;
+    font-size: 24px;
     box-shadow: var(--box-shadow);
     cursor: pointer;
+}
+
+.auto-scroll:active {
+    box-shadow: var(--box-shadow-inset);
+}
+
+.auto-scroll:focus-visible {
+    outline: 2px solid var(--green);
+    outline-offset: 3px;
 }
 
 

@@ -1016,7 +1016,7 @@ body.dashboard-values-blurred {
     }
 
     .dashboard-blur-setting {
-        padding: 0;
+        padding: 0 8px;
     }
 
     .dashboard-blur-option {
@@ -1407,6 +1407,14 @@ html body app-responsive-table .responsive-grid-page-controls button svg {
     width: 100%;
 }
 
+.home .hero-intro{
+    max-width: 76rem;
+    padding: clamp(2.6rem, 5vw, 5rem) clamp(1.6rem, 4vw, 4rem);
+    border-radius: 2rem;
+    background: transparent;
+    box-shadow: var(--box-shadow-inset);
+}
+
 .home .hero-eyebrow{
     color: var(--light-color);
     font-size: 1.15rem;
@@ -1759,16 +1767,6 @@ html body app-responsive-table .responsive-grid-page-controls button svg {
 .contact form .box:focus{
     box-shadow: var(--box-shadow-inset);
 }
-.auto-scroll {
-   .fa.fa-caret-up {
-    font-size: 1.6em; 
-    line-height: 0.9;
-   } 
-   .fa.fa-caret-down {
-    font-size: 1.6em; 
-   }
-}
-
 .credits{
     position: relative;
     font-size: 1.2rem;

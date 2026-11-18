@@ -4,6 +4,10 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 
 Animated counters use shaded 3D digit drums that rotate continuously through 9 to 0, reverse when counting down, and disable rotation transitions when reduced motion is preferred.
 
+The home intro uses a transparent panel with inset shadows that follow the light and dark themes, so the animated background shows through. The **Find me online** links sit below the raised download button.
+
+The portfolio's scroll button stays in the bottom-right corner on desktop and mobile and switches between scrolling to the top and bottom.
+
 Dashboard highlight color dots follow the chart's category/legend mapping, including repeated transfer dates. In line view, the dots use the single metric series color.
 
 All dashboard bar and line charts use compact Y-axis ticks (1k, 1.5k, 1M, 1B), while tooltips, tables, and summary cards retain their full-value formatting.
@@ -62,7 +66,7 @@ Each My Access card has an edit dialog. Required fields cannot be blank; optiona
 
 The code check also works on local-network HTTP URLs without Web Crypto. HTTP and browser-side code checks do not protect sensitive data; use HTTPS and server-side authorization for real credentials.
 
-The dashboard code dialog contains a mask switch, enabled by default on every launch, that visually obscures dashboard values, charts, and entry fields; a crossed-out eye indicates masking is on. The title row has the status strip on the left and the switch on the right. The strip shows a green check for **Value Masked** and a red info icon for **Value Unmasked**. The 14 dashboard code boxes are tinted to match the status: green when masked and red when unmasked. The dashboard and My Access code dialogs are enabled locally by default; set `showAccessCodePromptLocally` to `false` in `src/app/app.component.ts` to bypass them locally. The dashboard still opens masked. Production always requires the dialogs. Masking is a visual aid, not data protection: accessible text, browser tools, and exports can still expose the data.
+The dashboard code dialog contains a mask switch, enabled by default on every launch, that visually obscures dashboard values, charts, and entry fields; a crossed-out eye indicates masking is on. The title row has the status strip on the left and the switch on the right. On mobile, the switch sits in a padded oval. The strip shows a green check for **Value Masked** and a red info icon for **Value Unmasked**. The 14 dashboard code boxes are tinted to match the status: green when masked and red when unmasked. The dashboard and My Access code dialogs are enabled locally by default; set `showAccessCodePromptLocally` to `false` in `src/app/app.component.ts` to bypass them locally. The dashboard still opens masked. Production always requires the dialogs. Masking is a visual aid, not data protection: accessible text, browser tools, and exports can still expose the data.
 
 ```bash
 npm install
