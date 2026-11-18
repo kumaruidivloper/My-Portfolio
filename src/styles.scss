@@ -1408,11 +1408,37 @@ html body app-responsive-table .responsive-grid-page-controls button svg {
 }
 
 .home .hero-intro{
+    position: relative;
+    isolation: isolate;
     max-width: 76rem;
     padding: clamp(2.6rem, 5vw, 5rem) clamp(1.6rem, 4vw, 4rem);
+}
+
+.home .hero-intro::before{
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
     border-radius: 2rem;
-    background: transparent;
     box-shadow: var(--box-shadow-inset);
+    transform-origin: center;
+    transition: box-shadow .2s linear;
+}
+
+@supports (animation-timeline: scroll(root block)) and (animation-range: 0px min(50svh, 24rem)){
+    @media (prefers-reduced-motion: no-preference){
+        .home .hero-intro::before{
+            animation: hero-intro-frame-shrink linear both;
+            animation-timeline: scroll(root block);
+            animation-range: 0px min(50svh, 24rem);
+        }
+    }
+}
+
+@keyframes hero-intro-frame-shrink{
+    from { transform: scale(1); }
+    to { transform: scale(0); }
 }
 
 .home .hero-eyebrow{

@@ -4,7 +4,7 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 
 Animated counters use shaded 3D digit drums that rotate continuously through 9 to 0, reverse when counting down, and disable rotation transitions when reduced motion is preferred.
 
-The home intro uses a transparent panel with inset shadows that follow the light and dark themes, so the animated background shows through. The **Find me online** links sit below the raised download button.
+The home intro uses a transparent frame with inset shadows that follow the light and dark themes, so the animated background shows through. The **Find me online** links sit below the raised download button. Only the frame shrinks toward its center as you scroll down from the top and grows back as you scroll up. The intro content stays full size, and the QR form does not shift. The frame stays full size when reduced motion is enabled or the browser doesn't support scroll-driven animations.
 
 The portfolio's scroll button stays in the bottom-right corner on desktop and mobile and switches between scrolling to the top and bottom.
 
