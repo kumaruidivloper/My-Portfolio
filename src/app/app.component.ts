@@ -1,6 +1,6 @@
 
 import { Component, ViewChild, ElementRef, OnInit, OnDestroy, HostListener, Renderer2, Inject, DOCUMENT, ChangeDetectionStrategy, ChangeDetectorRef, Type, inject } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { delay, Subscription, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { AppOptions } from './model/model';
 import { DataService } from './service/data.service';
@@ -14,6 +14,7 @@ import { environment } from '../environments/environment';
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.scss'],
     changeDetection: ChangeDetectionStrategy.Eager,
+    host: { '[style.--startup-rewind-duration]': 'startupRewindDurationMs + "ms"' },
     standalone: false
 })
 export class AppComponent implements OnInit, OnDestroy {
@@ -27,6 +28,11 @@ export class AppComponent implements OnInit, OnDestroy {
 
   data: any;
   isDataLoaded: boolean = false;
+  portfolioLoadFailed = false;
+  startupFillDurationMs: number | null = null;
+  startupRewind = false;
+  readonly startupRewindDurationMs = 650;
+  private readonly startupDelayMs = 3500;
   title = 'Kumar UI';
   appOptions = AppOptions;
   transition = ['width 3s', 'width 4s', 'width 5s', 'width 6s', 'width 7s', 'width 8s', 'width 9s', 'width 10s', 'width 11s', 'width 12s'];
@@ -49,7 +55,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private timeUpdateTimeout?: ReturnType<typeof setTimeout>;
   private timeUpdateInterval?: ReturnType<typeof setInterval>;
   private dataSubscription?: Subscription;
-  private loadedTimeout?: ReturnType<typeof setTimeout>;
+  private startupRewindTimeout?: ReturnType<typeof setTimeout>;
 
   get showAutoScroll(): boolean {
     return !this.router.url.startsWith('/dashboard') && !this.router.url.startsWith('/my-access') && !this.isOverlay;
@@ -103,16 +109,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.checkTimeCondition();
-    this.dataSubscription = this.dataService.getData().subscribe((res) => {
-       this.data = res;
-    },() => {
-    }, () => {
-      this.loadedTimeout = setTimeout(() => {
-        this.isDataLoaded = true;
-      },3500)
-      
-      //console.log("pross completed");
-    });
+    this.loadPortfolioData();
     window.scrollTo({ top: 0, behavior: 'smooth' })
     //console.log(Math.max( this.body.scrollHeight, this.body.offsetHeight))
     this.renderer.removeClass(this.document.body, 'active');
@@ -122,13 +119,13 @@ export class AppComponent implements OnInit, OnDestroy {
       this.timeUpdateInterval = setInterval(() => {
         if (this.updateTime()) {
           if(this.isThemeModeClicked) {
-            this.themeToggler.nativeElement.classList.remove('fa-sun');
+            this.themeToggler?.nativeElement.classList.remove('fa-sun');
             this.renderer.removeClass(document.body, 'active');
             this.isDarkeMode = true;
           }
         } else {
           if(this.isThemeModeClicked) {
-            this.themeToggler.nativeElement.classList.add('fa-sun');
+            this.themeToggler?.nativeElement.classList.add('fa-sun');
             //this.renderer.addClass(document.body, 'active');
             this.isDarkeMode = false;
           }
@@ -138,9 +135,38 @@ export class AppComponent implements OnInit, OnDestroy {
 
   }
 
+  loadPortfolioData(): void {
+    this.portfolioLoadFailed = false;
+    this.startupFillDurationMs = null;
+    this.dataSubscription = this.dataService.getData().pipe(
+      tap(() => {
+        this.startupFillDurationMs = this.startupDelayMs;
+        this.cdr.markForCheck();
+      }),
+      delay(this.startupDelayMs)
+    ).subscribe({
+      next: (data) => {
+        this.data = data;
+        this.startupRewind = this.showAutoScroll;
+        if (this.startupRewind) {
+          this.startupRewindTimeout = setTimeout(() => {
+            this.startupRewind = false;
+            this.cdr.markForCheck();
+          }, this.startupRewindDurationMs);
+        }
+        this.isDataLoaded = true;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.portfolioLoadFailed = true;
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
   ngOnDestroy(): void {
     this.dataSubscription?.unsubscribe();
-    clearTimeout(this.loadedTimeout);
+    clearTimeout(this.startupRewindTimeout);
     this.renderer.removeClass(this.document.body, 'scrollOff');
     this.renderer.removeClass(this.document.body, 'dashboard-values-blurred');
     if (this.barAnimationTimeout) {
@@ -383,9 +409,8 @@ export class AppComponent implements OnInit, OnDestroy {
     const enteredCode = this.dashboardCodeDigits.join('');
     const target = this.accessTarget;
     const promptVersion = this.accessPromptVersion;
-    const destinationLabel = target === 'my-access' ? 'My Access' : 'the dashboard';
     if (!/^\d{14}$/.test(enteredCode)) {
-      this.dashboardCodeError = `Enter the correct 14-digit code to open ${destinationLabel}.`;
+      this.dashboardCodeError = 'Enter all 14 digits to continue.';
       return;
     }
 
@@ -404,7 +429,7 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     if (!isValid) {
-      this.dashboardCodeError = `Enter the correct 14-digit code to open ${destinationLabel}.`;
+      this.dashboardCodeError = 'Incorrect code. Check the 14 digits and try again.';
       return;
     }
 

@@ -1054,9 +1054,23 @@ body.dashboard-values-blurred {
 }
 
 .dashboard-code-error {
-    color: #c0392b;
+    align-items: center;
+    background: color-mix(in srgb, var(--dashboard-unmask-color) 8%, var(--bg-color));
+    border-radius: .5rem;
+    color: var(--dashboard-unmask-color);
+    display: flex;
     font-size: 1.3rem;
-    text-align: center;
+    gap: .6rem;
+    margin-inline: auto;
+    max-width: 100%;
+    padding: .5rem .8rem;
+    width: fit-content;
+}
+
+.dashboard-code-error svg {
+    flex: none;
+    height: 1.6rem;
+    width: 1.6rem;
 }
 
 .dashboard-code-actions {
@@ -1133,6 +1147,18 @@ body.dashboard-values-blurred {
     height: 18rem;
     width: 18rem;
     box-shadow: var(--box-shadow);
+}
+
+@property --profile-scroll-angle {
+    syntax: "<angle>";
+    inherits: false;
+    initial-value: 0deg;
+}
+
+@property --profile-scroll-opacity {
+    syntax: "<number>";
+    inherits: false;
+    initial-value: 0;
 }
 
 .header .user .profile-image-frame{

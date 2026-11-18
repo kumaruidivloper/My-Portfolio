@@ -75,34 +75,55 @@
 }
 
 
+.portfolio-startup-spinner {
+    position: fixed;
+    inset: 0;
+    height: auto;
+    pointer-events: none;
+}
+
 .custom-loader {
     width: 140px;
     height: 140px;
     background:
-      radial-gradient(farthest-side,#FF671F 90%,#0000) center/32px 32px,
-      radial-gradient(farthest-side,#046A38 90%,#0000) bottom/24px 24px;
+        radial-gradient(farthest-side, #FF671F 90%, transparent) center / 32px 32px,
+        radial-gradient(farthest-side, #046A38 90%, transparent) bottom / 24px 24px;
     background-repeat: no-repeat;
-    animation: s7 2s infinite linear;
+    animation: portfolio-spinner 2s linear infinite;
     position: relative;
-  }
-  .custom-loader::before {    
-    content:"";
+}
+
+.custom-loader::before {
+    content: "";
     position: absolute;
-    width:16px;
-    height:16px;
-    inset:auto 0 32px;
+    width: 16px;
+    height: 16px;
+    inset: auto 0 32px;
     margin: auto;
-    background:#FFFFFF;
+    background: #fff;
     border-radius: 50%;
     transform-origin: 50% calc(100% + 20px);
-    animation:inherit;
-    animation-duration: 1s;
-  }
-  
-  
-  @keyframes s7 { 
-    100%{transform: rotate(1turn)}
-  }
+    animation: portfolio-spinner 1s linear infinite;
+}
+
+@keyframes portfolio-spinner {
+    to { transform: rotate(1turn); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .custom-loader,
+    .custom-loader::before {
+        animation: none;
+    }
+}
+
+.portfolio-load-error {
+    color: var(--black);
+    flex-direction: column;
+    font-size: 1.6rem;
+    padding: 2rem;
+    text-align: center;
+}
 
   .landingTextStyle {
     padding: 2rem; 
@@ -331,4 +352,21 @@ app-counter {
 
 
 
+
+.profile-startup-rewind {
+    animation: profile-startup-rewind var(--startup-rewind-duration) linear;
+}
+
+@keyframes profile-startup-rewind {
+    from {
+        --profile-scroll-angle: 360deg;
+        --profile-scroll-opacity: .3;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .profile-startup-rewind {
+        animation: none;
+    }
+}
 

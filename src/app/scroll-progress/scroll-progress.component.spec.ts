@@ -2,6 +2,24 @@ import { TestBed } from '@angular/core/testing';
 import { ScrollProgressComponent } from './scroll-progress.component';
 
 describe('ScrollProgressComponent', () => {
+  it('keeps the loading animation independent of scroll and resize events', () => {
+    TestBed.configureTestingModule({ imports: [ScrollProgressComponent] });
+    const fixture = TestBed.createComponent(ScrollProgressComponent);
+    fixture.componentRef.setInput('loading', true);
+    const progressChanged = jasmine.createSpy('progressChanged');
+    fixture.componentInstance.scrollProgressChange.subscribe(progressChanged);
+    fixture.detectChanges();
+
+    window.dispatchEvent(new Event('scroll'));
+    window.dispatchEvent(new Event('resize'));
+    fixture.detectChanges();
+
+    const fill: HTMLElement = fixture.nativeElement.querySelector('.scroll-progress-fill');
+    expect(fill.style.transform).toBe('');
+    expect(progressChanged).not.toHaveBeenCalled();
+    fixture.destroy();
+  });
+
   it('tracks and clamps document scroll progress', () => {
     const scrollingElement = { scrollHeight: 2000, scrollTop: 0 };
     const emit = jasmine.createSpy('emit');

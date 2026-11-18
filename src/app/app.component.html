@@ -1,18 +1,28 @@
 @if (!isDataLoaded) {
-  <div class="loader">
-    <div  class="custom-loader"></div>
-</div>
+  @if (portfolioLoadFailed) {
+    <div class="loader portfolio-load-error">
+      <p role="alert">Couldn’t load the portfolio.</p>
+      <button type="button" class="btn" (click)="loadPortfolioData()">Try again</button>
+    </div>
+  } @else {
+    <app-scroll-progress [loading]="true" [loadingDurationMs]="startupFillDurationMs"></app-scroll-progress>
+    <div class="loader portfolio-startup-spinner" aria-hidden="true">
+      <div class="custom-loader"></div>
+    </div>
+  }
 }
 @if (isDataLoaded) {
   @if (showAutoScroll) {
-    <app-scroll-progress (scrollProgressChange)="profileScrollProgress = $event"></app-scroll-progress>
+    <app-scroll-progress [startupRewind]="startupRewind" (scrollProgressChange)="profileScrollProgress = $event"></app-scroll-progress>
   }
   @if (false) {
     <app-stopwatch></app-stopwatch>
   }
   <header class="header" #header>
     <div class="user">
-      <a href="#" class="profile-image-frame" [style.--profile-scroll-angle]="(profileScrollProgress * 360) + 'deg'" [style.--profile-scroll-opacity]="profileScrollProgress * 0.3">
+      <a href="#" class="profile-image-frame" [class.profile-startup-rewind]="startupRewind"
+        [style.--profile-scroll-angle]="(profileScrollProgress * 360) + 'deg'"
+        [style.--profile-scroll-opacity]="profileScrollProgress * 0.3">
         <img class="img-animation profile-scroll-image profile-image-light" [src]="data.intro[0].userImage" [alt]="data.intro[0].name" width="400" height="400" fetchpriority="high" decoding="async">
         <img class="img-animation profile-scroll-image profile-image-dark" src="assets/img/user-img-dark.jpg" [alt]="data.intro[0].name" width="400" height="400" decoding="async">
       </a>
@@ -253,7 +263,13 @@
           }
         </div>
         @if (dashboardCodeError) {
-          <p class="dashboard-code-error" role="alert">{{ dashboardCodeError }}</p>
+          <p class="dashboard-code-error" role="alert">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <circle cx="12" cy="12" r="9"></circle>
+              <path d="M12 8v5m0 3h.01"></path>
+            </svg>
+            <span>{{ dashboardCodeError }}</span>
+          </p>
         }
         <div class="dashboard-code-actions">
           <button type="button" class="btn" (click)="closeDashboardPrompt()">Cancel</button>

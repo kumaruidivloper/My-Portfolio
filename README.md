@@ -52,7 +52,7 @@ The About skill bars supplement API-provided skills with Claude / Claude Code (8
 
 ## 1. Install dependencies
 
-Dashboard access and edit/delete confirmations require the configured 14-digit code. Dashboard entry automatically verifies after all 14 digits are entered; pasted codes also fill all 14 fields.
+Dashboard access and edit/delete confirmations require the configured 14-digit code. Dashboard entry automatically verifies after all 14 digits are entered; pasted codes also fill all 14 fields. If the code is incorrect, the entry dialog stays open and shows an alert strip below the fields.
 
 My Access loads bank and account records from the configured MockAPI access-details resource. Sensitive-looking values are masked until individually revealed. It requires the 14-digit code in production and, by default, in local development. This is a client-side gate, not server-side authorization; do not use it to protect real credentials.
 
@@ -69,6 +69,8 @@ npm install
 ```
 
 ## 2. Run the app locally
+
+The portfolio shows both a centered spinner and a horizontal loading bar at the top while its initial data request is pending. Once the data arrives, the bar fills left to right over 3.5 seconds. When the page opens, the bar drains right to left once and the profile border unwinds with it before both return to scroll tracking. On narrow screens the startup bar is thicker and stays flush with the top edge. If loading fails, use **Try again**.
 
 Start the Angular dev server:
 

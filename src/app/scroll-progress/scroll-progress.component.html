@@ -1,3 +1,10 @@
-<div class="scroll-progress" aria-hidden="true">
-  <div class="scroll-progress-fill" [style.transform]="'scaleX(' + scrollProgress + ')'"></div>
+<div class="scroll-progress" [class.scroll-progress-loading]="loading"
+  [class.scroll-progress-rewinding]="startupRewind && !loading"
+  [attr.role]="loading ? 'progressbar' : null"
+  [attr.aria-label]="loading ? 'Loading portfolio' : null"
+  [attr.aria-hidden]="loading ? null : 'true'">
+  <div class="scroll-progress-fill"
+    [class.scroll-progress-filling]="loading && loadingDurationMs !== null"
+    [style.animation-duration.ms]="loading ? loadingDurationMs : null"
+    [style.transform]="loading ? null : 'scaleX(' + scrollProgress + ')'"></div>
 </div>

@@ -16,8 +16,45 @@
   transition: transform 0.1s linear;
 }
 
+.scroll-progress-loading {
+  background: color-mix(in srgb, var(--green) 18%, var(--bg-color));
+  overflow: hidden;
+}
+
+.scroll-progress-loading .scroll-progress-fill {
+  transform: scaleX(.05);
+}
+
+.scroll-progress-loading .scroll-progress-filling {
+  animation: scroll-progress-loading linear forwards;
+}
+
+@keyframes scroll-progress-loading {
+  to { transform: scaleX(1); }
+}
+
+.scroll-progress-rewinding .scroll-progress-fill {
+  animation: scroll-progress-rewind var(--startup-rewind-duration) linear;
+}
+
+@keyframes scroll-progress-rewind {
+  from { transform: scaleX(1); }
+}
+
+@media (max-width: 768px) {
+  .scroll-progress-loading,
+  .scroll-progress-rewinding {
+    height: 8px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .scroll-progress-fill {
     transition: none;
+  }
+
+  .scroll-progress-loading .scroll-progress-filling,
+  .scroll-progress-rewinding .scroll-progress-fill {
+    animation-name: none;
   }
 }

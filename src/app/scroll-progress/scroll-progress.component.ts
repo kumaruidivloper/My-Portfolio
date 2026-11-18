@@ -7,6 +7,9 @@ import { ChangeDetectorRef, Component, DOCUMENT, EventEmitter, HostListener, Inj
   styleUrls: ['./scroll-progress.component.scss']
 })
 export class ScrollProgressComponent implements OnInit, OnDestroy {
+  @Input() loading = false;
+  @Input() loadingDurationMs: number | null = null;
+  @Input() startupRewind = false;
   @Input() scrollContainer?: HTMLElement;
   @Input() resizeTarget?: HTMLElement;
   @Output() scrollProgressChange = new EventEmitter<number>();
@@ -23,6 +26,10 @@ export class ScrollProgressComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    if (this.loading) {
+      return;
+    }
+
     this.updateScrollProgress();
     this.scrollContainer?.addEventListener('scroll', this.onContainerScroll, { passive: true });
     if (typeof ResizeObserver !== 'undefined') {
@@ -45,6 +52,10 @@ export class ScrollProgressComponent implements OnInit, OnDestroy {
   @HostListener('window:scroll')
   @HostListener('window:resize')
   updateScrollProgress(): void {
+    if (this.loading) {
+      return;
+    }
+
     const scrollingElement = this.scrollContainer ?? this.document.scrollingElement;
     if (!scrollingElement) {
       this.scrollProgress = 0;

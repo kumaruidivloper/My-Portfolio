@@ -5,11 +5,13 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Subject } from 'rxjs';
 import { AppComponent } from './app.component';
 import { DataService } from './service/data.service';
 import { DashboardAccessGuard } from './service/dashboard-access.guard';
 import { ConfirmationCodeService } from './service/confirmation-code.service';
 import { TimeService } from './service/time.service';
+import { ScrollProgressComponent } from './scroll-progress/scroll-progress.component';
 import { environment } from '../environments/environment';
 
 describe('AppComponent', () => {
@@ -56,6 +58,81 @@ describe('AppComponent', () => {
 
     Object.assign(component, { router: { url: '/dashboard?tab=pf' } });
     expect(component.showAutoScroll).toBeFalse();
+  });
+
+  it('shows both startup loaders, allows retry, and switches to scroll progress 3.5 seconds after data arrives', () => {
+    const firstRequest = new Subject<object>();
+    const retryRequest = new Subject<object>();
+    const getData = jasmine.createSpy('getData').and.returnValues(firstRequest, retryRequest);
+    spyOn(window, 'scrollTo');
+    TestBed.configureTestingModule({
+      declarations: [AppComponent],
+      imports: [CommonModule, FormsModule, ScrollProgressComponent],
+      schemas: [NO_ERRORS_SCHEMA],
+      providers: [
+        { provide: Router, useValue: { url: '/' } },
+        { provide: DashboardAccessGuard, useValue: {} },
+        { provide: DataService, useValue: { getData } },
+        { provide: TimeService, useValue: { getState: () => ({ isDaytime: true }) } },
+        { provide: ConfirmationCodeService, useValue: {} }
+      ]
+    });
+    const originalBodyClasses = document.body.className;
+    const fixture = TestBed.createComponent(AppComponent);
+    const host: HTMLElement = fixture.nativeElement;
+
+    jasmine.clock().install();
+    try {
+      fixture.detectChanges();
+      const progress = host.querySelector('[role="progressbar"]');
+      expect(progress?.getAttribute('aria-label')).toBe('Loading portfolio');
+      expect(progress?.hasAttribute('aria-valuenow')).toBeFalse();
+      expect(progress?.querySelector('.scroll-progress-filling')).toBeNull();
+      expect(host.querySelector('.custom-loader')).not.toBeNull();
+      expect(host.querySelector('.dashboard-nav-link')).toBeNull();
+
+      firstRequest.error(new Error('Network failed'));
+      fixture.detectChanges();
+      expect(host.querySelector('[role="progressbar"]')).toBeNull();
+      expect(host.querySelector('.custom-loader')).toBeNull();
+      expect(host.querySelector('[role="alert"]')?.textContent).toContain('load the portfolio');
+
+      host.querySelector('button')!.click();
+      fixture.detectChanges();
+      expect(host.querySelector('[role="progressbar"]')).not.toBeNull();
+      expect(host.querySelector('.custom-loader')).not.toBeNull();
+      expect(host.querySelector('[role="alert"]')).toBeNull();
+
+      retryRequest.next({ intro: [{}], themeMode: [{}], aboutMe: {}, content: { intro: '' } });
+      retryRequest.complete();
+      jasmine.clock().tick(3499);
+      fixture.detectChanges();
+      expect(host.querySelector('[role="progressbar"]')).not.toBeNull();
+      expect(host.querySelector('.custom-loader')).not.toBeNull();
+
+      const fill = host.querySelector<HTMLElement>('.scroll-progress-filling');
+      expect(fill?.style.animationDuration).toBe('3500ms');
+      jasmine.clock().tick(1);
+      fixture.detectChanges();
+      expect(getData).toHaveBeenCalledTimes(2);
+      expect(host.querySelector('[role="progressbar"]')).toBeNull();
+      expect(host.querySelector('.custom-loader')).toBeNull();
+      expect(host.querySelector('.scroll-progress[aria-hidden="true"]')).not.toBeNull();
+      expect(host.querySelector('.dashboard-nav-link')).not.toBeNull();
+      const profile = host.querySelector('.profile-startup-rewind');
+      expect(profile).not.toBeNull();
+      expect(host.querySelector('.scroll-progress-rewinding')).not.toBeNull();
+      jasmine.clock().tick(649);
+      fixture.detectChanges();
+      expect(host.querySelector('.scroll-progress-rewinding')).not.toBeNull();
+      jasmine.clock().tick(1);
+      fixture.detectChanges();
+      expect(host.querySelector('.profile-startup-rewind, .scroll-progress-rewinding')).toBeNull();
+    } finally {
+      fixture.destroy();
+      jasmine.clock().uninstall();
+      document.body.className = originalBodyClasses;
+    }
   });
 
   it('switches profile photos with the light and dark themes', () => {
@@ -157,7 +234,7 @@ describe('AppComponent', () => {
     await component.submitDashboardCode();
 
     expect(component.isDashboardPromptOpen).toBeTrue();
-    expect(component.dashboardCodeError).toContain('correct 14-digit code');
+    expect(component.dashboardCodeError).toBe('Incorrect code. Check the 14 digits and try again.');
     expect(verify).toHaveBeenCalledWith('12345678901234');
   });
 
@@ -288,7 +365,7 @@ describe('AppComponent', () => {
       expect(navigateByUrl).not.toHaveBeenCalled();
       component.dashboardCodeDigits.splice(0, 14, ...'12345678901234');
       await component.submitDashboardCode();
-      expect(component.dashboardCodeError).toContain('My Access');
+      expect(component.dashboardCodeError).toContain('Incorrect code.');
       expect(grantOneTimeAccess).not.toHaveBeenCalled();
 
       verify.and.resolveTo(true);
@@ -397,6 +474,16 @@ describe('AppComponent', () => {
       expect(notice.getAttribute('role')).toBe('status');
 
       fixture.componentInstance.dashboardCodeDigits.splice(0, 14, ...'12345678901234');
+      verify.and.resolveTo(false);
+      await fixture.componentInstance.submitDashboardCode();
+      fixture.changeDetectorRef.markForCheck();
+      fixture.detectChanges();
+      const alert = modal.querySelector('[role="alert"]');
+      expect(alert?.textContent?.trim()).toBe('Incorrect code. Check the 14 digits and try again.');
+      expect(alert?.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
+      expect(navigateByUrl).not.toHaveBeenCalled();
+
+      verify.and.resolveTo(true);
       await fixture.componentInstance.submitDashboardCode();
       expect(grantOneTimeAccess).toHaveBeenCalledOnceWith('dashboard');
       expect(navigateByUrl).toHaveBeenCalledOnceWith('/dashboard');
@@ -516,7 +603,7 @@ describe('AppComponent', () => {
     });
     await component.submitDashboardCode();
     expect(verify).not.toHaveBeenCalled();
-    expect(component.dashboardCodeError).toContain('14-digit');
+    expect(component.dashboardCodeError).toBe('Enter all 14 digits to continue.');
   });
 
   it('fills all fourteen digits from a paste and automatically verifies them', async () => {
