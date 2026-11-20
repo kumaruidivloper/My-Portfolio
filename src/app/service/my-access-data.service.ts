@@ -1,8 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map, Observable, switchMap, throwError } from 'rxjs';
-
-const ACCESS_DETAILS_URL = 'https://64b76091df0839c97e168d79.mockapi.io/taskList/10';
+import { ACCESS_DETAILS_URL } from './api-resource-urls';
 
 export interface BankAccessDetail {
   type: string;

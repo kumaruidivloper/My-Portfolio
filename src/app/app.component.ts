@@ -4,6 +4,9 @@ import { delay, Subscription, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { AppOptions } from './model/model';
 import { DataService } from './service/data.service';
+import { ApiKeyGuard } from './service/api-key.guard';
+import { ApiEncryptionService, ApiPayloadDecryptionError } from './service/api-encryption.service';
+import { ApiKeyValidationService } from './service/api-key-validation.service';
 import { DashboardAccessGuard, ProtectedDestination } from './service/dashboard-access.guard';
 import { ConfirmationCodeService } from './service/confirmation-code.service';
 import { TimeService } from './service/time.service';
@@ -23,12 +26,22 @@ export class AppComponent implements OnInit, OnDestroy {
   dashboardBlurEnabled = true;
   isDashboardPromptOpen = false;
   dashboardCodeError = '';
+  readonly apiEncryptionAvailable = !!globalThis.crypto?.subtle;
+  apiEncryptionKey = '';
+  apiEncryptionKeyError = '';
+  apiKeyValidationInProgress = false;
+  apiEncryptionKeyVerified = false;
+  apiKeyTarget: ProtectedDestination | null = null;
   accessTarget: ProtectedDestination = 'dashboard';
   private accessPromptVersion = 0;
+  private apiKeyValidationVersion = 0;
+  private apiKeyValidation?: Promise<boolean>;
+  private apiKeyValidationTimeout?: ReturnType<typeof setTimeout>;
 
   data: any;
   isDataLoaded: boolean = false;
   portfolioLoadFailed = false;
+  portfolioLoadError = 'Couldn’t load the portfolio.';
   startupFillDurationMs: number | null = null;
   startupRewind = false;
   readonly startupRewindDurationMs = 650;
@@ -55,6 +68,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private timeUpdateTimeout?: ReturnType<typeof setTimeout>;
   private timeUpdateInterval?: ReturnType<typeof setInterval>;
   private dataSubscription?: Subscription;
+  private apiKeyRequestSubscription?: Subscription;
   private startupRewindTimeout?: ReturnType<typeof setTimeout>;
 
   get showAutoScroll(): boolean {
@@ -65,6 +79,10 @@ export class AppComponent implements OnInit, OnDestroy {
     return this.router.url.startsWith('/interview-qa');
   }
 
+  get requiresEncryptionKey(): boolean {
+    return !this.apiEncryptionService.hasPassphrase;
+  }
+
 
   @ViewChild('menubtn') menubtn!: ElementRef;
   @ViewChild('header') header!: ElementRef;
@@ -72,6 +90,12 @@ export class AppComponent implements OnInit, OnDestroy {
   @ViewChild('overlay') overlay!: ElementRef;
   @ViewChild('firstDashboardCodeInput')
   set firstDashboardCodeInput(input: ElementRef<HTMLInputElement> | undefined) {
+    if (!this.requiresEncryptionKey) {
+      input?.nativeElement.focus();
+    }
+  }
+  @ViewChild('apiEncryptionKeyInput')
+  set apiEncryptionKeyInput(input: ElementRef<HTMLInputElement> | undefined) {
     input?.nativeElement.focus();
   }
 
@@ -101,7 +125,10 @@ export class AppComponent implements OnInit, OnDestroy {
     private timeService: TimeService,
     private router: Router,
     private dashboardAccessGuard: DashboardAccessGuard,
-    private confirmationCodeService: ConfirmationCodeService
+    private confirmationCodeService: ConfirmationCodeService,
+    private apiKeyGuard: ApiKeyGuard,
+    private apiEncryptionService: ApiEncryptionService,
+    private apiKeyValidationService: ApiKeyValidationService
     ) {
       this.renderer.removeClass(document.body, 'active');
       this.setDashboardBlur(this.dashboardBlurEnabled);
@@ -109,6 +136,21 @@ export class AppComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.checkTimeCondition();
+    this.apiKeyRequestSubscription = this.apiKeyGuard.requested$.subscribe((target) => {
+      this.accessPromptVersion++;
+      this.apiKeyTarget = target;
+      this.apiEncryptionKey = '';
+      this.apiEncryptionKeyError = '';
+      this.resetApiKeyValidation();
+      if (target) {
+        this.accessTarget = target;
+        this.dashboardCodeError = '';
+        this.isDashboardPromptOpen = true;
+      } else {
+        this.isDashboardPromptOpen = false;
+      }
+      this.cdr.markForCheck();
+    });
     this.loadPortfolioData();
     window.scrollTo({ top: 0, behavior: 'smooth' })
     //console.log(Math.max( this.body.scrollHeight, this.body.offsetHeight))
@@ -137,6 +179,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   loadPortfolioData(): void {
     this.portfolioLoadFailed = false;
+    this.portfolioLoadError = 'Couldn’t load the portfolio.';
     this.startupFillDurationMs = null;
     this.dataSubscription = this.dataService.getData().pipe(
       tap(() => {
@@ -164,8 +207,25 @@ export class AppComponent implements OnInit, OnDestroy {
     });
   }
 
+  onEncryptionKeyChange(): void {
+    this.accessPromptVersion++;
+    this.apiEncryptionKeyError = '';
+    this.resetApiKeyValidation();
+    if (this.apiEncryptionAvailable && this.apiEncryptionKey.length >= 8 && this.apiEncryptionKey.trim()) {
+      this.apiKeyValidationInProgress = true;
+      this.apiKeyValidationTimeout = setTimeout(() => {
+        this.apiKeyValidationTimeout = undefined;
+        void this.validateEncryptionKey(this.accessTarget);
+      }, 300);
+    }
+  }
+
   ngOnDestroy(): void {
+    this.accessPromptVersion++;
+    this.resetApiKeyValidation();
     this.dataSubscription?.unsubscribe();
+    this.apiKeyRequestSubscription?.unsubscribe();
+    this.apiKeyGuard.cancel();
     clearTimeout(this.startupRewindTimeout);
     this.renderer.removeClass(this.document.body, 'scrollOff');
     this.renderer.removeClass(this.document.body, 'dashboard-values-blurred');
@@ -343,6 +403,9 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.dashboardCodeDigits.fill('');
     this.dashboardCodeError = '';
+    this.apiEncryptionKey = '';
+    this.apiEncryptionKeyError = '';
+    this.resetApiKeyValidation();
     this.isDashboardPromptOpen = true;
   }
 
@@ -359,6 +422,12 @@ export class AppComponent implements OnInit, OnDestroy {
     this.accessPromptVersion++;
     this.isDashboardPromptOpen = false;
     this.dashboardCodeError = '';
+    this.apiEncryptionKey = '';
+    this.apiEncryptionKeyError = '';
+    this.resetApiKeyValidation();
+    if (this.apiKeyTarget) {
+      this.apiKeyGuard.cancel();
+    }
   }
 
   onDashboardCodeInput(event: Event, index: number): void {
@@ -406,9 +475,17 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   async submitDashboardCode(): Promise<void> {
-    const enteredCode = this.dashboardCodeDigits.join('');
+    const promptVersion = ++this.accessPromptVersion;
     const target = this.accessTarget;
-    const promptVersion = this.accessPromptVersion;
+    if (this.apiKeyTarget) {
+      if (!await this.validateEncryptionKey(target) || promptVersion !== this.accessPromptVersion) {
+        return;
+      }
+      this.apiKeyGuard.unlock(this.apiEncryptionKey);
+      return;
+    }
+
+    const enteredCode = this.dashboardCodeDigits.join('');
     if (!/^\d{14}$/.test(enteredCode)) {
       this.dashboardCodeError = 'Enter all 14 digits to continue.';
       return;
@@ -433,10 +510,70 @@ export class AppComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (this.requiresEncryptionKey) {
+      if (!await this.validateEncryptionKey(target) || promptVersion !== this.accessPromptVersion) {
+        return;
+      }
+      this.apiEncryptionService.setPassphrase(this.apiEncryptionKey);
+    }
     this.dashboardAccessGuard.grantOneTimeAccess(target);
     this.closeDashboardPrompt();
     this.closeSideMenu();
     void this.router.navigateByUrl(`/${target}`);
+  }
+
+  private validateEncryptionKey(target: ProtectedDestination): Promise<boolean> {
+    if (!this.apiEncryptionAvailable) {
+      return Promise.resolve(false);
+    }
+    if (!this.apiEncryptionKey.trim()) {
+      this.apiEncryptionKeyError = 'Enter the encryption key to continue.';
+      return Promise.resolve(false);
+    }
+    if (this.apiEncryptionKeyVerified) {
+      return Promise.resolve(true);
+    }
+    if (this.apiKeyValidation) {
+      return this.apiKeyValidation;
+    }
+    clearTimeout(this.apiKeyValidationTimeout);
+    this.apiKeyValidationTimeout = undefined;
+    const version = this.apiKeyValidationVersion;
+    this.apiEncryptionKeyError = '';
+    this.apiKeyValidationInProgress = true;
+    this.apiKeyValidation = this.apiKeyValidationService.verify(this.apiEncryptionKey, target)
+      .then(() => {
+        if (version !== this.apiKeyValidationVersion) {
+          return false;
+        }
+        this.apiEncryptionKeyVerified = true;
+        return true;
+      })
+      .catch((error: unknown) => {
+        if (version === this.apiKeyValidationVersion) {
+          this.apiEncryptionKeyError = error instanceof ApiPayloadDecryptionError
+            ? 'Invalid key or damaged data. Try again.'
+            : 'Encryption key verification is unavailable. Please try again.';
+        }
+        return false;
+      })
+      .finally(() => {
+        if (version === this.apiKeyValidationVersion) {
+          this.apiKeyValidationInProgress = false;
+          this.apiKeyValidation = undefined;
+          this.cdr.markForCheck();
+        }
+      });
+    return this.apiKeyValidation;
+  }
+
+  private resetApiKeyValidation(): void {
+    this.apiKeyValidationVersion++;
+    clearTimeout(this.apiKeyValidationTimeout);
+    this.apiKeyValidationTimeout = undefined;
+    this.apiKeyValidation = undefined;
+    this.apiKeyValidationInProgress = false;
+    this.apiEncryptionKeyVerified = false;
   }
 
   private dashboardCodeInputs(): NodeListOf<HTMLInputElement> {

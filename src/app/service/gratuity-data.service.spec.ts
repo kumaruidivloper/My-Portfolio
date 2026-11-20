@@ -3,8 +3,8 @@ import { HttpClientTestingModule, HttpTestingController } from '@angular/common/
 import { TestBed } from '@angular/core/testing';
 import { GratuityDataService, parseGratuityDataResponse } from './gratuity-data.service';
 
-const GRATUITY_API_URL = 'https://64b76091df0839c97e168d79.mockapi.io/taskList/4';
-const VASUKI_GRATUITY_API_URL = 'https://64b76091df0839c97e168d79.mockapi.io/taskList/5';
+const GRATUITY_API_URL = 'https://64b76091df0839c97e168d79.mockapi.io/bank/4';
+const VASUKI_GRATUITY_API_URL = 'https://64b76091df0839c97e168d79.mockapi.io/bank/5';
 const VASUKI_SUPER_API_URL = 'https://64b76091df0839c97e168d79.mockapi.io/taskList/6';
 
 describe('GratuityDataService', () => {

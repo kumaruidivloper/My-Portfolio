@@ -5,9 +5,12 @@ import { HttpClientTestingModule, HttpTestingController } from '@angular/common/
 import { AppRoutingModule } from '../app-routing.module';
 import { MyAccessComponent } from './my-access.component';
 import { DashboardAccessGuard } from '../service/dashboard-access.guard';
+import { ApiKeyGuard } from '../service/api-key.guard';
+import { ApiEncryptionService } from '../service/api-encryption.service';
 import { ConfirmationCodeService } from '../service/confirmation-code.service';
 import { UnmaskCodeService } from '../service/unmask-code.service';
 import { environment } from '../../environments/environment';
+import { filter, firstValueFrom } from 'rxjs';
 
 describe('My Access routing', () => {
   let originalProduction: boolean;
@@ -25,6 +28,9 @@ describe('My Access routing', () => {
 
   beforeEach(() => {
     originalProduction = environment.production;
+    TestBed.configureTestingModule({
+      providers: [{ provide: ApiKeyGuard, useValue: { canMatch: () => true } }]
+    });
   });
 
   afterEach(() => {
@@ -51,6 +57,32 @@ describe('My Access routing', () => {
     expect(harness.routeNativeElement?.textContent).not.toContain('sample-password');
     const bankIcon = harness.routeNativeElement?.querySelector<SVGElement>('.access-bank-value svg');
     expect(bankIcon?.getBoundingClientRect().width).toBeGreaterThan(0);
+  });
+
+  it('waits for the encryption key before requesting access records', async () => {
+    TestBed.configureTestingModule({ imports: [AppRoutingModule, HttpClientTestingModule] });
+    TestBed.overrideProvider(ApiKeyGuard, {
+      useFactory: (encryption: ApiEncryptionService, router: Router) => new ApiKeyGuard(encryption, router),
+      deps: [ApiEncryptionService, Router]
+    });
+    const harness = await RouterTestingHarness.create();
+    const router = TestBed.inject(Router);
+    const guard = TestBed.inject(ApiKeyGuard);
+    const http = TestBed.inject(HttpTestingController);
+    const prompt = firstValueFrom(guard.requested$.pipe(filter((target) => target !== null)));
+
+    const navigation = router.navigateByUrl('/my-access');
+    expect(await prompt).toBe('my-access');
+    http.expectNone(endpoint);
+    guard.unlock('runtime test key');
+
+    expect(await navigation).toBeTrue();
+    harness.detectChanges();
+    http.expectOne(endpoint).flush(accessDetails);
+    await harness.fixture.whenStable();
+    harness.detectChanges();
+    expect(harness.routeNativeElement?.textContent).toContain('Sample Bank');
+    http.verify();
   });
 
   it('requires a one-time grant for My Access in production', async () => {

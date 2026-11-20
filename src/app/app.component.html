@@ -1,7 +1,7 @@
 @if (!isDataLoaded) {
   @if (portfolioLoadFailed) {
     <div class="loader portfolio-load-error">
-      <p role="alert">Couldn’t load the portfolio.</p>
+      <p role="alert">{{ portfolioLoadError }}</p>
       <button type="button" class="btn" (click)="loadPortfolioData()">Try again</button>
     </div>
   } @else {
@@ -195,7 +195,9 @@
       (keydown.escape)="closeDashboardPrompt()">
       <div class="dashboard-code-heading" [class.dashboard-code-heading-with-toggle]="accessTarget === 'dashboard'">
         <h2 id="dashboard-code-title">
-          @if (accessTarget === 'dashboard') {
+          @if (apiKeyTarget) {
+            Unlock {{ accessTarget === 'dashboard' ? 'My Dashboard' : 'My Access' }}
+          } @else if (accessTarget === 'dashboard') {
             <span class="dashboard-code-title-prefix">Enter </span>Dashboard code
           } @else {
             Enter My Access code
@@ -240,8 +242,46 @@
           </label>
         }
       </div>
-      <p>Enter the 14-digit code to continue.</p>
-      <div>
+      <form (ngSubmit)="submitDashboardCode()">
+        @if (requiresEncryptionKey) {
+          <div class="api-key-form">
+            @if (!apiEncryptionAvailable) {
+              <p class="api-key-unavailable" role="alert">Encryption is unavailable on this connection. Use HTTPS for network access, or open the app on localhost.</p>
+            } @else {
+              <label for="api-encryption-key">Encryption key</label>
+              <div class="api-key-input" [attr.aria-busy]="apiKeyValidationInProgress ? 'true' : null">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="4" y="10" width="16" height="11" rx="2"></rect>
+                  <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
+                </svg>
+                <input #apiEncryptionKeyInput id="api-encryption-key" name="apiEncryptionKey" type="password"
+                  autocomplete="off" autocapitalize="off" spellcheck="false"
+                  [attr.aria-invalid]="apiEncryptionKeyError ? 'true' : null"
+                  [attr.aria-describedby]="apiEncryptionKeyError ? 'api-key-hint api-key-error' : 'api-key-hint'"
+                  [(ngModel)]="apiEncryptionKey" (ngModelChange)="onEncryptionKeyChange()">
+                @if (apiKeyValidationInProgress) {
+                  <app-dashboard-loader class="api-key-progress" inline label="Checking encryption key"></app-dashboard-loader>
+                } @else if (apiEncryptionKeyVerified) {
+                  <span class="api-key-verified" role="status" aria-label="Encryption key verified">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"></path></svg>
+                  </span>
+                }
+              </div>
+              <p id="api-key-hint">Key stays in memory, cleared on reload.</p>
+              @if (apiEncryptionKeyError) {
+                <p id="api-key-error" class="api-key-error dashboard-code-error" role="alert">
+                  <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <circle cx="12" cy="12" r="9"></circle>
+                    <path d="M12 8v5m0 3h.01"></path>
+                  </svg>
+                  <span>{{ apiEncryptionKeyError }}</span>
+                </p>
+              }
+            }
+          </div>
+        }
+        @if (!apiKeyTarget) {
+        <p class="dashboard-code-instruction">Enter the 14-digit code to continue.</p>
         <div class="dashboard-code-inputs">
           @for (digit of dashboardCodeDigits; track $index; let i = $index) {
             <input
@@ -270,10 +310,12 @@
             <span>{{ dashboardCodeError }}</span>
           </p>
         }
+        }
         <div class="dashboard-code-actions">
           <button type="button" class="btn" (click)="closeDashboardPrompt()">Cancel</button>
-      </div>
-      </div>
+          <button type="submit" class="btn" [disabled]="requiresEncryptionKey && !apiEncryptionAvailable">Continue</button>
+        </div>
+      </form>
     </section>
   </div>
 }

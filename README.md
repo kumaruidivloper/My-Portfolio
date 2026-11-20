@@ -56,9 +56,11 @@ The About skill bars supplement API-provided skills with Claude / Claude Code (8
 
 ## 1. Install dependencies
 
-Dashboard access and edit/delete confirmations require the configured 14-digit code. Dashboard entry automatically verifies after all 14 digits are entered; pasted codes also fill all 14 fields. If the code is incorrect, the entry dialog stays open and shows an alert strip below the fields.
+Dashboard access and edit/delete confirmations require the configured 14-digit code. Dashboard entry automatically verifies after all 14 digits are entered; pasted codes also fill all 14 fields. If the code is incorrect, the entry dialog stays open and shows an alert strip below the fields. When the encryption key is needed, enter it in the same access dialog's themed password field. The key is checked after eight characters, with progress shown inside the field; select Continue if the code was entered first.
 
 My Access loads bank and account records from the configured MockAPI access-details resource. Sensitive-looking values are masked until individually revealed. It requires the 14-digit code in production and, by default, in local development. This is a client-side gate, not server-side authorization; do not use it to protect real credentials.
+
+MockAPI fields use `enc:` followed by base64-encoded IV, ciphertext and authentication tag. The browser derives the AES-256-GCM key using PBKDF2/HMAC-SHA256 with the original file's salt and 310,000 iterations. The portfolio loads without the key; the My Dashboard and My Access code dialog includes a key field once per page session, and the key stays in memory only. Direct local links also use this dialog for the key. Before opening a protected page, the app fetches its encrypted data and verifies the key locally; the key is not sent to the API. Incorrect keys can be retried in the dialog, while network errors or a response without encrypted data prevent verification. Reads decrypt each field before rendering, and saves encrypt fields in the same format after successfully decrypting data with that key. Plaintext responses remain readable during migration; they are not protected until migrated or saved. Browser-side encryption is not a substitute for server-side authorization, and Web Crypto requires HTTPS or localhost.
 
 Revealing a password or profile password on a card or in the edit form requires a separate mock reveal code each time; other masked fields are unchanged. This check is also browser-side and does not protect the data from browser tools or network access.
 
@@ -66,7 +68,7 @@ Each My Access card has an edit dialog. Required fields cannot be blank; optiona
 
 The code check also works on local-network HTTP URLs without Web Crypto. HTTP and browser-side code checks do not protect sensitive data; use HTTPS and server-side authorization for real credentials.
 
-The dashboard code dialog contains a mask switch, enabled by default on every launch, that visually obscures dashboard values, charts, and entry fields; a crossed-out eye indicates masking is on. The title row has the status strip on the left and the switch on the right. On mobile, the switch sits in a padded oval. The strip shows a green check for **Value Masked** and a red info icon for **Value Unmasked**. The 14 dashboard code boxes are tinted to match the status: green when masked and red when unmasked. The dashboard and My Access code dialogs are enabled locally by default; set `showAccessCodePromptLocally` to `false` in `src/app/app.component.ts` to bypass them locally. The dashboard still opens masked. Production always requires the dialogs. Masking is a visual aid, not data protection: accessible text, browser tools, and exports can still expose the data.
+The dashboard code dialog contains a mask switch, enabled by default on every launch, that visually obscures dashboard values, charts, and entry fields; a crossed-out eye indicates masking is on. The title row has the status strip on the left and the switch on the right. On mobile, the switch sits in a padded oval. The strip shows a green check for **Value Masked** and a red info icon for **Value Unmasked**. The dashboard code boxes and encryption key field are tinted to match the status: green when masked and red when unmasked. The encryption key itself remains hidden in both states. The dashboard and My Access code dialogs are enabled locally by default; set `showAccessCodePromptLocally` to `false` in `src/app/app.component.ts` to bypass them locally. The dashboard still opens masked. Production always requires the dialogs. Masking is a visual aid, not data protection: accessible text, browser tools, and exports can still expose the data.
 
 ```bash
 npm install
@@ -187,11 +189,22 @@ https://jsonserver-eudl.onrender.com
 
 ## 7. Local development notes
 
-- Local dev server: `ng serve --host 192.168.68.112`
-- Local preview URL: `http://192.168.68.100:4200/`
-- Network host mode: `ng serve --host 0.0.0.0`
-- Local IP example: `192.168.0.7`
+- On the development machine, `npm start` serves `http://localhost:4200/dashboard`; localhost supports Web Crypto.
+- For another device on the network, use HTTPS with a certificate trusted by that device. Plain HTTP on a LAN IP cannot decrypt the dashboard data.
+
+For example, with [mkcert](https://github.com/FiloSottile/mkcert) installed, create and trust a local development CA, then generate a certificate for the server's LAN IP:
+
+```bash
+mkcert -install
+mkdir -p .local-ssl
+mkcert -cert-file .local-ssl/lan.pem -key-file .local-ssl/lan-key.pem 192.168.68.112 localhost 127.0.0.1
+npx ng serve --host 0.0.0.0 --port 4200 --ssl --ssl-cert .local-ssl/lan.pem --ssl-key .local-ssl/lan-key.pem
+```
+
+Stop any existing server on port 4200 first. Open `https://192.168.68.112:4200/dashboard`; replace the example IP with the server's actual LAN IP. Other devices must also trust the mkcert CA before using the site. Keep the CA private key and the generated server key private; `.local-ssl/` is ignored by Git. Installing a local CA changes device trust, so use it only on devices you control.
 
 ## 8. Mock api
   kumaruidivloper's Mock API project:
   https://mockapi.io/projects/90064b76091df0839c97e168d7a
+
+  Resources 1–5 use the `/bank/:id` path; resources 6 and above remain under `/taskList/:id`.

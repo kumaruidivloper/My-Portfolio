@@ -5,21 +5,35 @@ import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Subject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { AppComponent } from './app.component';
 import { DataService } from './service/data.service';
+import { ApiEncryptionService, ApiPayloadDecryptionError } from './service/api-encryption.service';
+import { ApiKeyGuard } from './service/api-key.guard';
+import { ApiKeyValidationService } from './service/api-key-validation.service';
 import { DashboardAccessGuard } from './service/dashboard-access.guard';
 import { ConfirmationCodeService } from './service/confirmation-code.service';
 import { TimeService } from './service/time.service';
 import { ScrollProgressComponent } from './scroll-progress/scroll-progress.component';
+import { DashboardLoaderComponent } from './dashboard-loader/dashboard-loader.component';
 import { environment } from '../environments/environment';
 
 describe('AppComponent', () => {
   let component: AppComponent;
 
   beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [{ provide: ApiKeyValidationService, useValue: { verify: () => Promise.resolve() } }]
+    });
     component = Object.create(AppComponent.prototype) as AppComponent;
-    Object.assign(component, { accessTarget: 'dashboard', accessPromptVersion: 0 });
+    Object.assign(component, {
+      accessTarget: 'dashboard', accessPromptVersion: 0,
+      apiKeyValidationVersion: 0,
+      apiEncryptionService: { hasPassphrase: true },
+      apiKeyValidationService: { verify: () => Promise.resolve() },
+      apiEncryptionAvailable: true,
+      cdr: { markForCheck: () => undefined }
+    });
   });
 
   it('calculates experience from the May anniversary', () => {
@@ -73,6 +87,7 @@ describe('AppComponent', () => {
         { provide: Router, useValue: { url: '/' } },
         { provide: DashboardAccessGuard, useValue: {} },
         { provide: DataService, useValue: { getData } },
+        { provide: ApiEncryptionService, useValue: { setPassphrase: jasmine.createSpy('setPassphrase'), clearPassphrase: jasmine.createSpy('clearPassphrase') } },
         { provide: TimeService, useValue: { getState: () => ({ isDaytime: true }) } },
         { provide: ConfirmationCodeService, useValue: {} }
       ]
@@ -84,6 +99,8 @@ describe('AppComponent', () => {
     jasmine.clock().install();
     try {
       fixture.detectChanges();
+      expect(host.querySelector('.api-key-gate')).toBeNull();
+
       const progress = host.querySelector('[role="progressbar"]');
       expect(progress?.getAttribute('aria-label')).toBe('Loading portfolio');
       expect(progress?.hasAttribute('aria-valuenow')).toBeFalse();
@@ -135,6 +152,46 @@ describe('AppComponent', () => {
     }
   });
 
+  it('explains why the encryption key is unavailable on an insecure connection', () => {
+    const crypto = globalThis.crypto;
+    const original = Object.getOwnPropertyDescriptor(crypto, 'subtle');
+    Object.defineProperty(crypto, 'subtle', { configurable: true, value: undefined });
+    spyOn(AppComponent.prototype, 'ngOnInit');
+    TestBed.configureTestingModule({
+      declarations: [AppComponent],
+      imports: [CommonModule, FormsModule],
+      schemas: [NO_ERRORS_SCHEMA],
+      providers: [
+        { provide: Router, useValue: { url: '/' } },
+        { provide: DashboardAccessGuard, useValue: {} },
+        { provide: DataService, useValue: {} },
+        { provide: ApiEncryptionService, useValue: {} },
+        { provide: TimeService, useValue: {} },
+        { provide: ConfirmationCodeService, useValue: {} }
+      ]
+    });
+    const originalBodyClasses = document.body.className;
+    try {
+      const fixture = TestBed.createComponent(AppComponent);
+      fixture.componentInstance.apiKeyTarget = 'dashboard';
+      fixture.componentInstance.isDashboardPromptOpen = true;
+      fixture.detectChanges();
+      const host: HTMLElement = fixture.nativeElement;
+      expect(host.querySelector('[role="alert"]')?.textContent).toContain('Use HTTPS');
+      expect(host.querySelector('#api-encryption-key')).toBeNull();
+      expect(host.querySelector('.dashboard-code-modal')).not.toBeNull();
+      expect(host.querySelector<HTMLButtonElement>('button[type="submit"]')?.disabled).toBeTrue();
+      fixture.destroy();
+    } finally {
+      if (original) {
+        Object.defineProperty(crypto, 'subtle', original);
+      } else {
+        Reflect.deleteProperty(crypto, 'subtle');
+      }
+      document.body.className = originalBodyClasses;
+    }
+  });
+
   it('switches profile photos with the light and dark themes', () => {
     spyOn(AppComponent.prototype, 'ngOnInit');
     TestBed.configureTestingModule({
@@ -145,6 +202,7 @@ describe('AppComponent', () => {
         { provide: Router, useValue: { url: '/' } },
         { provide: DashboardAccessGuard, useValue: {} },
         { provide: DataService, useValue: {} },
+        { provide: ApiEncryptionService, useValue: { setPassphrase: () => undefined, clearPassphrase: () => undefined } },
         { provide: TimeService, useValue: {} },
         { provide: ConfirmationCodeService, useValue: {} }
       ]
@@ -185,6 +243,7 @@ describe('AppComponent', () => {
         { provide: Router, useValue: { url: '/' } },
         { provide: DashboardAccessGuard, useValue: {} },
         { provide: DataService, useValue: {} },
+        { provide: ApiEncryptionService, useValue: { setPassphrase: () => undefined, clearPassphrase: () => undefined } },
         { provide: TimeService, useValue: {} },
         { provide: ConfirmationCodeService, useValue: {} }
       ]
@@ -336,6 +395,309 @@ describe('AppComponent', () => {
     expect(component.isDashboardPromptOpen).toBeFalse();
   });
 
+  it('collects the encryption key in the same access dialog before navigating', async () => {
+    const requests = new BehaviorSubject<'dashboard' | 'my-access' | null>(null);
+    const verify = jasmine.createSpy('verify').and.resolveTo(true);
+    const navigateByUrl = jasmine.createSpy('navigateByUrl');
+    const grantOneTimeAccess = jasmine.createSpy('grantOneTimeAccess');
+    const encryption = new ApiEncryptionService();
+    spyOn(window, 'scrollTo');
+    TestBed.configureTestingModule({
+      declarations: [AppComponent],
+      imports: [CommonModule, FormsModule],
+      schemas: [NO_ERRORS_SCHEMA],
+      providers: [
+        { provide: Router, useValue: { url: '/', navigateByUrl } },
+        { provide: DashboardAccessGuard, useValue: { grantOneTimeAccess } },
+        { provide: ApiKeyGuard, useValue: { requested$: requests, cancel: () => undefined } },
+        { provide: ApiEncryptionService, useValue: encryption },
+        { provide: DataService, useValue: { getData: () => new Subject() } },
+        { provide: TimeService, useValue: { getState: () => ({ isDaytime: true }) } },
+        { provide: ConfirmationCodeService, useValue: { verify } }
+      ]
+    });
+    const fixture = TestBed.createComponent(AppComponent);
+    const instance = fixture.componentInstance;
+    const originalBodyClasses = document.body.className;
+    document.body.appendChild(fixture.nativeElement);
+    try {
+      fixture.detectChanges();
+      instance.openMyAccessPrompt();
+      fixture.changeDetectorRef.markForCheck();
+      fixture.detectChanges();
+      const dialog = fixture.nativeElement.querySelector('.dashboard-code-modal') as HTMLElement;
+      expect(dialog.querySelector('#api-encryption-key')).not.toBeNull();
+      expect(dialog.querySelectorAll('.dashboard-code-input').length).toBe(14);
+      const keyInput = dialog.querySelector<HTMLInputElement>('#api-encryption-key')!;
+      for (const dark of [false, true]) {
+        document.body.classList.toggle('active', dark);
+        expect(getComputedStyle(keyInput).backgroundColor).toBe(getComputedStyle(dialog).backgroundColor);
+        expect(getComputedStyle(keyInput).color).toBe(getComputedStyle(dialog).color);
+      }
+      expect(getComputedStyle(keyInput).textTransform).toBe('none');
+
+      instance.dashboardCodeDigits.splice(0, 14, ...'12345678901234');
+      await instance.submitDashboardCode();
+      fixture.changeDetectorRef.markForCheck();
+      fixture.detectChanges();
+      expect(dialog.textContent).toContain('Enter the encryption key');
+      expect(keyInput.getAttribute('aria-invalid')).toBe('true');
+      expect(keyInput.getAttribute('aria-describedby')).toContain('api-key-error');
+      expect(encryption.hasPassphrase).toBeFalse();
+      expect(navigateByUrl).not.toHaveBeenCalled();
+
+      keyInput.value = 'runtime test key';
+      keyInput.dispatchEvent(new Event('input'));
+      verify.and.resolveTo(false);
+      await instance.submitDashboardCode();
+      expect(encryption.hasPassphrase).toBeFalse();
+      expect(navigateByUrl).not.toHaveBeenCalled();
+
+      verify.and.resolveTo(true);
+      await instance.submitDashboardCode();
+      expect(encryption.hasPassphrase).toBeTrue();
+      expect(grantOneTimeAccess).toHaveBeenCalledOnceWith('my-access');
+      expect(navigateByUrl).toHaveBeenCalledOnceWith('/my-access');
+      expect(instance.apiEncryptionKey).toBe('');
+
+      instance.openDashboardPrompt();
+      fixture.changeDetectorRef.markForCheck();
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('#api-encryption-key')).toBeNull();
+    } finally {
+      fixture.destroy();
+      fixture.nativeElement.remove();
+      document.body.className = originalBodyClasses;
+    }
+  });
+
+  it('uses the same dialog for a direct local navigation and cancels or unlocks it', async () => {
+    const requests = new BehaviorSubject<'dashboard' | 'my-access' | null>(null);
+    const unlock = jasmine.createSpy('unlock').and.callFake(() => requests.next(null));
+    const cancel = jasmine.createSpy('cancel').and.callFake(() => requests.next(null));
+    const verifyKey = jasmine.createSpy('verify').and.rejectWith(new ApiPayloadDecryptionError());
+    spyOn(window, 'scrollTo');
+    TestBed.configureTestingModule({
+      declarations: [AppComponent],
+      imports: [CommonModule, FormsModule],
+      schemas: [NO_ERRORS_SCHEMA],
+      providers: [
+        { provide: Router, useValue: { url: '/' } },
+        { provide: DashboardAccessGuard, useValue: {} },
+        { provide: ApiKeyGuard, useValue: { requested$: requests, unlock, cancel } },
+        { provide: ApiKeyValidationService, useValue: { verify: verifyKey } },
+        { provide: ApiEncryptionService, useValue: new ApiEncryptionService() },
+        { provide: DataService, useValue: { getData: () => new Subject() } },
+        { provide: TimeService, useValue: { getState: () => ({ isDaytime: true }) } },
+        { provide: ConfirmationCodeService, useValue: {} }
+      ]
+    });
+    const fixture = TestBed.createComponent(AppComponent);
+    try {
+      fixture.detectChanges();
+      requests.next('dashboard');
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.dashboard-code-modal #api-encryption-key')).not.toBeNull();
+      expect(fixture.nativeElement.querySelector('.dashboard-code-input')).toBeNull();
+      fixture.componentInstance.closeDashboardPrompt();
+      expect(cancel).toHaveBeenCalled();
+      expect(fixture.componentInstance.isDashboardPromptOpen).toBeFalse();
+
+      requests.next('my-access');
+      fixture.componentInstance.apiEncryptionKey = 'runtime test key';
+      await fixture.componentInstance.submitDashboardCode();
+      expect(unlock).not.toHaveBeenCalled();
+      expect(fixture.componentInstance.apiEncryptionKeyError).toContain('Invalid key or damaged data');
+      expect(fixture.componentInstance.isDashboardPromptOpen).toBeTrue();
+      fixture.detectChanges();
+      const error = fixture.nativeElement.querySelector('#api-key-error') as HTMLElement;
+      expect(error.getAttribute('role')).toBe('alert');
+      expect(error.classList.contains('dashboard-code-error')).toBeTrue();
+      expect(error.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
+      expect(fixture.nativeElement.querySelector('#api-encryption-key').getAttribute('aria-describedby')).toContain('api-key-error');
+      verifyKey.and.resolveTo();
+      await fixture.componentInstance.submitDashboardCode();
+      expect(unlock).toHaveBeenCalledOnceWith('runtime test key');
+      expect(verifyKey).toHaveBeenCalledWith('runtime test key', 'my-access');
+      expect(fixture.componentInstance.isDashboardPromptOpen).toBeFalse();
+    } finally {
+      fixture.destroy();
+    }
+  });
+
+  it('checks the eighth key character and shows progress inside the input', async () => {
+    let finish!: () => void;
+    const verifyKey = jasmine.createSpy('verify').and.returnValue(
+      new Promise<void>((resolve) => { finish = resolve; })
+    );
+    const unlock = jasmine.createSpy('unlock');
+    spyOn(AppComponent.prototype, 'ngOnInit');
+    TestBed.configureTestingModule({
+      declarations: [AppComponent],
+      imports: [CommonModule, FormsModule, DashboardLoaderComponent],
+      schemas: [NO_ERRORS_SCHEMA],
+      providers: [
+        { provide: Router, useValue: { url: '/' } },
+        { provide: DashboardAccessGuard, useValue: {} },
+        { provide: ApiKeyGuard, useValue: { unlock, cancel: () => undefined } },
+        { provide: ApiKeyValidationService, useValue: { verify: verifyKey } },
+        { provide: ApiEncryptionService, useValue: new ApiEncryptionService() },
+        { provide: DataService, useValue: {} },
+        { provide: TimeService, useValue: {} },
+        { provide: ConfirmationCodeService, useValue: {} }
+      ]
+    });
+    const fixture = TestBed.createComponent(AppComponent);
+    const instance = fixture.componentInstance;
+    instance.apiKeyTarget = 'dashboard';
+    instance.isDashboardPromptOpen = true;
+    fixture.detectChanges();
+    await fixture.whenStable();
+    jasmine.clock().install();
+    try {
+      fixture.detectChanges();
+      const keyInput = fixture.nativeElement.querySelector('#api-encryption-key') as HTMLInputElement;
+      keyInput.value = '1234567';
+      keyInput.dispatchEvent(new Event('input'));
+      jasmine.clock().tick(400);
+      expect(verifyKey).not.toHaveBeenCalled();
+
+      keyInput.value = '        ';
+      keyInput.dispatchEvent(new Event('input'));
+      jasmine.clock().tick(400);
+      expect(verifyKey).not.toHaveBeenCalled();
+      expect(instance.apiKeyValidationInProgress).toBeFalse();
+
+      keyInput.value = '12345678';
+      keyInput.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.api-key-input [role="status"][aria-label="Checking encryption key"]')).not.toBeNull();
+      expect(fixture.nativeElement.querySelector('.api-key-input .loader-ring')).not.toBeNull();
+      const button = fixture.nativeElement.querySelector('button[type="submit"]') as HTMLButtonElement;
+      expect(button.disabled).toBeFalse();
+      expect(button.textContent?.trim()).toBe('Continue');
+      jasmine.clock().tick(299);
+      expect(verifyKey).not.toHaveBeenCalled();
+      jasmine.clock().tick(1);
+      expect(verifyKey).toHaveBeenCalledOnceWith('12345678', 'dashboard');
+
+      const pending = instance.submitDashboardCode();
+      expect(verifyKey).toHaveBeenCalledTimes(1);
+      expect(unlock).not.toHaveBeenCalled();
+      finish();
+      await pending;
+      fixture.detectChanges();
+      expect(unlock).toHaveBeenCalledOnceWith('12345678');
+      expect(fixture.nativeElement.querySelector('.api-key-input [aria-label="Encryption key verified"]')).not.toBeNull();
+      expect(fixture.nativeElement.querySelector('.api-key-progress')).toBeNull();
+    } finally {
+      fixture.destroy();
+      jasmine.clock().uninstall();
+    }
+  });
+
+  it('waits for the key check when the code is completed during validation', async () => {
+    let finish!: () => void;
+    const verifyKey = jasmine.createSpy('verify').and.returnValue(
+      new Promise<void>((resolve) => { finish = resolve; })
+    );
+    const setPassphrase = jasmine.createSpy('setPassphrase');
+    const navigateByUrl = jasmine.createSpy('navigateByUrl');
+    Object.assign(component, {
+      router: { navigateByUrl }, dashboardAccessGuard: { grantOneTimeAccess: () => undefined },
+      document,
+      apiEncryptionService: { hasPassphrase: false, setPassphrase },
+      apiKeyValidationService: { verify: verifyKey },
+      confirmationCodeService: { verify: () => Promise.resolve(true) },
+      dashboardCodeDigits: [...Array.from('1234567890123'), ''],
+      apiEncryptionKey: '12345678', isDashboardPromptOpen: true
+    });
+    jasmine.clock().install();
+    try {
+      component.onEncryptionKeyChange();
+      jasmine.clock().tick(300);
+      const submit = spyOn(component, 'submitDashboardCode').and.callThrough();
+      component.onDashboardCodeInput({ target: { value: '4' } } as unknown as Event, 13);
+      const pending = submit.calls.mostRecent().returnValue;
+      await Promise.resolve();
+      expect(verifyKey).toHaveBeenCalledTimes(1);
+      expect(navigateByUrl).not.toHaveBeenCalled();
+      finish();
+      await pending;
+      expect(setPassphrase).toHaveBeenCalledOnceWith('12345678');
+      expect(navigateByUrl).toHaveBeenCalledOnceWith('/dashboard');
+    } finally {
+      jasmine.clock().uninstall();
+    }
+  });
+
+  it('does not navigate when key verification fails or completes after cancellation', async () => {
+    const navigateByUrl = jasmine.createSpy('navigateByUrl');
+    const grantOneTimeAccess = jasmine.createSpy('grantOneTimeAccess');
+    const setPassphrase = jasmine.createSpy('setPassphrase');
+    const verifyKey = jasmine.createSpy('verify').and.rejectWith(new ApiPayloadDecryptionError());
+    Object.assign(component, {
+      router: { navigateByUrl }, dashboardAccessGuard: { grantOneTimeAccess },
+      apiEncryptionService: { hasPassphrase: false, setPassphrase },
+      apiKeyValidationService: { verify: verifyKey },
+      confirmationCodeService: { verify: () => Promise.resolve(true) },
+      dashboardCodeDigits: Array.from('12345678901234'),
+      apiEncryptionKey: 'wrong runtime key', isDashboardPromptOpen: true
+    });
+
+    await component.submitDashboardCode();
+    expect(component.apiEncryptionKeyError).toContain('Invalid key or damaged data');
+    expect(setPassphrase).not.toHaveBeenCalled();
+    expect(navigateByUrl).not.toHaveBeenCalled();
+
+    verifyKey.and.rejectWith(new Error('Network failed'));
+    await component.submitDashboardCode();
+    expect(component.apiEncryptionKeyError).toContain('verification is unavailable');
+    expect(navigateByUrl).not.toHaveBeenCalled();
+
+    let finish!: () => void;
+    verifyKey.and.returnValue(new Promise<void>((resolve) => { finish = resolve; }));
+    const pending = component.submitDashboardCode();
+    await Promise.resolve();
+    expect(component.apiKeyValidationInProgress).toBeTrue();
+    component.closeDashboardPrompt();
+    finish();
+    await pending;
+    expect(setPassphrase).not.toHaveBeenCalled();
+    expect(grantOneTimeAccess).not.toHaveBeenCalled();
+    expect(navigateByUrl).not.toHaveBeenCalled();
+  });
+
+  it('ignores a key verification result after the key is edited', async () => {
+    let finish!: () => void;
+    const verifyKey = jasmine.createSpy('verify').and.returnValue(
+      new Promise<void>((resolve) => { finish = resolve; })
+    );
+    const setPassphrase = jasmine.createSpy('setPassphrase');
+    const navigateByUrl = jasmine.createSpy('navigateByUrl');
+    Object.assign(component, {
+      router: { navigateByUrl }, dashboardAccessGuard: { grantOneTimeAccess: () => undefined },
+      apiEncryptionService: { hasPassphrase: false, setPassphrase },
+      apiKeyValidationService: { verify: verifyKey },
+      confirmationCodeService: { verify: () => Promise.resolve(true) },
+      dashboardCodeDigits: Array.from('12345678901234'),
+      apiEncryptionKey: 'first key', isDashboardPromptOpen: true
+    });
+
+    const pending = component.submitDashboardCode();
+    await Promise.resolve();
+    expect(component.apiKeyValidationInProgress).toBeTrue();
+    component.apiEncryptionKey = 'updated key';
+    component.onEncryptionKeyChange();
+    finish();
+    await pending;
+    expect(setPassphrase).not.toHaveBeenCalled();
+    expect(navigateByUrl).not.toHaveBeenCalled();
+    expect(component.apiKeyValidationInProgress).toBeTrue();
+    component.closeDashboardPrompt();
+    expect(component.apiKeyValidationInProgress).toBeFalse();
+  });
+
   describe('My Access production code prompt', () => {
     let originalProduction: boolean;
 
@@ -425,6 +787,8 @@ describe('AppComponent', () => {
     const navigateByUrl = jasmine.createSpy('navigateByUrl');
     const grantOneTimeAccess = jasmine.createSpy('grantOneTimeAccess');
     const verify = jasmine.createSpy('verify').and.resolveTo(true);
+    const encryption = { hasPassphrase: false, setPassphrase: () => { encryption.hasPassphrase = true; } };
+    const originalBodyClasses = document.body.className;
     const originalProduction = environment.production;
     environment.production = true;
     spyOn(AppComponent.prototype, 'ngOnInit');
@@ -436,6 +800,7 @@ describe('AppComponent', () => {
         { provide: Router, useValue: { url: '/', navigateByUrl } },
         { provide: DashboardAccessGuard, useValue: { grantOneTimeAccess } },
         { provide: DataService, useValue: {} },
+        { provide: ApiEncryptionService, useValue: encryption },
         { provide: TimeService, useValue: {} },
         { provide: ConfirmationCodeService, useValue: { verify } }
       ]
@@ -455,6 +820,16 @@ describe('AppComponent', () => {
       fixture.detectChanges();
       const modal = fixture.nativeElement.querySelector('.dashboard-code-modal') as HTMLElement;
       const toggle = modal.querySelector('input[role="switch"]') as HTMLInputElement;
+      const keyInput = modal.querySelector<HTMLInputElement>('#api-encryption-key')!;
+      const codeInput = modal.querySelector<HTMLInputElement>('.dashboard-code-input')!;
+      expect(keyInput.type).toBe('password');
+      const maskedColors: string[] = [];
+      for (const dark of [false, true]) {
+        document.body.classList.toggle('active', dark);
+        const color = getComputedStyle(keyInput).backgroundColor;
+        expect(color).toBe(getComputedStyle(codeInput).backgroundColor);
+        maskedColors.push(color);
+      }
       expect(toggle.getAttribute('aria-label')).toBe('Mask dashboard values');
       expect(toggle.checked).toBeTrue();
       expect(document.body.classList.contains('dashboard-values-blurred')).toBeTrue();
@@ -464,6 +839,13 @@ describe('AppComponent', () => {
       toggle.click();
       fixture.changeDetectorRef.markForCheck();
       fixture.detectChanges();
+      for (const [index, dark] of [false, true].entries()) {
+        document.body.classList.toggle('active', dark);
+        const color = getComputedStyle(keyInput).backgroundColor;
+        expect(color).toBe(getComputedStyle(codeInput).backgroundColor);
+        expect(color).not.toBe(maskedColors[index]);
+      }
+      expect(keyInput.type).toBe('password');
       expect(toggle.checked).toBeFalse();
       expect(document.body.classList.contains('dashboard-values-blurred')).toBeFalse();
       expect(navigateByUrl).not.toHaveBeenCalled();
@@ -474,6 +856,7 @@ describe('AppComponent', () => {
       expect(notice.getAttribute('role')).toBe('status');
 
       fixture.componentInstance.dashboardCodeDigits.splice(0, 14, ...'12345678901234');
+      fixture.componentInstance.apiEncryptionKey = 'runtime test key';
       verify.and.resolveTo(false);
       await fixture.componentInstance.submitDashboardCode();
       fixture.changeDetectorRef.markForCheck();
@@ -504,6 +887,7 @@ describe('AppComponent', () => {
     } finally {
       fixture.destroy();
       fixture.nativeElement.remove();
+      document.body.className = originalBodyClasses;
       environment.production = originalProduction;
     }
   });

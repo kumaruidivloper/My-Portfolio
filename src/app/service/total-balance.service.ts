@@ -3,8 +3,14 @@ import { HttpClient } from '@angular/common/http';
 import { catchError, EMPTY, forkJoin, map, Observable, Subject, switchMap } from 'rxjs';
 import { TotalApiDocument, TotalRecord } from '../model/total-record';
 
-const TOTAL_API_URL = 'https://64b76091df0839c97e168d79.mockapi.io/taskList';
+const TOTAL_API_URL = 'https://64b76091df0839c97e168d79.mockapi.io';
 const TOTAL_RESOURCE_ID = '7';
+const BANK_RESOURCE_IDS = new Set(['2', '3', '4', '5']);
+
+function resourceUrl(id: string): string {
+  const resourcePath = BANK_RESOURCE_IDS.has(id) ? 'bank' : 'taskList';
+  return `${TOTAL_API_URL}/${resourcePath}/${id}`;
+}
 
 export interface SourceEntry {
   date: string;
@@ -106,7 +112,7 @@ export class TotalBalanceService {
   }
 
   getTotals(): Observable<TotalApiDocument> {
-    return this.http.get<unknown>(`${TOTAL_API_URL}/${TOTAL_RESOURCE_ID}`).pipe(
+    return this.http.get<unknown>(resourceUrl(TOTAL_RESOURCE_ID)).pipe(
       map((response) => {
         const document = response as Record<string, unknown>;
         const records = document?.['totalRecords'];
@@ -126,7 +132,7 @@ export class TotalBalanceService {
   getOtherBalanceSources(): Observable<SourceEntry[][]> {
     const sources = SOURCES.filter((source) => source.id !== '6');
     return forkJoin(sources.map((source) =>
-      this.http.get<unknown>(`${TOTAL_API_URL}/${source.id}`).pipe(
+      this.http.get<unknown>(resourceUrl(source.id)).pipe(
         map((response) => toEntries(response, source.listKey, source.amountKey))
       )
     ));
@@ -139,13 +145,13 @@ export class TotalBalanceService {
 
   private recalculate(): Observable<unknown> {
     return forkJoin([
-      ...SOURCES.map((source) => this.http.get<unknown>(`${TOTAL_API_URL}/${source.id}`)),
-      this.http.get<unknown>(`${TOTAL_API_URL}/${TOTAL_RESOURCE_ID}`)
+      ...SOURCES.map((source) => this.http.get<unknown>(resourceUrl(source.id))),
+      this.http.get<unknown>(resourceUrl(TOTAL_RESOURCE_ID))
     ]).pipe(
       switchMap((responses) => {
         const current = responses[SOURCES.length] as Record<string, unknown>;
         const entries = SOURCES.map((source, index) => toEntries(responses[index], source.listKey, source.amountKey));
-        return this.http.put<unknown>(`${TOTAL_API_URL}/${TOTAL_RESOURCE_ID}`, {
+        return this.http.put<unknown>(resourceUrl(TOTAL_RESOURCE_ID), {
           ...current,
           totalRecords: calculateTotals(entries)
         });

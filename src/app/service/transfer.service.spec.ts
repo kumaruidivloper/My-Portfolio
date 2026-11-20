@@ -4,8 +4,7 @@ import { TestBed } from '@angular/core/testing';
 import { parseTransferResponse } from './transfer.service';
 import { TransferService } from './transfer.service';
 
-const TRANSFERS_API_URL = 'https://64b76091df0839c97e168d79.mockapi.io/taskList';
-const TRANSFERS_RESOURCE_URL = `${TRANSFERS_API_URL}/1`;
+const TRANSFERS_RESOURCE_URL = 'https://64b76091df0839c97e168d79.mockapi.io/bank/1';
 
 describe('TransferService', () => {
   let service: TransferService;
@@ -18,6 +17,21 @@ describe('TransferService', () => {
   });
 
   afterEach(() => http.verify());
+
+  it('loads transfer records from resource 1', () => {
+    const transfers = [{
+      dateOfTransfer: '29-Sep-23',
+      amountTransferredAUD: 9985,
+      conversionRate: 53.52,
+      receivedDate: '05-Oct-23',
+      amountReceivedINR: 535200
+    }];
+    service.getTransfers().subscribe((result) => expect(result).toEqual(transfers));
+
+    const request = http.expectOne(TRANSFERS_RESOURCE_URL);
+    expect(request.request.method).toBe('GET');
+    request.flush({ transfers });
+  });
 
   it('updates the existing transfer resource instead of creating a duplicate', () => {
     const updatedTransfers = [{

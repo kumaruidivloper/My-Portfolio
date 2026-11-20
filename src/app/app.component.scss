@@ -130,7 +130,100 @@
     color: var(--black);
     flex-direction: column;
     font-size: 1.6rem;
-    padding: 2rem;
+}
+
+.api-key-form {
+    display: grid;
+    gap: .6rem;
+    margin: 1.5rem auto;
+    max-width: 42rem;
+}
+
+.api-key-form label {
+    color: var(--black);
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.api-key-input {
+    position: relative;
+}
+
+.api-key-input svg {
+    color: var(--green);
+    height: 1.8rem;
+    left: 1.2rem;
+    pointer-events: none;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1.8rem;
+    z-index: 1;
+}
+
+.api-key-progress,
+.api-key-verified {
+    position: absolute;
+    right: 1.2rem;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.api-key-verified {
+    color: var(--green);
+    display: flex;
+}
+
+.api-key-verified svg {
+    position: static;
+    transform: none;
+}
+
+.api-key-form input {
+    width: 100%;
+    padding: 1rem 4rem;
+    border-radius: 0.8rem;
+    background: var(--bg-color);
+    box-shadow: var(--box-shadow-inset);
+    color: var(--black);
+    font-size: 1.5rem;
+    text-transform: none;
+}
+
+.api-key-form input:focus-visible {
+    outline: .2rem solid var(--green);
+    outline-offset: .2rem;
+}
+
+.api-key-form p {
+    color: var(--light-color);
+    font-size: 1.3rem;
+    text-transform: none;
+}
+
+#api-key-hint {
+    white-space: nowrap;
+}
+
+.api-key-form .api-key-unavailable {
+    margin: 0;
+    color: var(--dashboard-unmask-color);
+}
+
+.api-key-form .api-key-error {
+    margin: .4rem auto 0;
+    color: var(--dashboard-unmask-color);
+    text-align: center;
+}
+
+.api-key-error span {
+    text-transform: none;
+}
+
+.dashboard-code-instruction {
+    color: var(--light-color);
+    font-size: 1.5rem;
+    margin-top: .5rem;
     text-align: center;
 }
 

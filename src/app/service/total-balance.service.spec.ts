@@ -25,7 +25,7 @@ describe('calculateTotals', () => {
       TestBed.inject(TotalBalanceService).getOtherBalanceSources().subscribe((sources) => result = sources);
 
       for (const id of ['2', '3', '4', '5']) {
-        const request = http.expectOne((req) => req.url.endsWith(`/taskList/${id}`));
+        const request = http.expectOne((req) => req.url.endsWith(`/bank/${id}`));
         expect(request.request.method).toBe('GET');
         request.flush(id === '2' || id === '3'
           ? { pfRecords: [{ date: "Dec'26", pfAmount: 100, difference: 10 }] }

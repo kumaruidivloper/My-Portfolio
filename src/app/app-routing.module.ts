@@ -1,11 +1,12 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { DashboardAccessGuard } from './service/dashboard-access.guard';
+import { ApiKeyGuard } from './service/api-key.guard';
 
 const routes: Routes = [
   {
     path: 'dashboard',
-    canMatch: [DashboardAccessGuard],
+    canMatch: [DashboardAccessGuard, ApiKeyGuard],
     loadChildren: () =>
       import('./my-dashboard/my-dashboard.module').then(
         (module) => module.MyDashboardModule
@@ -13,7 +14,7 @@ const routes: Routes = [
   },
   {
     path: 'my-access',
-    canMatch: [DashboardAccessGuard],
+    canMatch: [DashboardAccessGuard, ApiKeyGuard],
     loadChildren: () =>
       import('./my-access/my-access.module').then(
         (module) => module.MyAccessModule

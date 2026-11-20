@@ -4,7 +4,7 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { provideHttpClient, withInterceptorsFromDi, withXhr } from  '@angular/common/http';
+import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi, withXhr } from  '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { CounterComponent } from './counter/counter.component';
 import { StopwatchComponent } from './stopwatch/stopwatch.component';
@@ -14,6 +14,8 @@ import { AboutSkillsComponent } from './about-skills/about-skills.component';
 import { WorkExperienceComponent } from './work-experience/work-experience.component';
 import { PortfolioComponent } from './portfolio/portfolio.component';
 import { ScrollProgressComponent } from './scroll-progress/scroll-progress.component';
+import { ApiEncryptionInterceptor } from './service/api-encryption.interceptor';
+import { DashboardLoaderComponent } from './dashboard-loader/dashboard-loader.component';
 
 @NgModule({ declarations: [
         AppComponent,
@@ -28,5 +30,10 @@ import { ScrollProgressComponent } from './scroll-progress/scroll-progress.compo
     bootstrap: [AppComponent], imports: [BrowserModule,
         AppRoutingModule,
         FormsModule,
-        ScrollProgressComponent], providers: [provideHttpClient(withXhr(), withInterceptorsFromDi()), provideAnimationsAsync()] })
+        DashboardLoaderComponent,
+        ScrollProgressComponent], providers: [
+        provideHttpClient(withXhr(), withInterceptorsFromDi()),
+        provideAnimationsAsync(),
+        { provide: HTTP_INTERCEPTORS, useClass: ApiEncryptionInterceptor, multi: true }
+    ] })
 export class AppModule { }

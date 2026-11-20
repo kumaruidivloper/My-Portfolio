@@ -3,8 +3,8 @@ import { HttpClientTestingModule, HttpTestingController } from '@angular/common/
 import { TestBed } from '@angular/core/testing';
 import { PfDataService, parsePfDataResponse } from './pf-data.service';
 
-const PF_DATA_API_URL = 'https://64b76091df0839c97e168d79.mockapi.io/taskList/2';
-const VASUKI_PF_DATA_API_URL = 'https://64b76091df0839c97e168d79.mockapi.io/taskList/3';
+const PF_DATA_API_URL = 'https://64b76091df0839c97e168d79.mockapi.io/bank/2';
+const VASUKI_PF_DATA_API_URL = 'https://64b76091df0839c97e168d79.mockapi.io/bank/3';
 
 describe('PfDataService', () => {
   let service: PfDataService;

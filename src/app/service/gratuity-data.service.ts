@@ -4,7 +4,7 @@ import { map, Observable, Subject, tap } from 'rxjs';
 import { GratuityApiDocument, GratuityRecord } from '../model/gratuity-record';
 import { TotalBalanceService } from './total-balance.service';
 
-const GRATUITY_DATA_API_URL = 'https://64b76091df0839c97e168d79.mockapi.io/taskList';
+const GRATUITY_DATA_API_URL = 'https://64b76091df0839c97e168d79.mockapi.io';
 
 export type GratuityResourceId = '4' | '5' | '6';
 
@@ -93,7 +93,7 @@ export class GratuityDataService {
   }
 
   getGratuityData(resourceId: GratuityResourceId = '4'): Observable<GratuityApiDocument> {
-    return this.http.get<unknown>(`${GRATUITY_DATA_API_URL}/${resourceId}`).pipe(
+    return this.http.get<unknown>(this.resourceUrl(resourceId)).pipe(
       map((response) => parseGratuityDataResponse(response, GRATUITY_RESOURCE_NAMES[resourceId], resourceId)),
       tap((document) => this.cache.set(resourceId, document))
     );
@@ -117,7 +117,7 @@ export class GratuityDataService {
         }))
       }
       : document;
-    return this.http.put<unknown>(`${GRATUITY_DATA_API_URL}/${resourceId}`, requestDocument).pipe(
+    return this.http.put<unknown>(this.resourceUrl(resourceId), requestDocument).pipe(
       map((response) => parseGratuityDataResponse(response, GRATUITY_RESOURCE_NAMES[resourceId], resourceId)),
       tap((updated) => {
         this.cache.set(resourceId, updated);
@@ -125,5 +125,10 @@ export class GratuityDataService {
         this.updated.next(resourceId);
       })
     );
+  }
+
+  private resourceUrl(resourceId: GratuityResourceId): string {
+    const resourcePath = resourceId === '6' ? 'taskList' : 'bank';
+    return `${GRATUITY_DATA_API_URL}/${resourcePath}/${resourceId}`;
   }
 }

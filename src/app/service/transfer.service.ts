@@ -4,8 +4,7 @@ import { map, Observable, Subject, tap } from 'rxjs';
 
 import { TransferApiDocument, TransferRecord } from '../model/transfer';
 
-const TRANSFERS_API_URL = 'https://64b76091df0839c97e168d79.mockapi.io/taskList';
-const TRANSFERS_RESOURCE_URL = `${TRANSFERS_API_URL}/1`;
+const TRANSFERS_RESOURCE_URL = 'https://64b76091df0839c97e168d79.mockapi.io/bank/1';
 
 function isTransferRecord(value: unknown): value is TransferRecord {
   if (typeof value !== 'object' || value === null) {
@@ -46,7 +45,7 @@ export class TransferService {
   constructor(private http: HttpClient) {}
 
   getTransfers(): Observable<TransferRecord[]> {
-    return this.http.get<unknown>(TRANSFERS_API_URL).pipe(
+    return this.http.get<unknown>(TRANSFERS_RESOURCE_URL).pipe(
       map(parseTransferResponse)
     );
   }

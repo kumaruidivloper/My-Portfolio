@@ -3,8 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { map, Observable, Subject, tap } from 'rxjs';
 import { PfApiDocument, PfRecord } from '../model/pf-record';
 import { TotalBalanceService } from './total-balance.service';
-
-const PF_DATA_API_URL = 'https://64b76091df0839c97e168d79.mockapi.io/taskList';
+import { PF_DATA_API_URL } from './api-resource-urls';
 
 export type PfResourceId = '2' | '3';
 

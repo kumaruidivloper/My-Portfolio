@@ -972,7 +972,8 @@ body.dashboard-values-blurred {
     width: 100%;
 }
 
-.dashboard-code-modal[data-mask-state] .dashboard-code-input {
+.dashboard-code-modal[data-mask-state] .dashboard-code-input,
+.dashboard-code-modal[data-mask-state] #api-encryption-key {
     background: color-mix(in srgb, var(--dashboard-visibility-color) 20%, var(--bg-color));
     transition: none;
 }
