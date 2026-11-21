@@ -16,6 +16,7 @@ import { PortfolioComponent } from './portfolio/portfolio.component';
 import { ScrollProgressComponent } from './scroll-progress/scroll-progress.component';
 import { ApiEncryptionInterceptor } from './service/api-encryption.interceptor';
 import { DashboardLoaderComponent } from './dashboard-loader/dashboard-loader.component';
+import { QrCodeViewComponent } from './qr-code-view/qr-code-view.component';
 
 @NgModule({ declarations: [
         AppComponent,
@@ -31,7 +32,8 @@ import { DashboardLoaderComponent } from './dashboard-loader/dashboard-loader.co
         AppRoutingModule,
         FormsModule,
         DashboardLoaderComponent,
-        ScrollProgressComponent], providers: [
+        ScrollProgressComponent,
+        QrCodeViewComponent], providers: [
         provideHttpClient(withXhr(), withInterceptorsFromDi()),
         provideAnimationsAsync(),
         { provide: HTTP_INTERCEPTORS, useClass: ApiEncryptionInterceptor, multi: true }

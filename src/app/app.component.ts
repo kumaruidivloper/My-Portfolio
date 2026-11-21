@@ -1,12 +1,13 @@
 
-import { Component, ViewChild, ElementRef, OnInit, OnDestroy, HostListener, Renderer2, Inject, DOCUMENT, ChangeDetectionStrategy, ChangeDetectorRef, Type, inject } from '@angular/core';
+import { Component, ViewChild, ElementRef, OnInit, OnDestroy, HostListener, Renderer2, Inject, DOCUMENT, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { delay, Subscription, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { AppOptions } from './model/model';
 import { DataService } from './service/data.service';
 import { ApiKeyGuard } from './service/api-key.guard';
-import { ApiEncryptionService, ApiPayloadDecryptionError } from './service/api-encryption.service';
+import { ApiEncryptionService } from './service/api-encryption.service';
 import { ApiKeyValidationService } from './service/api-key-validation.service';
+import { AccessKeyValidation } from './access-key-validation';
 import { DashboardAccessGuard, ProtectedDestination } from './service/dashboard-access.guard';
 import { ConfirmationCodeService } from './service/confirmation-code.service';
 import { TimeService } from './service/time.service';
@@ -22,21 +23,13 @@ import { environment } from '../environments/environment';
 })
 export class AppComponent implements OnInit, OnDestroy {
   readonly dashboardCodeDigits = Array.from({ length: 14 }, () => '');
-  showAccessCodePromptLocally = true;
   dashboardBlurEnabled = true;
   isDashboardPromptOpen = false;
   dashboardCodeError = '';
-  readonly apiEncryptionAvailable = !!globalThis.crypto?.subtle;
-  apiEncryptionKey = '';
-  apiEncryptionKeyError = '';
-  apiKeyValidationInProgress = false;
-  apiEncryptionKeyVerified = false;
+  readonly keyValidation: AccessKeyValidation;
   apiKeyTarget: ProtectedDestination | null = null;
   accessTarget: ProtectedDestination = 'dashboard';
   private accessPromptVersion = 0;
-  private apiKeyValidationVersion = 0;
-  private apiKeyValidation?: Promise<boolean>;
-  private apiKeyValidationTimeout?: ReturnType<typeof setTimeout>;
 
   data: any;
   isDataLoaded: boolean = false;
@@ -61,8 +54,6 @@ export class AppComponent implements OnInit, OnDestroy {
   isThemeModeClicked: boolean = true;
   inputValue: string = '';
   isButtonDisabled: boolean = true;
-  qrCodeComponent: Type<unknown> | null = null;
-  private qrCodeLoading?: Promise<void>;
   private cdr = inject(ChangeDetectorRef);
   private barAnimationTimeout?: ReturnType<typeof setTimeout>;
   private timeUpdateTimeout?: ReturnType<typeof setTimeout>;
@@ -128,8 +119,9 @@ export class AppComponent implements OnInit, OnDestroy {
     private confirmationCodeService: ConfirmationCodeService,
     private apiKeyGuard: ApiKeyGuard,
     private apiEncryptionService: ApiEncryptionService,
-    private apiKeyValidationService: ApiKeyValidationService
+    apiKeyValidationService: ApiKeyValidationService
     ) {
+      this.keyValidation = new AccessKeyValidation(apiKeyValidationService, () => this.cdr.markForCheck());
       this.renderer.removeClass(document.body, 'active');
       this.setDashboardBlur(this.dashboardBlurEnabled);
     }
@@ -139,9 +131,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.apiKeyRequestSubscription = this.apiKeyGuard.requested$.subscribe((target) => {
       this.accessPromptVersion++;
       this.apiKeyTarget = target;
-      this.apiEncryptionKey = '';
-      this.apiEncryptionKeyError = '';
-      this.resetApiKeyValidation();
+      this.keyValidation.clear();
       if (target) {
         this.accessTarget = target;
         this.dashboardCodeError = '';
@@ -209,20 +199,12 @@ export class AppComponent implements OnInit, OnDestroy {
 
   onEncryptionKeyChange(): void {
     this.accessPromptVersion++;
-    this.apiEncryptionKeyError = '';
-    this.resetApiKeyValidation();
-    if (this.apiEncryptionAvailable && this.apiEncryptionKey.length >= 8 && this.apiEncryptionKey.trim()) {
-      this.apiKeyValidationInProgress = true;
-      this.apiKeyValidationTimeout = setTimeout(() => {
-        this.apiKeyValidationTimeout = undefined;
-        void this.validateEncryptionKey(this.accessTarget);
-      }, 300);
-    }
+    this.keyValidation.onChange(() => this.accessTarget);
   }
 
   ngOnDestroy(): void {
     this.accessPromptVersion++;
-    this.resetApiKeyValidation();
+    this.keyValidation.reset();
     this.dataSubscription?.unsubscribe();
     this.apiKeyRequestSubscription?.unsubscribe();
     this.apiKeyGuard.cancel();
@@ -308,26 +290,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   qrValueCheck(): void {
-    if(this.inputValue.length > 0) {
-      this.isButtonDisabled = false;
-      this.loadQrCode();
-    } else {
-      this.isButtonDisabled = true;
-    }
-  }
-
-  /** The QR library is only needed once the user types, so fetch it on demand. */
-  private loadQrCode(): void {
-    if (this.qrCodeComponent || this.qrCodeLoading) {
-      return;
-    }
-    this.qrCodeLoading = import('./qr-code-view/qr-code-view.component')
-      .then(({ QrCodeViewComponent }) => {
-        this.qrCodeComponent = QrCodeViewComponent;
-        this.cdr.markForCheck();
-      })
-      .catch((error) => console.error('Failed to load QR code', error))
-      .finally(() => this.qrCodeLoading = undefined);
+    this.isButtonDisabled = this.inputValue.length === 0;
   }
 
   QrReset() {
@@ -393,7 +356,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.closeSideMenu();
     this.accessTarget = target;
     this.accessPromptVersion++;
-    if (!environment.production && !this.showAccessCodePromptLocally) {
+    if (!environment.production && !environment.showAccessCodePromptLocally) {
       this.isDashboardPromptOpen = false;
       this.dashboardCodeError = '';
       this.dashboardAccessGuard.grantOneTimeAccess(target);
@@ -403,9 +366,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.dashboardCodeDigits.fill('');
     this.dashboardCodeError = '';
-    this.apiEncryptionKey = '';
-    this.apiEncryptionKeyError = '';
-    this.resetApiKeyValidation();
+    this.keyValidation.clear();
     this.isDashboardPromptOpen = true;
   }
 
@@ -422,9 +383,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.accessPromptVersion++;
     this.isDashboardPromptOpen = false;
     this.dashboardCodeError = '';
-    this.apiEncryptionKey = '';
-    this.apiEncryptionKeyError = '';
-    this.resetApiKeyValidation();
+    this.keyValidation.clear();
     if (this.apiKeyTarget) {
       this.apiKeyGuard.cancel();
     }
@@ -478,10 +437,10 @@ export class AppComponent implements OnInit, OnDestroy {
     const promptVersion = ++this.accessPromptVersion;
     const target = this.accessTarget;
     if (this.apiKeyTarget) {
-      if (!await this.validateEncryptionKey(target) || promptVersion !== this.accessPromptVersion) {
+      if (!await this.keyValidation.validate(target) || promptVersion !== this.accessPromptVersion) {
         return;
       }
-      this.apiKeyGuard.unlock(this.apiEncryptionKey);
+      this.apiKeyGuard.unlock(this.keyValidation.key);
       return;
     }
 
@@ -511,69 +470,15 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     if (this.requiresEncryptionKey) {
-      if (!await this.validateEncryptionKey(target) || promptVersion !== this.accessPromptVersion) {
+      if (!await this.keyValidation.validate(target) || promptVersion !== this.accessPromptVersion) {
         return;
       }
-      this.apiEncryptionService.setPassphrase(this.apiEncryptionKey);
+      this.apiEncryptionService.setPassphrase(this.keyValidation.key);
     }
     this.dashboardAccessGuard.grantOneTimeAccess(target);
     this.closeDashboardPrompt();
     this.closeSideMenu();
     void this.router.navigateByUrl(`/${target}`);
-  }
-
-  private validateEncryptionKey(target: ProtectedDestination): Promise<boolean> {
-    if (!this.apiEncryptionAvailable) {
-      return Promise.resolve(false);
-    }
-    if (!this.apiEncryptionKey.trim()) {
-      this.apiEncryptionKeyError = 'Enter the encryption key to continue.';
-      return Promise.resolve(false);
-    }
-    if (this.apiEncryptionKeyVerified) {
-      return Promise.resolve(true);
-    }
-    if (this.apiKeyValidation) {
-      return this.apiKeyValidation;
-    }
-    clearTimeout(this.apiKeyValidationTimeout);
-    this.apiKeyValidationTimeout = undefined;
-    const version = this.apiKeyValidationVersion;
-    this.apiEncryptionKeyError = '';
-    this.apiKeyValidationInProgress = true;
-    this.apiKeyValidation = this.apiKeyValidationService.verify(this.apiEncryptionKey, target)
-      .then(() => {
-        if (version !== this.apiKeyValidationVersion) {
-          return false;
-        }
-        this.apiEncryptionKeyVerified = true;
-        return true;
-      })
-      .catch((error: unknown) => {
-        if (version === this.apiKeyValidationVersion) {
-          this.apiEncryptionKeyError = error instanceof ApiPayloadDecryptionError
-            ? 'Invalid key or damaged data. Try again.'
-            : 'Encryption key verification is unavailable. Please try again.';
-        }
-        return false;
-      })
-      .finally(() => {
-        if (version === this.apiKeyValidationVersion) {
-          this.apiKeyValidationInProgress = false;
-          this.apiKeyValidation = undefined;
-          this.cdr.markForCheck();
-        }
-      });
-    return this.apiKeyValidation;
-  }
-
-  private resetApiKeyValidation(): void {
-    this.apiKeyValidationVersion++;
-    clearTimeout(this.apiKeyValidationTimeout);
-    this.apiKeyValidationTimeout = undefined;
-    this.apiKeyValidation = undefined;
-    this.apiKeyValidationInProgress = false;
-    this.apiEncryptionKeyVerified = false;
   }
 
   private dashboardCodeInputs(): NodeListOf<HTMLInputElement> {

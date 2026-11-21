@@ -4,6 +4,7 @@
 
 export const environment = {
   production: false,
+  showAccessCodePromptLocally: false,
   baseUrl: 'https://kumaruidivloper.github.io/JsonServer/Profile_data.json'
 };
 
