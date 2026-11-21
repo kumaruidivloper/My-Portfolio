@@ -17,7 +17,7 @@ import { GratuityDataService } from '../shared/service/gratuity-data.service';
 import { TotalBalanceService } from '../shared/service/total-balance.service';
 import { PfApiDocument } from '../model/pf-record';
 import { GratuityApiDocument } from '../model/gratuity-record';
-import { createDashboardExport, DashboardExportFormat, DashboardExportTable, downloadDashboardExport } from '../model/dashboard-export';
+import { createDashboardExport, DashboardExportFormat, DashboardExportTable, downloadDashboardExport } from './dashboard-export/dashboard-export';
 import { SalaryDataService } from '../shared/service/salary-data.service';
 import { combineSalaryRecords } from '../model/combined-salary';
 import { SalaryField, salaryFields, salaryMonthKey, salaryMonthLabel } from '../model/salary-record';
