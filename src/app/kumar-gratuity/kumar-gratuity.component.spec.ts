@@ -1,8 +1,8 @@
 import { ChangeDetectorRef } from '@angular/core';
 import { of } from 'rxjs';
 import { GratuityApiDocument } from '../model/gratuity-record';
-import { ConfirmationCodeService } from '../service/confirmation-code.service';
-import { GratuityDataService } from '../service/gratuity-data.service';
+import { ConfirmationCodeService } from '../shared/service/confirmation-code.service';
+import { GratuityDataService } from '../shared/service/gratuity-data.service';
 import { KumarGratuityComponent } from './kumar-gratuity.component';
 
 describe('KumarGratuityComponent', () => {

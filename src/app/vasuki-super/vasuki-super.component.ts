@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { GratuityResourceId } from '../service/gratuity-data.service';
+import { GratuityResourceId } from '../shared/service/gratuity-data.service';
 
 @Component({
   selector: 'app-vasuki-super',

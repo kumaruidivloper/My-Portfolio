@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
-import { ChartDatum, formatCompactAxisValue } from '../model/chart-type';
+import { ChartDatum, formatCompactAxisValue } from '../../model/chart-type';
 
 const WIDTH = 300;
 const HEIGHT = 72;

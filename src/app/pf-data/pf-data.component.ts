@@ -7,12 +7,12 @@ import {
   chartColorScheme, CHART_TYPE_OPTIONS, ChartDatum, ChartType, isChartType, toLineChartSeries, formatCompactAxisValue
 } from '../model/chart-type';
 import { memoizeLast } from '../model/memoize';
-import { PreviewViewOption } from '../widget-preview-chart/widget-preview-chart.component';
-import { PfDataService, PfResourceId } from '../service/pf-data.service';
+import { PreviewViewOption } from '../shared/widget-preview-chart/widget-preview-chart.component';
+import { PfDataService, PfResourceId } from '../shared/service/pf-data.service';
 import { PfApiDocument, PfRecord } from '../model/pf-record';
-import { ConfirmationCodeService } from '../service/confirmation-code.service';
-import { DashboardRecordRefreshService } from '../service/dashboard-record-refresh.service';
-import { ResponsiveGridColumn, ResponsiveGridRow } from '../responsive-table/responsive-table.component';
+import { ConfirmationCodeService } from '../shared/service/confirmation-code.service';
+import { DashboardRecordRefreshService } from '../shared/service/dashboard-record-refresh.service';
+import { ResponsiveGridColumn, ResponsiveGridRow } from '../shared/responsive-table/responsive-table.component';
 
 type PfMetric = 'pfAmount' | 'difference';
 const NO_RECORDS: PfRecord[] = [];

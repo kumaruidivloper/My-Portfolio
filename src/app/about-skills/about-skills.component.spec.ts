@@ -2,7 +2,7 @@
 
 import { ComponentFixture, TestBed, discardPeriodicTasks, fakeAsync, tick } from '@angular/core/testing';
 
-import { CounterComponent } from '../counter/counter.component';
+import { CounterComponent } from '../shared/counter/counter.component';
 import { AboutSkillsComponent } from './about-skills.component';
 
 describe('AboutSkillsComponent', () => {

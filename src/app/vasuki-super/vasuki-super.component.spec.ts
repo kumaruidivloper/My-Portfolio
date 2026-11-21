@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { GratuityResourceId } from '../service/gratuity-data.service';
+import { GratuityResourceId } from '../shared/service/gratuity-data.service';
 import { VasukiSuperComponent } from './vasuki-super.component';
 
 @Component({

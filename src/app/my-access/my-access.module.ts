@@ -2,8 +2,8 @@ import { NgModule } from '@angular/core';
 import { A11yModule } from '@angular/cdk/a11y';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { DashboardLoaderComponent } from '../dashboard-loader/dashboard-loader.component';
-import { ScrollProgressComponent } from '../scroll-progress/scroll-progress.component';
+import { DashboardLoaderComponent } from '../shared/dashboard-loader/dashboard-loader.component';
+import { ScrollProgressComponent } from '../shared/scroll-progress/scroll-progress.component';
 import { MyAccessComponent } from './my-access.component';
 
 @NgModule({

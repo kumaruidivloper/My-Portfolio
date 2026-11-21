@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { CanMatch, Route, Router, UrlTree } from '@angular/router';
 import { BehaviorSubject, finalize, Observable, ReplaySubject } from 'rxjs';
-import { ApiEncryptionService } from './api-encryption.service';
+import { ApiEncryptionService } from '../shared/service/api-encryption.service';
 import { ProtectedDestination } from './dashboard-access.guard';
 
 @Injectable({ providedIn: 'root' })

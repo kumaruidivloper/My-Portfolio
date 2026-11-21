@@ -2,7 +2,7 @@ import { HttpClientTestingModule, HttpTestingController } from '@angular/common/
 import { TestBed } from '@angular/core/testing';
 import { ApiEncryptionService, ApiPayloadDecryptionError } from './api-encryption.service';
 import { ApiKeyValidationService } from './api-key-validation.service';
-import { ACCESS_DETAILS_URL, PF_DATA_API_URL } from './api-resource-urls';
+import { ACCESS_DETAILS_URL, PF_DATA_API_URL } from '../../service/api-resource-urls';
 
 describe('ApiKeyValidationService', () => {
   let service: ApiKeyValidationService;

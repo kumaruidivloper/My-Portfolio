@@ -4,12 +4,12 @@ import { TestBed } from '@angular/core/testing';
 import { ReactiveFormsModule } from '@angular/forms';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
 import { of } from 'rxjs';
-import { ConfirmationCodeService } from '../service/confirmation-code.service';
-import { PfDataService } from '../service/pf-data.service';
+import { ConfirmationCodeService } from '../shared/service/confirmation-code.service';
+import { PfDataService } from '../shared/service/pf-data.service';
 import { PfDataComponent } from './pf-data.component';
 import { PfApiDocument } from '../model/pf-record';
-import { WidgetPreviewChartComponent } from '../widget-preview-chart/widget-preview-chart.component';
-import { DashboardLoaderComponent } from '../dashboard-loader/dashboard-loader.component';
+import { WidgetPreviewChartComponent } from '../shared/widget-preview-chart/widget-preview-chart.component';
+import { DashboardLoaderComponent } from '../shared/dashboard-loader/dashboard-loader.component';
 
 describe('PfDataComponent (Vasuki)', () => {
   it('renders the Vasuki accordion collapsed and loads its preview data from resource 3', async () => {

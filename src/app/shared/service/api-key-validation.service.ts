@@ -2,8 +2,8 @@ import { HttpBackend, HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { firstValueFrom, timeout } from 'rxjs';
 import { ApiEncryptionService } from './api-encryption.service';
-import { ProtectedDestination } from './dashboard-access.guard';
-import { ACCESS_DETAILS_URL, PF_DATA_API_URL } from './api-resource-urls';
+import { ProtectedDestination } from '../../service/dashboard-access.guard';
+import { ACCESS_DETAILS_URL, PF_DATA_API_URL } from '../../service/api-resource-urls';
 
 @Injectable({ providedIn: 'root' })
 export class ApiKeyValidationService {

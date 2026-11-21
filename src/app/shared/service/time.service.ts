@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { TimeState } from '../model/time-state';
+import { TimeState } from '../../model/time-state';
 
 @Injectable({
   providedIn: 'root'

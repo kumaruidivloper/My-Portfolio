@@ -1,7 +1,7 @@
 import { firstValueFrom } from 'rxjs';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router, UrlTree } from '@angular/router';
-import { ApiEncryptionService } from './api-encryption.service';
+import { ApiEncryptionService } from '../shared/service/api-encryption.service';
 import { ApiKeyGuard } from './api-key.guard';
 
 describe('ApiKeyGuard', () => {

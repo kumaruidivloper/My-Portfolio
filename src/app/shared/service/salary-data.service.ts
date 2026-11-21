@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, Observable, Subject, tap } from 'rxjs';
-import { SalaryApiDocument, SalaryRecord, SalaryResourceId, salaryFields, salaryMonthKey } from '../model/salary-record';
+import { SalaryApiDocument, SalaryRecord, SalaryResourceId, salaryFields, salaryMonthKey } from '../../model/salary-record';
 
 const SALARY_API_URL = 'https://64b76091df0839c97e168d79.mockapi.io/taskList';
 

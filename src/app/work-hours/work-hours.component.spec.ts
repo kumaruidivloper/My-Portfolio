@@ -1,10 +1,10 @@
 /// <reference types="jasmine" />
 
 import { TestBed } from '@angular/core/testing';
-import { TimeService } from '../service/time.service';
-import { TotalWorkHoursService } from '../service/total-work-hours.service';
+import { TimeService } from '../shared/service/time.service';
+import { TotalWorkHoursService } from '../shared/service/total-work-hours.service';
 import { WorkHoursComponent } from './work-hours.component';
-import { CounterComponent } from '../counter/counter.component';
+import { CounterComponent } from '../shared/counter/counter.component';
 
 describe('WorkHoursComponent', () => {
   let component: WorkHoursComponent;

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { catchError, EMPTY, forkJoin, map, Observable, Subject, switchMap } from 'rxjs';
-import { TotalApiDocument, TotalRecord } from '../model/total-record';
+import { TotalApiDocument, TotalRecord } from '../../model/total-record';
 
 const TOTAL_API_URL = 'https://64b76091df0839c97e168d79.mockapi.io';
 const TOTAL_RESOURCE_ID = '7';

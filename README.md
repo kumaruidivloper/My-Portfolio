@@ -191,6 +191,9 @@ https://jsonserver-eudl.onrender.com
 
 ## 7. Local development notes
 
+- Reusable UI components are in `src/app/shared/`, with each component's template, styles, and tests alongside it.
+- Shared services and their tests are in `src/app/shared/service/`.
+- HTTP interceptors and their tests are in `src/app/interceptor/`.
 - On the development machine, `npm start` serves `http://localhost:4200/dashboard`; localhost supports Web Crypto.
 - For another device on the network, use HTTPS with a certificate trusted by that device. Plain HTTP on a LAN IP cannot decrypt the dashboard data.
 

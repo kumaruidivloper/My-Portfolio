@@ -3,11 +3,11 @@ import { HttpClientTestingModule, HttpTestingController } from '@angular/common/
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 import { ApiEncryptionInterceptor } from './api-encryption.interceptor';
-import { ApiEncryptionService } from './api-encryption.service';
-import { ACCESS_DETAILS_URL } from './api-resource-urls';
-import { MyAccessDataService } from './my-access-data.service';
-import { PfDataService } from './pf-data.service';
-import { TotalBalanceService } from './total-balance.service';
+import { ApiEncryptionService } from '../shared/service/api-encryption.service';
+import { ACCESS_DETAILS_URL } from '../service/api-resource-urls';
+import { MyAccessDataService } from '../shared/service/my-access-data.service';
+import { PfDataService } from '../shared/service/pf-data.service';
+import { TotalBalanceService } from '../shared/service/total-balance.service';
 
 describe('ApiEncryptionInterceptor', () => {
   let client: HttpClient;

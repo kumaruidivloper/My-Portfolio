@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map, Observable, switchMap, throwError } from 'rxjs';
-import { ACCESS_DETAILS_URL } from './api-resource-urls';
+import { ACCESS_DETAILS_URL } from '../../service/api-resource-urls';
 
 export interface BankAccessDetail {
   type: string;

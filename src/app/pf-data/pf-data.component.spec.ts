@@ -1,7 +1,7 @@
 import { ChangeDetectorRef } from '@angular/core';
 import { of, throwError } from 'rxjs';
-import { PfDataService } from '../service/pf-data.service';
-import { ConfirmationCodeService } from '../service/confirmation-code.service';
+import { PfDataService } from '../shared/service/pf-data.service';
+import { ConfirmationCodeService } from '../shared/service/confirmation-code.service';
 import { PfDataComponent } from './pf-data.component';
 
 describe('PfDataComponent', () => {

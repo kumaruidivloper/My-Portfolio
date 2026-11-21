@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, Observable, Subject, tap } from 'rxjs';
-import { PfApiDocument, PfRecord } from '../model/pf-record';
+import { PfApiDocument, PfRecord } from '../../model/pf-record';
 import { TotalBalanceService } from './total-balance.service';
-import { PF_DATA_API_URL } from './api-resource-urls';
+import { PF_DATA_API_URL } from '../../service/api-resource-urls';
 
 export type PfResourceId = '2' | '3';
 

@@ -6,15 +6,15 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { of, Subject, throwError } from 'rxjs';
 import { TransferRecord } from '../model/transfer';
 import { GratuityApiDocument } from '../model/gratuity-record';
-import { GratuityDataService } from '../service/gratuity-data.service';
-import { PfDataService } from '../service/pf-data.service';
-import { SalaryDataService } from '../service/salary-data.service';
-import { DashboardRecordRefreshService } from '../service/dashboard-record-refresh.service';
-import { TransferService } from '../service/transfer.service';
+import { GratuityDataService } from '../shared/service/gratuity-data.service';
+import { PfDataService } from '../shared/service/pf-data.service';
+import { SalaryDataService } from '../shared/service/salary-data.service';
+import { DashboardRecordRefreshService } from '../shared/service/dashboard-record-refresh.service';
+import { TransferService } from '../shared/service/transfer.service';
 import { CentralRecordFormComponent } from './central-record-form.component';
-import { FormStepperComponent } from '../form-stepper/form-stepper.component';
-import { TotalBalanceService } from '../service/total-balance.service';
-import { ThemeDatePickerComponent } from '../theme-date-picker/theme-date-picker.component';
+import { FormStepperComponent } from '../shared/form-stepper/form-stepper.component';
+import { TotalBalanceService } from '../shared/service/total-balance.service';
+import { ThemeDatePickerComponent } from '../shared/theme-date-picker/theme-date-picker.component';
 
 describe('CentralRecordFormComponent', () => {
   let transferService: jasmine.SpyObj<TransferService>;

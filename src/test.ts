@@ -15,10 +15,10 @@ getTestBed().initTestEnvironment(
 
 import './app/app.component.spec';
 import './app/interview-qa/accordion/accordion.component.spec';
-import './app/counter/counter.component.spec';
-import './app/service/data.service.spec';
-import './app/service/time.service.spec';
-import './app/service/total-work-hours.service.spec';
+import './app/shared/counter/counter.component.spec';
+import './app/shared/service/data.service.spec';
+import './app/shared/service/time.service.spec';
+import './app/shared/service/total-work-hours.service.spec';
 import './app/stopwatch/stopwatch.component.spec';
 import './app/timer/timer.component.spec';
 import './app/work-hours/work-hours.component.spec';

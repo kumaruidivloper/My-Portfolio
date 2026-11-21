@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input, OnDestroy, OnInit } from '@angular/core';
-import { TimeService } from '../service/time.service';
-import { TotalWorkHoursService } from '../service/total-work-hours.service';
+import { TimeService } from '../shared/service/time.service';
+import { TotalWorkHoursService } from '../shared/service/total-work-hours.service';
 
 @Component({
   selector: 'app-work-hours',

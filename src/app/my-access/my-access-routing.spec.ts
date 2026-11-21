@@ -6,9 +6,9 @@ import { AppRoutingModule } from '../app-routing.module';
 import { MyAccessComponent } from './my-access.component';
 import { DashboardAccessGuard } from '../service/dashboard-access.guard';
 import { ApiKeyGuard } from '../service/api-key.guard';
-import { ApiEncryptionService } from '../service/api-encryption.service';
-import { ConfirmationCodeService } from '../service/confirmation-code.service';
-import { UnmaskCodeService } from '../service/unmask-code.service';
+import { ApiEncryptionService } from '../shared/service/api-encryption.service';
+import { ConfirmationCodeService } from '../shared/service/confirmation-code.service';
+import { UnmaskCodeService } from '../shared/service/unmask-code.service';
 import { environment } from '../../environments/environment';
 import { filter, firstValueFrom } from 'rxjs';
 

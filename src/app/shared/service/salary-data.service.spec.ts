@@ -1,6 +1,6 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { SalaryApiDocument } from '../model/salary-record';
+import { SalaryApiDocument } from '../../model/salary-record';
 import { SalaryDataService, parseSalaryDataResponse } from './salary-data.service';
 
 const salary: SalaryApiDocument = {

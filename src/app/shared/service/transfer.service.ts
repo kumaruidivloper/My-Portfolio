@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, Observable, Subject, tap } from 'rxjs';
 
-import { TransferApiDocument, TransferRecord } from '../model/transfer';
+import { TransferApiDocument, TransferRecord } from '../../model/transfer';
 
 const TRANSFERS_RESOURCE_URL = 'https://64b76091df0839c97e168d79.mockapi.io/bank/1';
 

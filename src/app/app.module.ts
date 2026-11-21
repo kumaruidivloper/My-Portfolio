@@ -6,16 +6,16 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi, withXhr } from  '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { CounterComponent } from './counter/counter.component';
+import { CounterComponent } from './shared/counter/counter.component';
 import { StopwatchComponent } from './stopwatch/stopwatch.component';
 import { TimerComponent } from './timer/timer.component';
 import { WorkHoursComponent } from './work-hours/work-hours.component';
 import { AboutSkillsComponent } from './about-skills/about-skills.component';
 import { WorkExperienceComponent } from './work-experience/work-experience.component';
 import { PortfolioComponent } from './portfolio/portfolio.component';
-import { ScrollProgressComponent } from './scroll-progress/scroll-progress.component';
-import { ApiEncryptionInterceptor } from './service/api-encryption.interceptor';
-import { DashboardLoaderComponent } from './dashboard-loader/dashboard-loader.component';
+import { ScrollProgressComponent } from './shared/scroll-progress/scroll-progress.component';
+import { ApiEncryptionInterceptor } from './interceptor/api-encryption.interceptor';
+import { DashboardLoaderComponent } from './shared/dashboard-loader/dashboard-loader.component';
 import { QrCodeViewComponent } from './qr-code-view/qr-code-view.component';
 
 @NgModule({ declarations: [

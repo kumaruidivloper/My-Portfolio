@@ -1,6 +1,6 @@
 import { ChangeDetectorRef } from '@angular/core';
 import { of, throwError } from 'rxjs';
-import { PfDataService } from '../service/pf-data.service';
+import { PfDataService } from '../shared/service/pf-data.service';
 import { SumOfValueComponent } from './sum-of-value.component';
 
 describe('SumOfValueComponent', () => {

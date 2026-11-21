@@ -5,9 +5,9 @@ import {
   chartColorScheme, CHART_TYPE_OPTIONS, ChartDatum, ChartType, isChartType, toLineChartSeries, formatCompactAxisValue
 } from '../model/chart-type';
 import { memoizeLast } from '../model/memoize';
-import { PreviewViewOption } from '../widget-preview-chart/widget-preview-chart.component';
+import { PreviewViewOption } from '../shared/widget-preview-chart/widget-preview-chart.component';
 import { PfApiDocument, PfRecord } from '../model/pf-record';
-import { PfDataService } from '../service/pf-data.service';
+import { PfDataService } from '../shared/service/pf-data.service';
 
 interface MonthlyTotal {
   key: string;

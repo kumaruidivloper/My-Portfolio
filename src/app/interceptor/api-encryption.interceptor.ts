@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { defer, from, Observable, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
-import { ApiEncryptionService } from './api-encryption.service';
+import { ApiEncryptionService } from '../shared/service/api-encryption.service';
 
 function isEncryptedApiUrl(url: string): boolean {
   const parsedUrl = new URL(url, globalThis.location?.origin ?? 'http://localhost');
