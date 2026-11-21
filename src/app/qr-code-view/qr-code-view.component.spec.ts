@@ -49,4 +49,47 @@ describe('QrCodeViewComponent', () => {
     expect(fixture.nativeElement.querySelector('[role="alert"]')).toBeNull();
     fixture.destroy();
   });
+
+  it('updates an existing QR code without hiding it or showing a loading message', async () => {
+    const fixture = TestBed.createComponent(QrCodeViewComponent);
+    fixture.componentRef.setInput('data', 'first');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const canvas = fixture.nativeElement.querySelector('canvas') as HTMLCanvasElement;
+    const previousPixels = canvas.getContext('2d')!.getImageData(0, 0, 200, 200).data;
+    fixture.componentRef.setInput('data', 'second');
+    fixture.detectChanges();
+
+    const currentPixels = canvas.getContext('2d')!.getImageData(0, 0, 200, 200).data;
+    expect(canvas.parentElement!.hidden).toBeFalse();
+    expect(fixture.nativeElement.querySelector('[role="status"]')).toBeNull();
+    expect(canvas.getAttribute('aria-label')).toBe('QR code for second');
+    expect(currentPixels.some((value, index) => value !== previousPixels[index])).toBeTrue();
+    fixture.destroy();
+  });
+
+  it('hides an outdated QR code on a generation error and renders it again after correction', async () => {
+    spyOn(console, 'error');
+    const fixture = TestBed.createComponent(QrCodeViewComponent);
+    fixture.componentRef.setInput('data', 'first');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const canvas = fixture.nativeElement.querySelector('canvas') as HTMLCanvasElement;
+    fixture.componentRef.setInput('data', 'x'.repeat(3000));
+    fixture.detectChanges();
+    expect(canvas.parentElement!.hidden).toBeTrue();
+    expect(fixture.nativeElement.querySelector('[role="alert"]')?.textContent)
+      .toContain('Could not generate the QR code');
+
+    fixture.componentRef.setInput('data', 'corrected');
+    fixture.detectChanges();
+    expect(canvas.parentElement!.hidden).toBeFalse();
+    expect(canvas.getAttribute('aria-label')).toBe('QR code for corrected');
+    expect(fixture.nativeElement.querySelector('[role="alert"]')).toBeNull();
+    fixture.destroy();
+  });
 });
