@@ -12,7 +12,7 @@ import { ColorHelper, ScaleType } from '@swimlane/ngx-charts';
 import ExcelJS from 'exceljs';
 import { SalaryDataService } from '../../shared/service/salary-data.service';
 import { RenderInViewDirective } from '../../render-in-view/render-in-view.directive';
-import type { RecordCategory } from '../../central-record-form/central-record-form.component';
+import type { RecordCategory } from '../../shared/central-record-form/central-record-form.component';
 
 @Component({
   selector: 'app-test-accordion',

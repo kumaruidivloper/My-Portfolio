@@ -23,7 +23,7 @@ import { combineSalaryRecords } from '../../model/combined-salary';
 import { SalaryField, salaryFields, salaryMonthKey, salaryMonthLabel } from '../../model/salary-record';
 import { DashboardRecordRefreshService } from '../../shared/service/dashboard-record-refresh.service';
 import { RenderInViewDirective } from '../../render-in-view/render-in-view.directive';
-import type { RecordCategory } from '../../central-record-form/central-record-form.component';
+import type { RecordCategory } from '../../shared/central-record-form/central-record-form.component';
 
 type DashboardChartType = ChartType;
 type SalaryMetric = `${'kumar' | 'vasuki'}Salary_${SalaryField}`;

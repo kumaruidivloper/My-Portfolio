@@ -1,19 +1,19 @@
 import { ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { catchError, filter, firstValueFrom, map, Observable, of, startWith, Subscription, switchMap } from 'rxjs';
-import { GratuityApiDocument, GratuityRecord } from '../model/gratuity-record';
-import { PfApiDocument, PfRecord } from '../model/pf-record';
-import { SalaryRecord, salaryMonthKey, salaryMonthLabel } from '../model/salary-record';
-import { TransferRecord } from '../model/transfer';
-import { TotalRecord } from '../model/total-record';
-import { GratuityDataService, GratuityResourceId } from '../shared/service/gratuity-data.service';
-import { PfDataService, PfResourceId } from '../shared/service/pf-data.service';
-import { SalaryDataService } from '../shared/service/salary-data.service';
-import { DashboardRecordRefreshService } from '../shared/service/dashboard-record-refresh.service';
-import { TransferService } from '../shared/service/transfer.service';
-import { isOverlayOpen } from '../service/escape-dismiss';
-import { FormStepperComponent } from '../shared/form-stepper/form-stepper.component';
-import { calculateTotals, SourceEntry, TotalBalanceService } from '../shared/service/total-balance.service';
+import { GratuityApiDocument, GratuityRecord } from '../../model/gratuity-record';
+import { PfApiDocument, PfRecord } from '../../model/pf-record';
+import { SalaryRecord, salaryMonthKey, salaryMonthLabel } from '../../model/salary-record';
+import { TransferRecord } from '../../model/transfer';
+import { TotalRecord } from '../../model/total-record';
+import { GratuityDataService, GratuityResourceId } from '../service/gratuity-data.service';
+import { PfDataService, PfResourceId } from '../service/pf-data.service';
+import { SalaryDataService } from '../service/salary-data.service';
+import { DashboardRecordRefreshService } from '../service/dashboard-record-refresh.service';
+import { TransferService } from '../service/transfer.service';
+import { isOverlayOpen } from '../../service/escape-dismiss';
+import { FormStepperComponent } from '../form-stepper/form-stepper.component';
+import { calculateTotals, SourceEntry, TotalBalanceService } from '../service/total-balance.service';
 
 export type RecordCategory = 'transfer' | 'kumarPf' | 'vasukiPf' | 'kumarGratuity' | 'vasukiGratuity' | 'vasukiSuper' | 'kumarSalary' | 'vasukiSalary';
 interface ItemSummary { headline: string; detail: string; loading?: boolean; trend?: 'up' | 'down' | 'flat'; change?: string }

@@ -22,7 +22,7 @@ import { WidgetPreviewChartComponent } from '../../shared/widget-preview-chart/w
 import { DashboardLoaderComponent } from '../../shared/dashboard-loader/dashboard-loader.component';
 import { RenderInViewDirective } from '../../render-in-view/render-in-view.directive';
 import { SalaryDataComponent } from '../../shared/salary-data/salary-data.component';
-import { CentralRecordFormComponent } from '../../central-record-form/central-record-form.component';
+import { CentralRecordFormComponent } from '../../shared/central-record-form/central-record-form.component';
 import { ScrollProgressComponent } from '../../shared/scroll-progress/scroll-progress.component';
 
 @NgModule({
