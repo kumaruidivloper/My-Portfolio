@@ -574,10 +574,13 @@ describe('CentralRecordFormComponent', () => {
     focusInput.style.transition = 'none';
     amountField.style.transition = 'none';
     const shadow = getComputedStyle(focusInput).boxShadow;
+    const background = getComputedStyle(focusInput).backgroundColor;
     focusInput.focus();
     expect(focusInput.matches(':focus-visible')).toBeTrue();
     expect(getComputedStyle(focusInput).outlineStyle).toBe('none');
+    expect(getComputedStyle(focusInput).backgroundColor).toBe(background);
     expect(getComputedStyle(focusInput).boxShadow).toBe(shadow);
+    expect(shadow).toContain('inset');
     expect(getComputedStyle(amountField).boxShadow).not.toBe('none');
     focusInput.blur();
     nextButton.click();
