@@ -7,7 +7,7 @@ import { DataService } from './shared/service/data.service';
 import { ApiKeyGuard } from './service/api-key.guard';
 import { ApiEncryptionService } from './shared/service/api-encryption.service';
 import { ApiKeyValidationService } from './shared/service/api-key-validation.service';
-import { AccessKeyValidation } from './access-key-validation';
+import { AccessKeyValidation } from './shared/key-validation/access-key-validation';
 import { DashboardAccessGuard, ProtectedDestination } from './service/dashboard-access.guard';
 import { ConfirmationCodeService } from './shared/service/confirmation-code.service';
 import { TimeService } from './shared/service/time.service';

@@ -1,7 +1,7 @@
 import { fakeAsync, tick } from '@angular/core/testing';
 import { AccessKeyValidation } from './access-key-validation';
-import { ApiPayloadDecryptionError } from './shared/service/api-encryption.service';
-import { ApiKeyValidationService } from './shared/service/api-key-validation.service';
+import { ApiPayloadDecryptionError } from '../service/api-encryption.service';
+import { ApiKeyValidationService } from '../service/api-key-validation.service';
 
 describe('AccessKeyValidation', () => {
   let service: jasmine.SpyObj<ApiKeyValidationService>;

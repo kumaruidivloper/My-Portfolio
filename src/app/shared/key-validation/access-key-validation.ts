@@ -1,6 +1,6 @@
-import { ApiPayloadDecryptionError } from './shared/service/api-encryption.service';
-import { ApiKeyValidationService } from './shared/service/api-key-validation.service';
-import { ProtectedDestination } from './service/dashboard-access.guard';
+import { ApiPayloadDecryptionError } from '../service/api-encryption.service';
+import { ApiKeyValidationService } from '../service/api-key-validation.service';
+import { ProtectedDestination } from '../../service/dashboard-access.guard';
 
 export class AccessKeyValidation {
   key = '';

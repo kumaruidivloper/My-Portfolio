@@ -7,7 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { AppComponent } from './app.component';
-import { AccessKeyValidation } from './access-key-validation';
+import { AccessKeyValidation } from './shared/key-validation/access-key-validation';
 import { DataService } from './shared/service/data.service';
 import { ApiEncryptionService, ApiPayloadDecryptionError } from './shared/service/api-encryption.service';
 import { ApiKeyGuard } from './service/api-key.guard';
