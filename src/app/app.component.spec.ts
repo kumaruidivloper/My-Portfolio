@@ -268,7 +268,11 @@ describe('AppComponent', () => {
       input.dispatchEvent(new Event('input'));
       fixture.changeDetectorRef.markForCheck();
       fixture.detectChanges();
+      input.value = 'https://example.com/latest';
+      input.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
       await fixture.whenStable();
+      fixture.detectChanges();
 
       expect(fixture.componentInstance.inputValue).toBe(input.value);
       expect(fixture.componentInstance.isButtonDisabled).toBeFalse();
@@ -284,12 +288,16 @@ describe('AppComponent', () => {
       input.value = 'x'.repeat(3000);
       input.dispatchEvent(new Event('input'));
       fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
       expect(fixture.nativeElement.querySelector('.qrcodeImage [role="alert"]').textContent)
         .toContain('Could not generate');
       expect(console.error).toHaveBeenCalled();
 
       input.value = 'https://example.com/again';
       input.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      await fixture.whenStable();
       fixture.detectChanges();
       expect(fixture.nativeElement.querySelector('.qrcodeImage [role="alert"]')).toBeNull();
       expect(qrCanvas.getAttribute('aria-label')).toContain(input.value);
@@ -302,8 +310,19 @@ describe('AppComponent', () => {
       expect(input.value).toBe('');
       expect(fixture.nativeElement.querySelector('.qrcodeImage')).toBeNull();
 
+      input.value = 'https://example.com/cleared';
+      input.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      clear.click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.qrcodeImage')).toBeNull();
+
       input.value = 'x'.repeat(3000);
       input.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+      await fixture.whenStable();
       fixture.detectChanges();
       expect(fixture.nativeElement.querySelector('.qrcodeImage [role="alert"]').textContent)
         .toContain('Could not generate');

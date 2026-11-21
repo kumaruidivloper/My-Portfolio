@@ -6,7 +6,7 @@ Animated counters use shaded 3D digit drums that rotate continuously through 9 t
 
 The home intro uses a transparent frame with inset shadows that follow the light and dark themes, so the animated background shows through. The **Find me online** links sit below the raised download button. Only the frame shrinks toward its center as you scroll down from the top and grows back as you scroll up. The intro content stays full size, and the QR form does not shift. The frame stays full size when reduced motion is enabled or the browser doesn't support scroll-driven animations.
 
-The QR form generates codes locally as you type. If the text is too long to encode, it shows an error until the text is shortened.
+The QR form loads its generator when needed and generates codes locally as you type. If the generator cannot load, refresh the page to retry; if the text is too long to encode, shorten it.
 
 The portfolio's scroll button stays in the bottom-right corner on desktop and mobile and switches between scrolling to the top and bottom.
 

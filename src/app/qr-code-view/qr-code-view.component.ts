@@ -1,16 +1,18 @@
-import { ChangeDetectionStrategy, Component, ElementRef, Input, OnChanges, ViewChild } from '@angular/core';
-import { toCanvas } from 'qrcode';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnDestroy, PendingTasks, ViewChild, inject } from '@angular/core';
 
 @Component({
   selector: 'app-qr-code-view',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="qr-code" [hidden]="generationError">
+    <div class="qr-code" [hidden]="!!generationError || loading">
       <canvas #canvas [attr.aria-label]="'QR code for ' + data" [title]="'QR Code For (' + data + ')'"></canvas>
       <img src="assets/img/user-img.jpg" alt="" width="50" height="50">
     </div>
+    @if (loading) {
+      <p role="status">Loading QR code...</p>
+    }
     @if (generationError) {
-      <p role="alert">Could not generate the QR code. Try shorter text.</p>
+      <p role="alert">{{ generationError }}</p>
     }
   `,
   styles: [`
@@ -19,25 +21,58 @@ import { toCanvas } from 'qrcode';
     p { color: #000; line-height: 1.4; }
   `]
 })
-export class QrCodeViewComponent implements OnChanges {
+export class QrCodeViewComponent implements OnChanges, OnDestroy {
   @Input() data = '';
   @ViewChild('canvas', { static: true }) private canvas!: ElementRef<HTMLCanvasElement>;
-  generationError = false;
+  generationError = '';
+  loading = false;
+  private readonly pendingTasks = inject(PendingTasks);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private renderVersion = 0;
 
   ngOnChanges(): void {
-    if (!this.data) {
+    const version = ++this.renderVersion;
+    const data = this.data;
+    if (!data) {
+      this.loading = false;
+      this.generationError = '';
       return;
     }
-    toCanvas(this.canvas.nativeElement, this.data, {
-      errorCorrectionLevel: 'M',
-      margin: 1,
-      width: 200,
-      color: { dark: '#000000ff', light: '#ffffffff' }
-    }, (error) => {
-      this.generationError = !!error;
-      if (error) {
-        console.error('Failed to generate QR code', error);
+    this.loading = true;
+    this.generationError = '';
+    this.pendingTasks.run(async () => {
+      try {
+        const { default: qrCode } = await import('qrcode');
+        if (version !== this.renderVersion) {
+          return;
+        }
+        qrCode.toCanvas(this.canvas.nativeElement, data, {
+          errorCorrectionLevel: 'M',
+          margin: 1,
+          width: 200,
+          color: { dark: '#000000ff', light: '#ffffffff' }
+        }, (error) => {
+          if (error) {
+            console.error('Failed to generate QR code', error);
+            this.generationError = 'Could not generate the QR code. Try shorter text.';
+          }
+        });
+      } catch (error) {
+        if (version !== this.renderVersion) {
+          return;
+        }
+        console.error('Failed to load QR code generator', error);
+        this.generationError = 'Could not load the QR code generator. Refresh the page to retry.';
+      } finally {
+        if (version === this.renderVersion) {
+          this.loading = false;
+          this.cdr.markForCheck();
+        }
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.renderVersion++;
   }
 }
