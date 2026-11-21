@@ -6,7 +6,7 @@ import { By } from '@angular/platform-browser';
 
 import { InterviewQaModule } from './interview-qa.module';
 import { InterviewQaComponent } from './interview-qa.component';
-import { ScrollProgressComponent } from '../shared/scroll-progress/scroll-progress.component';
+import { ScrollProgressComponent } from '../../shared/scroll-progress/scroll-progress.component';
 
 describe('InterviewQaComponent', () => {
   beforeEach(() => {

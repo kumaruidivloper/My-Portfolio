@@ -5,11 +5,11 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { By } from '@angular/platform-browser';
 import { of, Subject, throwError } from 'rxjs';
-import { DashboardLoaderComponent } from '../shared/dashboard-loader/dashboard-loader.component';
-import { ScrollProgressComponent } from '../shared/scroll-progress/scroll-progress.component';
-import { ConfirmationCodeService } from '../shared/service/confirmation-code.service';
-import { UnmaskCodeService } from '../shared/service/unmask-code.service';
-import { AccessDetails, AccessRecordChangedError, MyAccessDataService } from '../shared/service/my-access-data.service';
+import { DashboardLoaderComponent } from '../../shared/dashboard-loader/dashboard-loader.component';
+import { ScrollProgressComponent } from '../../shared/scroll-progress/scroll-progress.component';
+import { ConfirmationCodeService } from '../../shared/service/confirmation-code.service';
+import { UnmaskCodeService } from '../../shared/service/unmask-code.service';
+import { AccessDetails, AccessRecordChangedError, MyAccessDataService } from '../../shared/service/my-access-data.service';
 import { MyAccessComponent } from './my-access.component';
 
 const accessDetails = {

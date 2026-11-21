@@ -14,7 +14,7 @@ getTestBed().initTestEnvironment(
 );
 
 import './app/app.component.spec';
-import './app/interview-qa/accordion/accordion.component.spec';
+import './app/features/interview-qa/accordion/accordion.component.spec';
 import './app/shared/counter/counter.component.spec';
 import './app/shared/service/data.service.spec';
 import './app/shared/service/time.service.spec';

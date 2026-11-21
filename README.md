@@ -191,6 +191,7 @@ https://jsonserver-eudl.onrender.com
 
 ## 7. Local development notes
 
+- Lazy-loaded feature modules are in `src/app/features/`: My Dashboard, My Access, and Interview Q&A.
 - Reusable UI components are in `src/app/shared/`, with each component's template, styles, and tests alongside it.
 - Shared services and their tests are in `src/app/shared/service/`.
 - HTTP interceptors and their tests are in `src/app/interceptor/`.

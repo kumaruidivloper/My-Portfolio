@@ -2,14 +2,14 @@ import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { AppRoutingModule } from '../app-routing.module';
+import { AppRoutingModule } from '../../app-routing.module';
 import { MyAccessComponent } from './my-access.component';
-import { DashboardAccessGuard } from '../service/dashboard-access.guard';
-import { ApiKeyGuard } from '../service/api-key.guard';
-import { ApiEncryptionService } from '../shared/service/api-encryption.service';
-import { ConfirmationCodeService } from '../shared/service/confirmation-code.service';
-import { UnmaskCodeService } from '../shared/service/unmask-code.service';
-import { environment } from '../../environments/environment';
+import { DashboardAccessGuard } from '../../service/dashboard-access.guard';
+import { ApiKeyGuard } from '../../service/api-key.guard';
+import { ApiEncryptionService } from '../../shared/service/api-encryption.service';
+import { ConfirmationCodeService } from '../../shared/service/confirmation-code.service';
+import { UnmaskCodeService } from '../../shared/service/unmask-code.service';
+import { environment } from '../../../environments/environment';
 import { filter, firstValueFrom } from 'rxjs';
 
 describe('My Access routing', () => {

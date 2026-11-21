@@ -8,7 +8,7 @@ const routes: Routes = [
     path: 'dashboard',
     canMatch: [DashboardAccessGuard, ApiKeyGuard],
     loadChildren: () =>
-      import('./my-dashboard/my-dashboard.module').then(
+      import('./features/my-dashboard/my-dashboard.module').then(
         (module) => module.MyDashboardModule
       )
   },
@@ -16,14 +16,14 @@ const routes: Routes = [
     path: 'my-access',
     canMatch: [DashboardAccessGuard, ApiKeyGuard],
     loadChildren: () =>
-      import('./my-access/my-access.module').then(
+      import('./features/my-access/my-access.module').then(
         (module) => module.MyAccessModule
       )
   },
   {
     path: 'interview-qa',
     loadChildren: () =>
-      import('./interview-qa/interview-qa.module').then(
+      import('./features/interview-qa/interview-qa.module').then(
         (module) => module.InterviewQaModule
       )
   }

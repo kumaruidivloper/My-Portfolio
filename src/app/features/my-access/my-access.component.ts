@@ -1,9 +1,9 @@
 import { ChangeDetectorRef, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { Subscription, timer } from 'rxjs';
-import { ConfirmationCodeService } from '../shared/service/confirmation-code.service';
-import { UnmaskCodeService } from '../shared/service/unmask-code.service';
-import { AccessDetails, AccessRecordChangedError, BankAccessDetail, MyAccessDataService } from '../shared/service/my-access-data.service';
+import { ConfirmationCodeService } from '../../shared/service/confirmation-code.service';
+import { UnmaskCodeService } from '../../shared/service/unmask-code.service';
+import { AccessDetails, AccessRecordChangedError, BankAccessDetail, MyAccessDataService } from '../../shared/service/my-access-data.service';
 
 interface AccessField {
   key: keyof BankAccessDetail;

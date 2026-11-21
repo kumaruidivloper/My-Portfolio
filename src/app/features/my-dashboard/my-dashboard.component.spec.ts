@@ -1,18 +1,18 @@
 import { ChangeDetectorRef, Component, EventEmitter, Output } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MyDashboardComponent } from './my-dashboard.component';
-import { TransferRecord } from '../model/transfer';
-import { TransferService } from '../shared/service/transfer.service';
-import { ConfirmationCodeService } from '../shared/service/confirmation-code.service';
-import { PfDataService } from '../shared/service/pf-data.service';
-import { GratuityDataService } from '../shared/service/gratuity-data.service';
-import { TotalBalanceService } from '../shared/service/total-balance.service';
+import { TransferRecord } from '../../model/transfer';
+import { TransferService } from '../../shared/service/transfer.service';
+import { ConfirmationCodeService } from '../../shared/service/confirmation-code.service';
+import { PfDataService } from '../../shared/service/pf-data.service';
+import { GratuityDataService } from '../../shared/service/gratuity-data.service';
+import { TotalBalanceService } from '../../shared/service/total-balance.service';
 import { of, Subject, throwError } from 'rxjs';
 import { ColorHelper, ScaleType } from '@swimlane/ngx-charts';
 import ExcelJS from 'exceljs';
-import { SalaryDataService } from '../shared/service/salary-data.service';
-import { RenderInViewDirective } from '../render-in-view/render-in-view.directive';
-import type { RecordCategory } from '../central-record-form/central-record-form.component';
+import { SalaryDataService } from '../../shared/service/salary-data.service';
+import { RenderInViewDirective } from '../../render-in-view/render-in-view.directive';
+import type { RecordCategory } from '../../central-record-form/central-record-form.component';
 
 @Component({
   selector: 'app-test-accordion',
