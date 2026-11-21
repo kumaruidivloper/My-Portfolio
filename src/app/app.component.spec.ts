@@ -244,6 +244,62 @@ describe('AppComponent', () => {
     }
   });
 
+  it('uses a circular inset hero frame in both themes', () => {
+    const originalBodyClasses = document.body.className;
+    const home = document.createElement('section');
+    home.className = 'home test-hero-frame';
+    home.style.width = '100rem';
+    home.innerHTML = '<div class="content hero-intro"><div class="shadow-probe"></div></div>';
+    const style = document.createElement('style');
+    style.textContent = '.test-hero-frame .hero-intro::before { transition: none !important; }';
+    document.head.appendChild(style);
+    document.body.appendChild(home);
+    const intro = home.querySelector<HTMLElement>('.hero-intro')!;
+    const probe = home.querySelector<HTMLElement>('.shadow-probe')!;
+    probe.style.boxShadow = 'var(--box-shadow-inset)';
+    probe.style.transition = 'none';
+
+    try {
+      document.body.classList.remove('day', 'night', 'active');
+      const bounds = intro.getBoundingClientRect();
+      expect(bounds.width).toBeCloseTo(bounds.height, 0);
+      expect(bounds.width).toBeLessThan(70 * parseFloat(getComputedStyle(document.documentElement).fontSize));
+      expect(getComputedStyle(intro, '::before').borderRadius).toBe('50%');
+      for (const dark of [false, true]) {
+        document.body.classList.toggle('active', dark);
+        const shadow = getComputedStyle(intro, '::before').boxShadow;
+        expect(shadow).toBe(getComputedStyle(probe).boxShadow);
+        expect(shadow).toContain('inset');
+      }
+    } finally {
+      home.remove();
+      style.remove();
+      document.body.className = originalBodyClasses;
+    }
+  });
+
+  it('indicates native field focus without changing its shadow', () => {
+    const form = document.createElement('form');
+    form.innerHTML = '<input type="text"><input type="number"><textarea></textarea><select><option>One</option></select>';
+    document.body.appendChild(form);
+    try {
+      for (const field of Array.from(form.querySelectorAll<HTMLElement>('input, textarea, select'))) {
+        field.style.transition = 'none';
+        field.style.boxShadow = 'inset 0 2px 4px #888';
+        const background = getComputedStyle(field).backgroundColor;
+        const shadow = getComputedStyle(field).boxShadow;
+        field.focus();
+        const style = getComputedStyle(field);
+        expect(field.matches(':focus-visible')).toBeTrue();
+        expect(style.outlineStyle).toBe('none');
+        expect(style.backgroundColor).not.toBe(background);
+        expect(style.boxShadow).toBe(shadow);
+      }
+    } finally {
+      form.remove();
+    }
+  });
+
   it('generates the hero QR code on input and clears it with the reset button', async () => {
     spyOn(AppComponent.prototype, 'ngOnInit');
     TestBed.configureTestingModule({
@@ -267,6 +323,15 @@ describe('AppComponent', () => {
       await fixture.whenStable();
       const input = fixture.nativeElement.querySelector('#hero-qr-input') as HTMLInputElement;
       expect(input.labels?.[0].textContent).toContain('Create a QR code');
+
+      document.body.appendChild(fixture.nativeElement);
+      input.style.transition = 'none';
+      const background = getComputedStyle(input).backgroundColor;
+      input.focus();
+      expect(getComputedStyle(input).outlineStyle).toBe('none');
+      expect(getComputedStyle(input).backgroundColor).toBe(background);
+      expect(getComputedStyle(input).boxShadow).toContain('inset');
+      fixture.nativeElement.remove();
 
       input.value = 'https://example.com/Hello?code=Ab12';
       input.dispatchEvent(new Event('input'));
@@ -332,6 +397,7 @@ describe('AppComponent', () => {
         .toContain('Could not generate');
     } finally {
       fixture.destroy();
+      fixture.nativeElement.remove();
     }
   });
 
@@ -897,13 +963,68 @@ describe('AppComponent', () => {
       const toggle = modal.querySelector('input[role="switch"]') as HTMLInputElement;
       const keyInput = modal.querySelector<HTMLInputElement>('#api-encryption-key')!;
       const codeInput = modal.querySelector<HTMLInputElement>('.dashboard-code-input')!;
+      const probe = document.createElement('span');
+      probe.style.cssText = 'position: absolute; visibility: hidden; transition: none';
+      modal.appendChild(probe);
+      const canvas = document.createElement('canvas');
+      canvas.width = canvas.height = 1;
+      const context = canvas.getContext('2d')!;
+      const luminance = (color: string) => {
+        context.fillStyle = color;
+        context.clearRect(0, 0, 1, 1);
+        context.fillRect(0, 0, 1, 1);
+        const channels = context.getImageData(0, 0, 1, 1).data;
+        return [0.2126, 0.7152, 0.0722].reduce((sum, weight, index) => {
+          const channel = channels[index] / 255;
+          return sum + weight * (channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4);
+        }, 0);
+      };
+      const expectReadableTint = (field: HTMLInputElement, tint: string) => {
+        probe.style.backgroundColor = `color-mix(in srgb, var(--dashboard-visibility-color) ${tint}, var(--bg-color))`;
+        const style = getComputedStyle(field);
+        const background = luminance(style.backgroundColor);
+        const foreground = luminance(style.color);
+        expect(style.backgroundColor).toBe(getComputedStyle(probe).backgroundColor);
+        expect((Math.max(background, foreground) + 0.05) / (Math.min(background, foreground) + 0.05))
+          .toBeGreaterThanOrEqual(4.5);
+      };
+      const expectFieldTints = (dark: boolean) => {
+        expectReadableTint(keyInput, dark ? '10%' : '5%');
+        expectReadableTint(codeInput, dark ? '10%' : '5%');
+        codeInput.focus();
+        expect(codeInput.matches(':focus-visible')).toBeTrue();
+        expectReadableTint(codeInput, dark ? '15%' : '12%');
+        codeInput.blur();
+      };
       expect(keyInput.type).toBe('password');
+      for (const field of [keyInput, codeInput]) {
+        field.blur();
+        const shadow = getComputedStyle(field).boxShadow;
+        const background = getComputedStyle(field).backgroundColor;
+        field.focus();
+        const style = getComputedStyle(field);
+        expect(field.matches(':focus-visible')).toBeTrue();
+        expect(style.outlineStyle).toBe('none');
+        expect(style.boxShadow).toBe(shadow);
+        expect(style.boxShadow).toContain('inset');
+        if (field === keyInput) {
+          expect(style.backgroundColor).toBe(background);
+          expect(getComputedStyle(modal.querySelector('label[for="api-encryption-key"]')!).textDecorationLine).toBe('none');
+        } else {
+          expect(style.backgroundColor).not.toBe(background);
+        }
+        field.blur();
+      }
       const maskedColors: string[] = [];
-      for (const dark of [false, true]) {
-        document.body.classList.toggle('active', dark);
+      const themes = ['', 'active', 'night'];
+      document.body.classList.remove('day');
+      for (const theme of themes) {
+        document.body.classList.toggle('active', theme === 'active');
+        document.body.classList.toggle('night', theme === 'night');
         const color = getComputedStyle(keyInput).backgroundColor;
         expect(color).toBe(getComputedStyle(codeInput).backgroundColor);
         maskedColors.push(color);
+        expectFieldTints(theme !== '');
       }
       expect(toggle.getAttribute('aria-label')).toBe('Mask dashboard values');
       expect(toggle.checked).toBeTrue();
@@ -914,11 +1035,13 @@ describe('AppComponent', () => {
       toggle.click();
       fixture.changeDetectorRef.markForCheck();
       fixture.detectChanges();
-      for (const [index, dark] of [false, true].entries()) {
-        document.body.classList.toggle('active', dark);
+      for (const [index, theme] of themes.entries()) {
+        document.body.classList.toggle('active', theme === 'active');
+        document.body.classList.toggle('night', theme === 'night');
         const color = getComputedStyle(keyInput).backgroundColor;
         expect(color).toBe(getComputedStyle(codeInput).backgroundColor);
         expect(color).not.toBe(maskedColors[index]);
+        expectFieldTints(theme !== '');
       }
       expect(keyInput.type).toBe('password');
       expect(toggle.checked).toBeFalse();

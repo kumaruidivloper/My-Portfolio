@@ -35,6 +35,30 @@ describe('ThemeSelectComponent', () => {
     expect(emitted).toEqual(['2']);
   });
 
+  it('indicates keyboard focus without changing the shadow', () => {
+    TestBed.configureTestingModule({ imports: [OverlayModule], declarations: [ThemeSelectComponent] });
+    const fixture = TestBed.createComponent(ThemeSelectComponent);
+    const input = document.createElement('input');
+    document.body.append(input, fixture.nativeElement);
+    try {
+      fixture.detectChanges();
+      const trigger = fixture.nativeElement.querySelector('.theme-select-trigger') as HTMLButtonElement;
+      trigger.style.transition = 'none';
+      const background = getComputedStyle(trigger).backgroundColor;
+      const shadow = getComputedStyle(trigger).boxShadow;
+      input.focus();
+      trigger.focus();
+      expect(trigger.matches(':focus-visible')).toBeTrue();
+      expect(getComputedStyle(trigger).outlineStyle).toBe('none');
+      expect(getComputedStyle(trigger).backgroundColor).not.toBe(background);
+      expect(getComputedStyle(trigger).boxShadow).toBe(shadow);
+    } finally {
+      fixture.destroy();
+      fixture.nativeElement.remove();
+      input.remove();
+    }
+  });
+
   it('reserves every option label only when option-based sizing is enabled', () => {
     TestBed.configureTestingModule({ imports: [OverlayModule], declarations: [ThemeSelectComponent] });
     const fixture = TestBed.createComponent(ThemeSelectComponent);

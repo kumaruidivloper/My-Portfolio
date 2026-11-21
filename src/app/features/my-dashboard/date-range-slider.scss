@@ -22,7 +22,7 @@
 }
 
 .date-range-handle-label:focus-visible {
-    outline: .2rem solid var(--green);
+    background: color-mix(in srgb, var(--green) 25%, var(--bg-color));
 }
 
 .date-range-handle-label:disabled {
@@ -145,10 +145,12 @@ input.date-range-input {
     outline: .25rem solid color-mix(in srgb, var(--green) 35%, transparent);
 }
 
-.date-range-input:focus-visible {
-    outline: .2rem solid var(--green);
-    outline-offset: .2rem;
-    border-radius: 1rem;
+.date-range-input:focus-visible::-webkit-slider-thumb {
+    background: var(--green);
+}
+
+.date-range-input:focus-visible::-moz-range-thumb {
+    background: var(--green);
 }
 
 .date-range-input:disabled {

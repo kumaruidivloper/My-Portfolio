@@ -460,8 +460,7 @@ app-theme-select.all-dashboard-metric-select {
   }
 
   input:focus-visible {
-    outline: 0.2rem solid var(--green);
-    outline-offset: 0.2rem;
+    background: color-mix(in srgb, var(--green) 25%, var(--bg-color));
   }
 }
 

@@ -447,8 +447,7 @@
   }
 
   .toggle-input:focus-visible + .toggle-track {
-    outline: 0.2rem solid var(--green);
-    outline-offset: 0.2rem;
+    background: var(--green);
   }
 
   span {

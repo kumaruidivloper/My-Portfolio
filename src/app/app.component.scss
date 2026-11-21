@@ -190,11 +190,6 @@
     text-transform: none;
 }
 
-.api-key-form input:focus-visible {
-    outline: .2rem solid var(--green);
-    outline-offset: .2rem;
-}
-
 .api-key-form p {
     color: var(--light-color);
     font-size: 1.3rem;
@@ -372,8 +367,6 @@
 
 .Qr-form .box:focus {
   box-shadow: var(--box-shadow-inset);
-  outline: 2px solid color-mix(in srgb, var(--green) 20%, transparent);
-  outline-offset: 2px;
 }
 app-counter {
   display: inline-block;

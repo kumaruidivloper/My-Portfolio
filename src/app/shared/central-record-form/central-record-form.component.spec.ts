@@ -569,6 +569,17 @@ describe('CentralRecordFormComponent', () => {
     fixture.detectChanges();
     expect(nextButton.disabled).toBeFalse();
     expect(fixture.nativeElement.querySelector('.stepper-actions button')?.textContent).toContain('Back');
+    const focusInput = fixture.nativeElement.querySelector('input[formControlName="amountTransferredAUD"]') as HTMLInputElement;
+    const amountField = focusInput.closest<HTMLElement>('.form-field')!;
+    focusInput.style.transition = 'none';
+    amountField.style.transition = 'none';
+    const shadow = getComputedStyle(focusInput).boxShadow;
+    focusInput.focus();
+    expect(focusInput.matches(':focus-visible')).toBeTrue();
+    expect(getComputedStyle(focusInput).outlineStyle).toBe('none');
+    expect(getComputedStyle(focusInput).boxShadow).toBe(shadow);
+    expect(getComputedStyle(amountField).boxShadow).not.toBe('none');
+    focusInput.blur();
     nextButton.click();
     expect(fixture.componentInstance.hasTriedToReview).toBeTrue();
     fixture.componentInstance.form.patchValue({
