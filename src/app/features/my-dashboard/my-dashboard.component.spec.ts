@@ -417,6 +417,13 @@ describe('MyDashboardComponent', () => {
     const mainToggle = grid.querySelector('.main') as HTMLElement;
     const toTopSpy = spyOn(page, 'scrollTo') as jasmine.Spy;
     const toCardSpy = spyOn(widget, 'scrollIntoView');
+    let resizeCallback!: ResizeObserverCallback;
+    let resizeObserver!: jasmine.SpyObj<ResizeObserver>;
+    spyOn(window, 'ResizeObserver').and.callFake(function (callback) {
+      resizeCallback = callback;
+      resizeObserver = jasmine.createSpyObj<ResizeObserver>('ResizeObserver', ['observe', 'unobserve', 'disconnect']);
+      return resizeObserver;
+    });
     const resetSpies = () => {
       toTopSpy.calls.reset();
       toCardSpy.calls.reset();
@@ -426,42 +433,42 @@ describe('MyDashboardComponent', () => {
       expect(toTopSpy).not.toHaveBeenCalled();
       expect(toCardSpy).not.toHaveBeenCalled();
       mainToggle.setAttribute('aria-expanded', String(mainToggle.getAttribute('aria-expanded') !== 'true'));
-      await new Promise((resolve) => setTimeout(resolve));
+      await new Promise((resolve) => setTimeout(resolve, 0));
     };
-    const stopPinning = async () => {
+    const stopPinning = () => {
       window.dispatchEvent(new WheelEvent('wheel'));
+      expect(resizeObserver.disconnect).withContext('stops pinning once the user scrolls').toHaveBeenCalled();
       resetSpies();
-      widget.style.height = '500px';
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      expect(toTopSpy).withContext('stops pinning once the user scrolls').not.toHaveBeenCalled();
-      expect(toCardSpy).withContext('stops pinning once the user scrolls').not.toHaveBeenCalled();
-      widget.style.height = '400px';
     };
 
-    await clickAndToggle('.main');
-    expect(widget.classList).withContext('highlights the opened card').toContain('widget-highlight');
-    expect(toTopSpy).toHaveBeenCalledWith({ top: 0 });
-    expect(toCardSpy).not.toHaveBeenCalled();
-    resetSpies();
-    widget.style.height = '450px';
-    await new Promise((resolve) => setTimeout(resolve, 50));
-    expect(toTopSpy).withContext('re-aligns while the layout settles').toHaveBeenCalled();
-    await stopPinning();
+    try {
+      await clickAndToggle('.main');
+      expect(widget.classList).withContext('highlights the opened card').toContain('widget-highlight');
+      expect(toTopSpy).toHaveBeenCalledWith({ top: 0 });
+      expect(toCardSpy).not.toHaveBeenCalled();
+      expect(resizeObserver.observe).toHaveBeenCalledWith(grid);
+      resetSpies();
+      resizeCallback([], resizeObserver);
+      expect(toTopSpy).withContext('re-aligns while the layout settles').toHaveBeenCalledWith({ top: 0 });
+      stopPinning();
 
-    widget.classList.remove('widget-highlight');
-    await clickAndToggle('.inside');
-    expect(widget.classList).withContext('highlights the closed card').toContain('widget-highlight');
-    expect(toCardSpy).toHaveBeenCalledWith(jasmine.objectContaining({ block: 'start' }));
-    expect(toTopSpy).not.toHaveBeenCalled();
-    await stopPinning();
+      widget.classList.remove('widget-highlight');
+      await clickAndToggle('.inside');
+      expect(widget.classList).withContext('highlights the closed card').toContain('widget-highlight');
+      expect(toCardSpy).toHaveBeenCalledWith(jasmine.objectContaining({ block: 'start' }));
+      expect(toTopSpy).not.toHaveBeenCalled();
+      expect(resizeObserver.observe).toHaveBeenCalledWith(grid);
+      stopPinning();
 
-    component.onWidgetGridClick({ target: grid.querySelector('.inner') } as unknown as Event);
-    mainToggle.setAttribute('aria-expanded', 'true');
-    await new Promise((resolve) => setTimeout(resolve));
-    expect(toTopSpy).not.toHaveBeenCalled();
-    expect(toCardSpy).not.toHaveBeenCalled();
-    component.ngOnDestroy();
-    page.remove();
+      component.onWidgetGridClick({ target: grid.querySelector('.inner') } as unknown as Event);
+      mainToggle.setAttribute('aria-expanded', 'true');
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(toTopSpy).not.toHaveBeenCalled();
+      expect(toCardSpy).not.toHaveBeenCalled();
+    } finally {
+      component.ngOnDestroy();
+      page.remove();
+    }
   });
 
   it('changes chart type without changing loaded transfers', () => {

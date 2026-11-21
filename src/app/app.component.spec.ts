@@ -23,9 +23,12 @@ import { environment } from '../environments/environment';
 describe('AppComponent', () => {
   let component: AppComponent;
   let originalLocalCodePrompt: boolean;
+  let originalDashboardBlur: boolean;
 
   beforeEach(() => {
     originalLocalCodePrompt = environment.showAccessCodePromptLocally;
+    originalDashboardBlur = document.body.classList.contains('dashboard-values-blurred');
+    document.body.classList.remove('dashboard-values-blurred');
     environment.showAccessCodePromptLocally = true;
     TestBed.configureTestingModule({
       providers: [{ provide: ApiKeyValidationService, useValue: { verify: () => Promise.resolve() } }]
@@ -41,6 +44,7 @@ describe('AppComponent', () => {
 
   afterEach(() => {
     environment.showAccessCodePromptLocally = originalLocalCodePrompt;
+    document.body.classList.toggle('dashboard-values-blurred', originalDashboardBlur);
   });
 
   it('calculates experience from the May anniversary', () => {
