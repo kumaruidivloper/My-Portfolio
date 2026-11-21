@@ -3,11 +3,11 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { of, Subject, throwError } from 'rxjs';
 import { SalaryDataComponent } from './salary-data.component';
-import { SalaryApiDocument, salaryMonthKey } from '../model/salary-record';
-import { SalaryDataService } from '../shared/service/salary-data.service';
-import { ConfirmationCodeService } from '../shared/service/confirmation-code.service';
-import { announceAccordionOpened } from '../service/accordion-group';
-import { MyDashboardModule } from '../features/my-dashboard/my-dashboard.module';
+import { SalaryApiDocument, salaryMonthKey } from '../../model/salary-record';
+import { SalaryDataService } from '../service/salary-data.service';
+import { ConfirmationCodeService } from '../service/confirmation-code.service';
+import { announceAccordionOpened } from '../../service/accordion-group';
+import { MyDashboardModule } from '../../features/my-dashboard/my-dashboard.module';
 
 describe('SalaryDataComponent', () => {
   let component: SalaryDataComponent;

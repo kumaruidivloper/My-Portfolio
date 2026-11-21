@@ -1,16 +1,16 @@
 import { ChangeDetectorRef, Component, HostListener, Input, OnDestroy, OnInit } from '@angular/core';
-import { isOverlayOpen } from '../service/escape-dismiss';
+import { isOverlayOpen } from '../../service/escape-dismiss';
 import { FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { Subscription, forkJoin, map } from 'rxjs';
-import { SALARY_FIELDS, SalaryApiDocument, SalaryField, SalaryRecord, SalaryResourceId, salaryFields, salaryMonthKey, salaryMonthLabel } from '../model/salary-record';
-import { CHART_TYPE_OPTIONS, ChartType, chartColorScheme, formatCompactAxisValue, isChartType, toLineChartSeries } from '../model/chart-type';
-import { memoizeLast } from '../model/memoize';
-import { ResponsiveGridColumn, ResponsiveGridRow } from '../shared/responsive-table/responsive-table.component';
-import { SalaryDataService } from '../shared/service/salary-data.service';
-import { ConfirmationCodeService } from '../shared/service/confirmation-code.service';
-import { announceAccordionOpened, collapseWhenAnotherOpens } from '../service/accordion-group';
-import { combineSalaryRecords } from '../model/combined-salary';
-import { DashboardRecordRefreshService } from '../shared/service/dashboard-record-refresh.service';
+import { SALARY_FIELDS, SalaryApiDocument, SalaryField, SalaryRecord, SalaryResourceId, salaryFields, salaryMonthKey, salaryMonthLabel } from '../../model/salary-record';
+import { CHART_TYPE_OPTIONS, ChartType, chartColorScheme, formatCompactAxisValue, isChartType, toLineChartSeries } from '../../model/chart-type';
+import { memoizeLast } from '../../model/memoize';
+import { ResponsiveGridColumn, ResponsiveGridRow } from '../responsive-table/responsive-table.component';
+import { SalaryDataService } from '../service/salary-data.service';
+import { ConfirmationCodeService } from '../service/confirmation-code.service';
+import { announceAccordionOpened, collapseWhenAnotherOpens } from '../../service/accordion-group';
+import { combineSalaryRecords } from '../../model/combined-salary';
+import { DashboardRecordRefreshService } from '../service/dashboard-record-refresh.service';
 
 const finiteAmount: ValidatorFn = (control) =>
   typeof control.value === 'number' && Number.isFinite(control.value) ? null : { invalidAmount: true };
@@ -19,7 +19,7 @@ const amountControl = () => new FormControl(0, { nonNullable: true, validators: 
 @Component({
   selector: 'app-salary-data',
   templateUrl: './salary-data.component.html',
-  styleUrls: ['../kumar-gratuity/kumar-gratuity.component.scss', '../shared/widget-preview-chart/widget-preview-slider.scss', './salary-data.component.scss'],
+  styleUrls: ['../kumar-gratuity/kumar-gratuity.component.scss', '../widget-preview-chart/widget-preview-slider.scss', './salary-data.component.scss'],
   standalone: false
 })
 export class SalaryDataComponent implements OnInit, OnDestroy {

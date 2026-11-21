@@ -1,18 +1,18 @@
-import { announceAccordionOpened, collapseWhenAnotherOpens } from '../service/accordion-group';
+import { announceAccordionOpened, collapseWhenAnotherOpens } from '../../service/accordion-group';
 import { ChangeDetectorRef, Component, HostListener, Input, OnDestroy, OnInit } from '@angular/core';
-import { isOverlayOpen } from '../service/escape-dismiss';
+import { isOverlayOpen } from '../../service/escape-dismiss';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Subscription, timer } from 'rxjs';
 import {
   chartColorScheme, CHART_TYPE_OPTIONS, ChartDatum, ChartType, isChartType, toLineChartSeries, formatCompactAxisValue
-} from '../model/chart-type';
-import { memoizeLast } from '../model/memoize';
-import { PreviewViewOption } from '../shared/widget-preview-chart/widget-preview-chart.component';
-import { GratuityApiDocument, GratuityRecord } from '../model/gratuity-record';
-import { ConfirmationCodeService } from '../shared/service/confirmation-code.service';
-import { GratuityDataService, GratuityResourceId } from '../shared/service/gratuity-data.service';
-import { ResponsiveGridColumn, ResponsiveGridRow } from '../shared/responsive-table/responsive-table.component';
-import { DashboardRecordRefreshService } from '../shared/service/dashboard-record-refresh.service';
+} from '../../model/chart-type';
+import { memoizeLast } from '../../model/memoize';
+import { PreviewViewOption } from '../widget-preview-chart/widget-preview-chart.component';
+import { GratuityApiDocument, GratuityRecord } from '../../model/gratuity-record';
+import { ConfirmationCodeService } from '../service/confirmation-code.service';
+import { GratuityDataService, GratuityResourceId } from '../service/gratuity-data.service';
+import { ResponsiveGridColumn, ResponsiveGridRow } from '../responsive-table/responsive-table.component';
+import { DashboardRecordRefreshService } from '../service/dashboard-record-refresh.service';
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 

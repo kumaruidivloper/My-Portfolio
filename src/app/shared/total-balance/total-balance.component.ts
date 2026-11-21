@@ -1,13 +1,13 @@
-import { announceAccordionOpened, collapseWhenAnotherOpens } from '../service/accordion-group';
+import { announceAccordionOpened, collapseWhenAnotherOpens } from '../../service/accordion-group';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import {
   chartColorScheme, CHART_TYPE_OPTIONS, ChartDatum, ChartType, isChartType, toLineChartSeries, formatCompactAxisValue
-} from '../model/chart-type';
-import { PreviewViewOption } from '../shared/widget-preview-chart/widget-preview-chart.component';
-import { ResponsiveGridColumn, ResponsiveGridRow } from '../shared/responsive-table/responsive-table.component';
-import { TotalRecord } from '../model/total-record';
-import { TotalBalanceService } from '../shared/service/total-balance.service';
+} from '../../model/chart-type';
+import { PreviewViewOption } from '../widget-preview-chart/widget-preview-chart.component';
+import { ResponsiveGridColumn, ResponsiveGridRow } from '../responsive-table/responsive-table.component';
+import { TotalRecord } from '../../model/total-record';
+import { TotalBalanceService } from '../service/total-balance.service';
 
 @Component({
   selector: 'app-total-balance',

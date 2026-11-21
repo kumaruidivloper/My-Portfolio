@@ -1,7 +1,7 @@
 import { ChangeDetectorRef } from '@angular/core';
 import { Subject, of, throwError } from 'rxjs';
-import { TotalApiDocument } from '../model/total-record';
-import { TotalBalanceService } from '../shared/service/total-balance.service';
+import { TotalApiDocument } from '../../model/total-record';
+import { TotalBalanceService } from '../service/total-balance.service';
 import { TotalBalanceComponent } from './total-balance.component';
 
 describe('TotalBalanceComponent', () => {
