@@ -1,68 +1,44 @@
-<section class="services" id="services">
-  <h1 class="heading"> {{proud?.title}} <span>{{proud?.companies}}</span> </h1>
-  <div class="box-container">
-    <div class="box">
-      <i class="fas fa-thumbtack"></i>
-      <h3>{{companyDeatils?.companies[0].name}}</h3>
-      <p>
-        <b>From:</b><span>&nbsp;{{companyDeatils?.companies[0].from}}</span> &nbsp; &nbsp; <b>To:</b><span>&nbsp;{{companyDeatils?.companies[0].to}}</span>
-      </p>
-    </div>
-    <div class="box">
-      <i class="fas fa-paint-brush"></i>
-      <h3>{{companyDeatils?.companies[1].name}}</h3>
-      <p>
-        <b>From:</b><span>&nbsp;{{companyDeatils?.companies[1].from}}</span> &nbsp; &nbsp; <b>To:</b><span>&nbsp;{{companyDeatils?.companies[1].to}}</span>
-      </p>
-    </div>
-    <div class="box">
-      <i class="fas fa-mobile"></i>
-      <h3>{{companyDeatils?.companies[2].name}}</h3>
-      <p>
-        <b>From:</b><span>&nbsp;{{companyDeatils?.companies[2].from}}</span> &nbsp; &nbsp; <b>To:</b><span>&nbsp;{{companyDeatils?.companies[2].to}}</span>
-      </p>
-    </div>
-    <div class="box">
-      <i class="fas fa-swatchbook"></i>
-      <h3>{{companyDeatils?.companies[3].name}}</h3>
-      <p>
-        <b>From:</b><span>&nbsp;{{companyDeatils?.companies[3].from}}</span> &nbsp; &nbsp; <b>To:</b><span>&nbsp;{{companyDeatils?.companies[3].to}}</span>
-      </p>
-    </div>
-    <div class="box">
-      <i class="fas fa-truck"></i>
-      <h3>{{companyDeatils?.companies[4].name}}</h3>
-      <p>
-        <b>From:</b><span>&nbsp;{{companyDeatils?.companies[4].from}}</span> &nbsp; &nbsp; <b>To:</b><span>&nbsp;{{companyDeatils?.companies[4].to}}</span>
-      </p>
-    </div>
-    <div class="box">
-      <i class="fas fa-volleyball-ball"></i>
-      <h3>{{companyDeatils?.companies[5].name}}</h3>
-      <p>
-        <b>From:</b><span>&nbsp;{{companyDeatils?.companies[5].from}}</span> &nbsp; &nbsp; <b>To:</b><span>&nbsp;{{companyDeatils?.companies[5].to}}</span>
-      </p>
-    </div>
-    <div class="box">
-      <i class="fa fa-plane"></i>
-      <h3>{{companyDeatils?.companies[6].name}}</h3>
-      <p>
-        <b>From:</b><span>&nbsp;{{companyDeatils?.companies[6].from}}</span> &nbsp; &nbsp; <b>To:</b><span>&nbsp;{{companyDeatils?.companies[6].to}}</span>
-      </p>
-    </div>
-    <div class="box">
-      <i class="fas fa-volume-up"></i>
-      <h3>{{companyDeatils?.companies[7].name}}</h3>
-      <p>
-        <b>From:</b><span>&nbsp;{{companyDeatils?.companies[7].from}}</span> &nbsp; &nbsp; <b>To:</b><span>&nbsp;{{companyDeatils?.companies[7].to}}</span>
-      </p>
-    </div>
-    <div class="box">
-      <i class="fas fa-clock"></i>
-      <h3>{{companyDeatils?.companies[8].name}}</h3>
-      <p>
-        <b>From:</b><span>&nbsp;{{companyDeatils?.companies[8].from}}</span> &nbsp; &nbsp; <span>{{companyDeatils?.companies[8].to}}</span>
-      </p>
-    </div>
+<section class="company-experience" aria-labelledby="companies-title">
+  <h1 id="companies-title" class="heading">{{ proud?.title }} <span>{{ proud?.companies }}</span></h1>
+  <p class="journey-caption">My career, in good company.</p>
+  <div class="company-grid">
+    @for (company of companyDeatils?.companies ?? []; track company; let index = $index) {
+      @let brand = brandFor(company.name);
+      <article class="company-chapter" [attr.aria-labelledby]="'company-title-' + index">
+        <div class="chapter-heading">
+          <span class="chapter-number">Chapter {{ index + 1 }}</span>
+          <span class="chapter-period">{{ company.from }} &mdash; {{ company.to }}</span>
+        </div>
+        <div class="lanyard" aria-hidden="true">
+          <span>{{ brand?.label ?? company.name }}</span>
+        </div>
+        <div class="id-badge">
+          <span class="badge-clip" aria-hidden="true"></span>
+          <div class="brand-panel">
+            @if (brand) {
+              <img class="company-logo" [src]="brand.logo" [alt]="brand.label + ' logo'" width="180" height="64" loading="lazy" decoding="async">
+            } @else {
+              <span class="company-monogram" aria-hidden="true">{{ initials(company.name) }}</span>
+              <span class="monogram-caption">Company monogram</span>
+            }
+          </div>
+          <div class="badge-content">
+            @if (profile) {
+              <div class="badge-portrait">
+                <img src="assets/img/companies/company-id-photo.png" [alt]="profile.name" width="140" height="160" loading="lazy" decoding="async">
+              </div>
+              <p class="badge-name">{{ profile.name }}</p>
+              <p class="badge-role">{{ profileRole }}</p>
+            }
+            <h2 class="company-name" [id]="'company-title-' + index">{{ company.name }}</h2>
+            <dl class="badge-dates">
+              <div><dt>From</dt><dd>{{ company.from }}</dd></div>
+              <div><dt>To</dt><dd>{{ company.to }}</dd></div>
+            </dl>
+          </div>
+          <div class="badge-ribbon" aria-hidden="true"><span>Career journey</span><span>{{ index + 1 }}</span></div>
+        </div>
+      </article>
+    }
   </div>
 </section>
