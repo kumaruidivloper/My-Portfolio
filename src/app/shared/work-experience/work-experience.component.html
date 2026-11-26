@@ -15,7 +15,13 @@
             }
             <span>{{ brand?.label ?? company.name }}</span>
           </div>
-          <div class="id-badge">
+          <div class="id-badge"
+            (pointerdown)="startDrag($event)"
+            (pointermove)="moveDrag($event)"
+            (pointerup)="endDrag($event)"
+            (pointercancel)="endDrag($event)"
+            (lostpointercapture)="endDrag($event)"
+            (dragstart)="$event.preventDefault()">
             <span class="badge-clip" aria-hidden="true"></span>
             <div class="brand-panel">
               @if (brand) {

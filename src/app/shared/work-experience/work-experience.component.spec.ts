@@ -1,6 +1,6 @@
 /// <reference types="jasmine" />
 
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { QrCodeViewComponent } from '../../qr-code-view/qr-code-view.component';
 
 import { WorkExperienceComponent } from './work-experience.component';
@@ -52,6 +52,46 @@ describe('WorkExperienceComponent', () => {
   it('should show the number of company cards', () => {
     const cards = fixture.nativeElement.querySelectorAll('.id-badge');
     expect(cards.length).toBe(9);
+  });
+
+  it('extends only the pressed card with resistance and retracts after release or cancellation', fakeAsync(() => {
+    const badges = fixture.nativeElement.querySelectorAll('.id-badge') as NodeListOf<HTMLElement>;
+    const badge = badges[0];
+    const hanger = badge.parentElement!;
+    const capture = spyOn(badge, 'setPointerCapture');
+    spyOn(badge, 'hasPointerCapture').and.returnValue(true);
+    const release = spyOn(badge, 'releasePointerCapture');
+    const send = (type: string, pointerId = 1, clientY = 100) => badge.dispatchEvent(new PointerEvent(type, {
+      bubbles: true, isPrimary: true, button: 0, pointerId, clientX: 100, clientY
+    }));
+
+    for (const endEvent of ['pointerup', 'pointercancel', 'lostpointercapture']) {
+      send('pointerdown');
+      expect(capture).toHaveBeenCalledWith(1);
+      send('pointermove', 2, 300);
+      expect(hanger.style.getPropertyValue('--card-pull')).not.toMatch(/^[1-9]/);
+      send('pointermove', 1, 300);
+      const pull = parseFloat(hanger.style.getPropertyValue('--card-pull'));
+      expect(pull).toBeGreaterThan(0);
+      expect(pull).toBeLessThan(64);
+      expect(badges[1].parentElement!.style.getPropertyValue('--card-pull')).toBe('');
+      send(endEvent);
+      expect(hanger.style.getPropertyValue('--card-pull')).toBe('0px');
+      expect(hanger.style.getPropertyValue('--card-tilt')).toBe('0deg');
+      expect(hanger.classList.contains('is-dragging')).toBeFalse();
+      expect(hanger.classList.contains('is-returning')).toBeTrue();
+      tick(650);
+      expect(hanger.classList.contains('is-returning')).toBeFalse();
+    }
+    expect(release).toHaveBeenCalledWith(1);
+  }));
+
+  it('ignores secondary-button presses', () => {
+    const badge = fixture.nativeElement.querySelector('.id-badge') as HTMLElement;
+    const capture = spyOn(badge, 'setPointerCapture');
+    badge.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, isPrimary: true, button: 2 }));
+    expect(capture).not.toHaveBeenCalled();
+    expect(badge.parentElement!.classList.contains('is-dragging')).toBeFalse();
   });
 
   it('places each company QR between its dates and refreshes it when records change', async () => {
