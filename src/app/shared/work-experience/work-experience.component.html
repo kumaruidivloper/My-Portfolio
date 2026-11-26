@@ -1,11 +1,13 @@
 <section class="company-experience" aria-labelledby="companies-title">
   <h1 id="companies-title" class="heading">{{ proud?.title }} <span>{{ proud?.companies }}</span></h1>
   <div class="company-grid">
-    @for (company of companyDeatils?.companies ?? []; track company; let index = $index) {
+    @let companies = latestCompanies;
+    @for (company of companies; track company; let index = $index) {
       @let brand = brandFor(company.name);
+      @let chapter = companies.length - index;
       <article class="company-chapter" [attr.aria-labelledby]="'company-title-' + index">
         <div class="chapter-heading">
-          <span class="chapter-number">Chapter {{ index + 1 }}</span>
+          <span class="chapter-number">Chapter {{ chapter }}</span>
           <span class="chapter-period">{{ company.from }} &mdash; {{ company.to }}</span>
         </div>
         <div class="hanging-card">
@@ -46,7 +48,7 @@
                 <dl><dt>To</dt><dd>{{ company.to }}</dd></dl>
               </div>
             </div>
-            <div class="badge-ribbon" aria-hidden="true"><span>Career journey</span><span>{{ index + 1 }}</span></div>
+            <div class="badge-ribbon" aria-hidden="true"><span>Career journey</span><span>{{ chapter }}</span></div>
           </div>
         </div>
       </article>

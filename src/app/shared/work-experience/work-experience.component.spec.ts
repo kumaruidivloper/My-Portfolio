@@ -106,7 +106,7 @@ describe('WorkExperienceComponent', () => {
       const rows = fixture.nativeElement.querySelectorAll('.badge-dates') as NodeListOf<HTMLElement>;
       expect(rows.length).toBe(companies.length);
       rows.forEach((row, index) => {
-        const company = companies[index];
+        const company = companies[companies.length - 1 - index];
         expect(row.children[0].textContent).toContain(company.from);
         expect(row.children[1].tagName).toBe('APP-QR-CODE-VIEW');
         expect(row.children[2].textContent).toContain(company.to);
@@ -127,7 +127,8 @@ describe('WorkExperienceComponent', () => {
       fixture.detectChanges();
       const cards: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.id-badge'));
       expect(cards.length).toBe(count);
-      expect(cards[count - 1].textContent).toContain(`Employer ${count}`);
+      expect(cards[0].textContent).toContain(`Employer ${count}`);
+      expect(cards[count - 1].textContent).toContain('Employer 1');
       expect(cards[count - 1].textContent).toContain('01/01/2020');
       expect(cards[count - 1].textContent).toContain('Till Date');
     }
@@ -147,6 +148,23 @@ describe('WorkExperienceComponent', () => {
     expect(card.querySelector('.company-logo')?.getAttribute('src')).toBe('assets/img/companies/cognizant.png');
   });
 
+  it('shows the newest career chapter first without mutating the supplied chronology', () => {
+    const companies = [
+      { name: 'Dart Innovation & Technologies Pvt Ltd', from: '25/05/2007', to: '30/04/2010' },
+      { name: 'Harman International Pvt Ltd', from: '17/10/2019', to: '28/09/2021' },
+      { name: 'Tata consultancy services', from: '25/10/2021', to: 'Till Date' }
+    ];
+    fixture.componentRef.setInput('companyDeatils', { companies });
+    fixture.detectChanges();
+    const chapters = fixture.nativeElement.querySelectorAll('.company-chapter') as NodeListOf<HTMLElement>;
+    expect(Array.from(chapters, card => card.querySelector('.company-name')?.textContent))
+      .toEqual(['Tata consultancy services', 'Harman International Pvt Ltd', 'Dart Innovation & Technologies Pvt Ltd']);
+    expect(Array.from(chapters, card => card.querySelector('.chapter-number')?.textContent))
+      .toEqual(['Chapter 3', 'Chapter 2', 'Chapter 1']);
+    expect(companies[0].name).toBe('Dart Innovation & Technologies Pvt Ltd');
+    expect(companies[2].name).toBe('Tata consultancy services');
+  });
+
   it('uses the ID portrait and available company logos, and labels missing-logo monograms', () => {
     const profile = { name: 'Portfolio Owner', title: 'I Am A Front-End Developer', userImage: 'assets/img/user-img.jpg' };
     fixture.componentRef.setInput('profile', profile);
@@ -161,7 +179,7 @@ describe('WorkExperienceComponent', () => {
       ]
     });
     fixture.detectChanges();
-    const cards: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.id-badge'));
+    const cards = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>('.id-badge')).reverse();
     expect(cards[0].querySelector('img.company-logo')?.getAttribute('src')).toBe('assets/img/companies/tcs.png');
     const chapters: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.company-chapter'));
     for (const chapter of chapters) {

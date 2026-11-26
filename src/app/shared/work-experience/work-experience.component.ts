@@ -52,6 +52,10 @@ export class WorkExperienceComponent implements OnDestroy {
     return formatProfileTitle(this.profile?.title.replace(/^I am (?:an? )?/i, '') ?? '');
   }
 
+  get latestCompanies(): CompanyExperience[] {
+    return [...(this.companyDeatils?.companies ?? [])].reverse();
+  }
+
   brandFor(name: string): CompanyBrand | undefined {
     return this.brands.find(brand => name.toLowerCase().includes(brand.match));
   }
