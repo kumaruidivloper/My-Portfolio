@@ -9,7 +9,7 @@
 .company-grid {
   display: grid;
   gap: 4rem 2.8rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
 }
 
 .company-chapter {
@@ -121,15 +121,16 @@
   border-radius: 1.6rem;
   box-shadow: var(--box-shadow);
   display: flex;
-  flex: 1;
+  flex: 0 0 auto;
   flex-direction: column;
   margin: 1rem auto 0;
-  max-width: 32rem;
+  max-width: 100%;
+  min-height: 480px;
   padding: 1.1rem;
   position: relative;
   transform-origin: center -5rem;
   transition: box-shadow 0.25s ease;
-  width: 100%;
+  width: 300px;
 
   &::before {
     background: linear-gradient(#707780, #e1e6eb, #858c94);
@@ -181,13 +182,13 @@
   border-top: 0.6rem solid var(--company-accent);
   display: flex;
   flex-direction: column;
-  height: 9rem;
+  height: 7rem;
   justify-content: center;
   padding: 1rem;
 }
 
 .company-logo {
-  height: 6.4rem;
+  height: 4.8rem;
   max-width: 100%;
   object-fit: contain;
   width: 18rem;
@@ -209,9 +210,8 @@
   align-items: center;
   color: var(--black);
   display: flex;
-  flex: 1;
   flex-direction: column;
-  padding: 1.8rem 1rem;
+  padding: 1rem 0.6rem;
   text-align: center;
 }
 
@@ -220,9 +220,9 @@
   border: 0.5rem solid #fff;
   border-radius: 1rem;
   box-shadow: 0 0.3rem 0.8rem #0002;
-  margin-bottom: 1.4rem;
+  margin-bottom: 0.8rem;
   max-width: 100%;
-  width: 13rem;
+  width: 10rem;
 
   img {
     aspect-ratio: 7 / 8;
@@ -249,25 +249,76 @@
 }
 
 .company-name {
+  align-items: center;
+  display: flex;
   font-size: 15px;
   font-weight: 600;
-  line-height: 1.6;
-  margin: 1.6rem 0;
+  line-height: 1.4;
+  margin: 0.8rem 0;
+  min-height: 2lh;
   overflow-wrap: anywhere;
   text-transform: none;
 }
 
 .badge-dates {
+  align-items: center;
   border-top: 1px solid color-mix(in srgb, var(--black) 15%, transparent);
   display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin-top: auto;
+  gap: 0.6rem;
+  grid-template-columns: minmax(0, 1fr) 96px minmax(0, 1fr);
   padding-top: 1.2rem;
   width: 100%;
 
-  dt { color: var(--light-color); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
-  dd { font-size: 11px; margin-top: 0.4rem; overflow-wrap: anywhere; text-transform: none; }
+  dl {
+    background: color-mix(in srgb, var(--company-accent) 6%, var(--bg-color));
+    border: 1px solid color-mix(in srgb, var(--company-accent) 24%, transparent);
+    border-radius: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    justify-content: center;
+    min-height: 60px;
+    min-width: 0;
+    padding: 8px 2px;
+  }
+
+  dt {
+    align-items: center;
+    color: var(--light-color);
+    display: flex;
+    font-size: 9px;
+    font-weight: 600;
+    gap: 4px;
+    justify-content: center;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+
+    &::before {
+      border: 1px solid var(--company-accent);
+      border-radius: 50%;
+      content: '';
+      height: 5px;
+      width: 5px;
+    }
+  }
+
+  dl:last-child dt::before { background: var(--company-accent); }
+
+  dd {
+    color: var(--black);
+    font-size: 10px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+    text-transform: none;
+  }
+}
+
+.badge-qr {
+  background: #fff;
+  display: block;
+  min-width: 0;
 }
 
 .badge-ribbon {
@@ -279,17 +330,13 @@
   font-size: 10px;
   justify-content: space-between;
   letter-spacing: 0.1em;
-  padding: 1rem 1.4rem;
+  margin-top: auto;
+  padding: 0.6rem 1.2rem;
   text-transform: uppercase;
-}
-
-@media (max-width: 1100px) {
-  .company-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 600px) {
   .company-grid { gap: 3.5rem; grid-template-columns: 1fr; }
-  .id-badge { max-width: 36rem; }
   .lanyard { height: 11rem; }
   .hanging-card { transform-origin: calc(50% + 1.3rem) top; }
 }

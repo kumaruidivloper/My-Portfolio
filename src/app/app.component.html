@@ -27,7 +27,7 @@
         <img class="img-animation profile-scroll-image profile-image-dark" src="assets/img/user-img-dark.jpg" [alt]="data.intro[0].name" width="400" height="400" decoding="async">
       </a>
       <h3>{{data.intro[0].name}}</h3>
-      <p>{{data.intro[0].menuTitle}}</p>
+      <p>{{profileTitle(data.intro[0].menuTitle)}}</p>
     </div>
     <nav class="navbar">
       @for (item of appOptions; track item) {
@@ -79,7 +79,7 @@
     <div class="content hero-intro">
       <span class="hero-eyebrow">Design. Code. Experience.</span>
       <h1 id="home-title">{{data.intro[0].name}}</h1>
-      <p>{{data.intro[0].title}}</p>
+      <p>{{profileTitle(data.intro[0].title)}}</p>
       <a href="{{data.intro[0].profilePath}}" class="btn hero-download" download>
         {{data.intro[0].buttonName}}
         <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m-5-5 5 5 5-5M5 16v5h14v-5"/></svg>

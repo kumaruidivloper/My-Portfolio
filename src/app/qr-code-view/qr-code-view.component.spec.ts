@@ -50,6 +50,32 @@ describe('QrCodeViewComponent', () => {
     fixture.destroy();
   });
 
+  it('renders compact codes without a portrait and with a four-module quiet zone', async () => {
+    const fixture = TestBed.createComponent(QrCodeViewComponent);
+    fixture.componentRef.setInput('data', 'Company A\nFrom: 2020\nTo: 2022');
+    fixture.componentRef.setInput('compact', true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const canvas = fixture.nativeElement.querySelector('canvas') as HTMLCanvasElement;
+    expect(canvas.width).toBe(96);
+    expect(fixture.nativeElement.querySelector('img')).toBeNull();
+    const pixels = canvas.getContext('2d')!.getImageData(0, 0, 96, 96).data;
+    let hasBlack = false;
+    for (let y = 0; y < 96; y++) {
+      for (let x = 0; x < 96; x++) {
+        const red = pixels[(y * 96 + x) * 4];
+        if (x < 8 || y < 8 || x >= 88 || y >= 88) {
+          expect(red).toBe(255);
+        }
+        hasBlack ||= red === 0;
+      }
+    }
+    expect(hasBlack).toBeTrue();
+    fixture.destroy();
+  });
+
   it('updates an existing QR code without hiding it or showing a loading message', async () => {
     const fixture = TestBed.createComponent(QrCodeViewComponent);
     fixture.componentRef.setInput('data', 'first');

@@ -1,6 +1,7 @@
 /// <reference types="jasmine" />
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { QrCodeViewComponent } from '../../qr-code-view/qr-code-view.component';
 
 import { WorkExperienceComponent } from './work-experience.component';
 
@@ -10,7 +11,8 @@ describe('WorkExperienceComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [WorkExperienceComponent]
+      declarations: [WorkExperienceComponent],
+      imports: [QrCodeViewComponent]
     }).compileComponents();
 
     fixture = TestBed.createComponent(WorkExperienceComponent);
@@ -52,6 +54,28 @@ describe('WorkExperienceComponent', () => {
     expect(cards.length).toBe(9);
   });
 
+  it('places each company QR between its dates and refreshes it when records change', async () => {
+    for (const companies of [
+      [{ name: 'Company A', from: '2020', to: '2022' }, { name: 'Company B', from: '2022', to: 'Till Date' }],
+      [{ name: 'Updated Employer', from: '2024', to: 'Present' }]
+    ]) {
+      fixture.componentRef.setInput('companyDeatils', { companies });
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      const rows = fixture.nativeElement.querySelectorAll('.badge-dates') as NodeListOf<HTMLElement>;
+      expect(rows.length).toBe(companies.length);
+      rows.forEach((row, index) => {
+        const company = companies[index];
+        expect(row.children[0].textContent).toContain(company.from);
+        expect(row.children[1].tagName).toBe('APP-QR-CODE-VIEW');
+        expect(row.children[2].textContent).toContain(company.to);
+        expect(row.querySelector('canvas')?.getAttribute('aria-label'))
+          .toBe(`QR code for ${company.name}\nFrom: ${company.from}\nTo: ${company.to}`);
+      });
+    }
+  });
+
   it('renders every supplied company instead of requiring exactly nine entries', () => {
     for (const count of [2, 10]) {
       fixture.componentRef.setInput('companyDeatils', {
@@ -59,6 +83,7 @@ describe('WorkExperienceComponent', () => {
           name: `Employer ${index + 1}`, from: '01/01/2020', to: 'Till Date'
         }))
       });
+
       fixture.detectChanges();
       const cards: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.id-badge'));
       expect(cards.length).toBe(count);
@@ -66,6 +91,20 @@ describe('WorkExperienceComponent', () => {
       expect(cards[count - 1].textContent).toContain('01/01/2020');
       expect(cards[count - 1].textContent).toContain('Till Date');
     }
+  });
+
+  it('uses the updated Cognizant name on the badge and in its QR code', async () => {
+    fixture.componentRef.setInput('companyDeatils', {
+      companies: [{ name: 'Cognizant Technology and Solution India Pvt Ltd', from: '09/03/2011', to: '21/07/2017' }]
+    });
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    const card = fixture.nativeElement as HTMLElement;
+    expect(card.querySelector('.company-name')?.textContent).toBe('Cognizant Technology & Solution India Pvt Ltd');
+    expect(card.querySelector('.badge-qr canvas')?.getAttribute('aria-label'))
+      .toBe('QR code for Cognizant Technology & Solution India Pvt Ltd\nFrom: 09/03/2011\nTo: 21/07/2017');
+    expect(card.querySelector('.company-logo')?.getAttribute('src')).toBe('assets/img/companies/cognizant.png');
   });
 
   it('uses the ID portrait and available company logos, and labels missing-logo monograms', () => {
@@ -93,7 +132,7 @@ describe('WorkExperienceComponent', () => {
       expect(card.querySelector('.badge-portrait img')?.getAttribute('src')).toBe('assets/img/companies/company-id-photo.png');
     }
     expect(cards[0].querySelector('.badge-name')?.textContent).toBe('Portfolio Owner');
-    expect(cards[0].querySelector('.badge-role')?.textContent).toBe('Front-End Developer');
+    expect(cards[0].querySelector('.badge-role')?.textContent).toBe('Front-End Engineer');
     expect(cards[1].querySelector('.monogram-caption')?.textContent).toBe('Company monogram');
     expect(cards[1].querySelector('.company-name')?.textContent).toBe('Other Employer');
     expect(cards[1].querySelector('img.company-logo')).toBeNull();

@@ -1,4 +1,5 @@
 import { Component, Input } from '@angular/core';
+import { formatProfileTitle } from '../profile-title';
 
 interface CompanyExperience {
   name: string;
@@ -36,7 +37,7 @@ export class WorkExperienceComponent {
   ];
 
   get profileRole(): string {
-    return this.profile?.title.replace(/^I am (?:an? )?/i, '') ?? '';
+    return formatProfileTitle(this.profile?.title.replace(/^I am (?:an? )?/i, '') ?? '');
   }
 
   brandFor(name: string): CompanyBrand | undefined {
@@ -45,5 +46,13 @@ export class WorkExperienceComponent {
 
   initials(name: string): string {
     return name.split(/\s+/).slice(0, 2).map(word => word.charAt(0)).join('').toUpperCase();
+  }
+
+  companyName(name: string): string {
+    return name.replace(/^Cognizant Technology and Solution India Pvt Ltd$/i, 'Cognizant Technology & Solution India Pvt Ltd');
+  }
+
+  qrData(company: CompanyExperience): string {
+    return `${this.companyName(company.name)}\nFrom: ${company.from}\nTo: ${company.to}`;
   }
 }

@@ -33,11 +33,12 @@
                 <p class="badge-name">{{ profile.name }}</p>
                 <p class="badge-role">{{ profileRole }}</p>
               }
-              <h2 class="company-name" [id]="'company-title-' + index">{{ company.name }}</h2>
-              <dl class="badge-dates">
-                <div><dt>From</dt><dd>{{ company.from }}</dd></div>
-                <div><dt>To</dt><dd>{{ company.to }}</dd></div>
-              </dl>
+              <h2 class="company-name" [id]="'company-title-' + index">{{ companyName(company.name) }}</h2>
+              <div class="badge-dates">
+                <dl><dt>From</dt><dd>{{ company.from }}</dd></dl>
+                <app-qr-code-view class="badge-qr" [data]="qrData(company)" [compact]="true"></app-qr-code-view>
+                <dl><dt>To</dt><dd>{{ company.to }}</dd></dl>
+              </div>
             </div>
             <div class="badge-ribbon" aria-hidden="true"><span>Career journey</span><span>{{ index + 1 }}</span></div>
           </div>

@@ -6,7 +6,9 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Inpu
   template: `
     <div class="qr-code" [hidden]="!!generationError || loading">
       <canvas #canvas [attr.aria-label]="'QR code for ' + data" [title]="'QR Code For (' + data + ')'"></canvas>
-      <img src="assets/img/user-img.jpg" alt="" width="50" height="50">
+      @if (!compact) {
+        <img src="assets/img/user-img.jpg" alt="" width="50" height="50">
+      }
     </div>
     @if (loading) {
       <p role="status">Loading QR code...</p>
@@ -17,12 +19,14 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Inpu
   `,
   styles: [`
     .qr-code { position: relative; }
+    canvas { display: block; }
     img { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
     p { color: #000; line-height: 1.4; }
   `]
 })
 export class QrCodeViewComponent implements OnChanges, OnDestroy {
   @Input() data = '';
+  @Input() compact = false;
   @ViewChild('canvas', { static: true }) private canvas!: ElementRef<HTMLCanvasElement>;
   generationError = '';
   loading = false;
@@ -76,8 +80,8 @@ export class QrCodeViewComponent implements OnChanges, OnDestroy {
   private renderQrCode(qrCode: typeof import('qrcode'), data: string): void {
     qrCode.toCanvas(this.canvas.nativeElement, data, {
       errorCorrectionLevel: 'M',
-      margin: 1,
-      width: 200,
+      margin: this.compact ? 4 : 1,
+      width: this.compact ? 96 : 200,
       color: { dark: '#000000ff', light: '#ffffffff' }
     }, (error) => {
       if (error) {

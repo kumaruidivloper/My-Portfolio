@@ -74,6 +74,12 @@ describe('AppComponent', () => {
     expect(component.barRange(89)).toBe('89%');
   });
 
+  it('updates profile titles while preserving introductory text and unrelated roles', () => {
+    expect(component.profileTitle('I Am A Front-End Developer')).toBe('I Am A Front-End Engineer');
+    expect(component.profileTitle('front end developer')).toBe('Front-End Engineer');
+    expect(component.profileTitle('Designer')).toBe('Designer');
+  });
+
   it('shows auto-scroll on the portfolio page but not in the dashboard', () => {
     Object.assign(component, { router: { url: '/' } });
     expect(component.showAutoScroll).toBeTrue();

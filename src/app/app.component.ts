@@ -12,6 +12,7 @@ import { DashboardAccessGuard, ProtectedDestination } from './service/dashboard-
 import { ConfirmationCodeService } from './shared/service/confirmation-code.service';
 import { TimeService } from './shared/service/time.service';
 import { environment } from '../environments/environment';
+import { formatProfileTitle } from './shared/profile-title';
 
 @Component({
     selector: 'app-root',
@@ -40,6 +41,10 @@ export class AppComponent implements OnInit, OnDestroy {
   readonly startupRewindDurationMs = 650;
   private readonly startupDelayMs = 3500;
   title = 'Kumar UI';
+  profileTitle(title = ''): string {
+    return formatProfileTitle(title);
+  }
+
   appOptions = AppOptions;
   transition = ['width 3s', 'width 4s', 'width 5s', 'width 6s', 'width 7s', 'width 8s', 'width 9s', 'width 10s', 'width 11s', 'width 12s'];
   barAnimation = false;

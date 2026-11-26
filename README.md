@@ -14,6 +14,10 @@ Awesome Companies displays each existing experience record as a colored lanyard 
 
 Company lanyards and badges sway together gently from the strap's top with staggered timing for a windy hanging-card effect. Hover pauses the motion for reading, and reduced-motion preferences disable it.
 
+Each company badge includes a locally generated QR code between its From and To dates, displayed in compact theme-aware panels with company-accent markers and tabular numbers. Scanning it shows the company name and employment dates; no data is sent to an external QR service.
+
+Badges share a 300px-wide, 480px-tall portrait layout, close to standard ID-card proportions. Company names reserve two lines so dates and QR codes align consistently while leaving room for larger photos. The grid wraps to fit, cards narrow on small screens, and unusually long content can grow rather than being clipped.
+
 Dashboard highlight color dots follow the chart's category/legend mapping, including repeated transfer dates. In line view, the dots use the single metric series color.
 
 All dashboard bar and line charts use compact Y-axis ticks (1k, 1.5k, 1M, 1B), while tooltips, tables, and summary cards retain their full-value formatting.
