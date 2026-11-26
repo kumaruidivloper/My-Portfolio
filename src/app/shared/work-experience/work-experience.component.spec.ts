@@ -84,6 +84,11 @@ describe('WorkExperienceComponent', () => {
     fixture.detectChanges();
     const cards: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.id-badge'));
     expect(cards[0].querySelector('img.company-logo')?.getAttribute('src')).toBe('assets/img/companies/tcs.png');
+    const chapters: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.company-chapter'));
+    for (const chapter of chapters) {
+      expect(chapter.querySelector('.lanyard-logo')?.getAttribute('src'))
+        .toBe(chapter.querySelector('.company-logo')?.getAttribute('src'));
+    }
     for (const card of cards) {
       expect(card.querySelector('.badge-portrait img')?.getAttribute('src')).toBe('assets/img/companies/company-id-photo.png');
     }

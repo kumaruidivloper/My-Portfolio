@@ -1,6 +1,5 @@
 <section class="company-experience" aria-labelledby="companies-title">
   <h1 id="companies-title" class="heading">{{ proud?.title }} <span>{{ proud?.companies }}</span></h1>
-  <p class="journey-caption">My career, in good company.</p>
   <div class="company-grid">
     @for (company of companyDeatils?.companies ?? []; track company; let index = $index) {
       @let brand = brandFor(company.name);
@@ -10,6 +9,9 @@
           <span class="chapter-period">{{ company.from }} &mdash; {{ company.to }}</span>
         </div>
         <div class="lanyard" aria-hidden="true">
+          @if (brand) {
+            <img class="lanyard-logo" [src]="brand.logo" alt="" width="28" height="28" loading="lazy" decoding="async">
+          }
           <span>{{ brand?.label ?? company.name }}</span>
         </div>
         <div class="id-badge">
