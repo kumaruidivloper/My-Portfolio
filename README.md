@@ -221,7 +221,14 @@ npx ng serve --host 0.0.0.0 --port 4200 --ssl --ssl-cert .local-ssl/lan.pem --ss
 
 Stop any existing server on port 4200 first. Open `https://192.168.68.112:4200/dashboard`; replace the example IP with the server's actual LAN IP. Other devices must also trust the mkcert CA before using the site. Keep the CA private key and the generated server key private; `.local-ssl/` is ignored by Git. Installing a local CA changes device trust, so use it only on devices you control.
 
-## 8. Mock api
+## 8. Local development notes for LAN development
+
+- Local dev server: `ng serve --host 192.168.68.112`
+- Local preview URL: `http://192.168.68.100:4200/`
+- Network host mode: `ng serve --host 0.0.0.0`
+- Local IP example: `192.168.0.7`
+
+## 9. Mock api
   kumaruidivloper's Mock API project:
   https://mockapi.io/projects/90064b76091df0839c97e168d7a
 
