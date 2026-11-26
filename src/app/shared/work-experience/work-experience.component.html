@@ -8,37 +8,39 @@
           <span class="chapter-number">Chapter {{ index + 1 }}</span>
           <span class="chapter-period">{{ company.from }} &mdash; {{ company.to }}</span>
         </div>
-        <div class="lanyard" aria-hidden="true">
-          @if (brand) {
-            <img class="lanyard-logo" [src]="brand.logo" alt="" width="28" height="28" loading="lazy" decoding="async">
-          }
-          <span>{{ brand?.label ?? company.name }}</span>
-        </div>
-        <div class="id-badge">
-          <span class="badge-clip" aria-hidden="true"></span>
-          <div class="brand-panel">
+        <div class="hanging-card">
+          <div class="lanyard" aria-hidden="true">
             @if (brand) {
-              <img class="company-logo" [src]="brand.logo" [alt]="brand.label + ' logo'" width="180" height="64" loading="lazy" decoding="async">
-            } @else {
-              <span class="company-monogram" aria-hidden="true">{{ initials(company.name) }}</span>
-              <span class="monogram-caption">Company monogram</span>
+              <img class="lanyard-logo" [src]="brand.logo" alt="" width="28" height="28" loading="lazy" decoding="async">
             }
+            <span>{{ brand?.label ?? company.name }}</span>
           </div>
-          <div class="badge-content">
-            @if (profile) {
-              <div class="badge-portrait">
-                <img src="assets/img/companies/company-id-photo.png" [alt]="profile.name" width="140" height="160" loading="lazy" decoding="async">
-              </div>
-              <p class="badge-name">{{ profile.name }}</p>
-              <p class="badge-role">{{ profileRole }}</p>
-            }
-            <h2 class="company-name" [id]="'company-title-' + index">{{ company.name }}</h2>
-            <dl class="badge-dates">
-              <div><dt>From</dt><dd>{{ company.from }}</dd></div>
-              <div><dt>To</dt><dd>{{ company.to }}</dd></div>
-            </dl>
+          <div class="id-badge">
+            <span class="badge-clip" aria-hidden="true"></span>
+            <div class="brand-panel">
+              @if (brand) {
+                <img class="company-logo" [src]="brand.logo" [alt]="brand.label + ' logo'" width="180" height="64" loading="lazy" decoding="async">
+              } @else {
+                <span class="company-monogram" aria-hidden="true">{{ initials(company.name) }}</span>
+                <span class="monogram-caption">Company monogram</span>
+              }
+            </div>
+            <div class="badge-content">
+              @if (profile) {
+                <div class="badge-portrait">
+                  <img src="assets/img/companies/company-id-photo.png" [alt]="profile.name" width="140" height="160" loading="lazy" decoding="async">
+                </div>
+                <p class="badge-name">{{ profile.name }}</p>
+                <p class="badge-role">{{ profileRole }}</p>
+              }
+              <h2 class="company-name" [id]="'company-title-' + index">{{ company.name }}</h2>
+              <dl class="badge-dates">
+                <div><dt>From</dt><dd>{{ company.from }}</dd></div>
+                <div><dt>To</dt><dd>{{ company.to }}</dd></div>
+              </dl>
+            </div>
+            <div class="badge-ribbon" aria-hidden="true"><span>Career journey</span><span>{{ index + 1 }}</span></div>
           </div>
-          <div class="badge-ribbon" aria-hidden="true"><span>Career journey</span><span>{{ index + 1 }}</span></div>
         </div>
       </article>
     }

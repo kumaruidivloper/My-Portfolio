@@ -12,6 +12,8 @@ The portfolio's scroll button stays in the bottom-right corner on desktop and mo
 
 Awesome Companies displays each existing experience record as a colored lanyard and ID-style career badge, using a user-supplied ID portrait and the portfolio's name and title while preserving company names, dates and order. Each available company logo appears on both the lanyard strap and badge; the straps retain their original colors and shaded design. The badge portrait is separate from the main portfolio photo. Chapter numbers represent the career sequence, not employee IDs. Cards adapt from three columns to one and disable hover movement for reduced motion. Logos are stored locally from [Dart Innovations](https://dartinnovations.com/), [Boeing](https://www.boeing.com/) and [Harman](https://www.harman.com/). Mindtree, Cognizant, Volvo, TCS, Xentaqsys and Schindlers use user-supplied logos; empty margins are trimmed where needed to fit the badges. The supplied TCS logo uses a plain white background. Company trademarks belong to their owners. Companies without an available logo use explicitly labeled monograms; historical employer names are not replaced with successor brands.
 
+Company lanyards and badges sway together gently from the strap's top with staggered timing for a windy hanging-card effect. Hover pauses the motion for reading, and reduced-motion preferences disable it.
+
 Dashboard highlight color dots follow the chart's category/legend mapping, including repeated transfer dates. In line view, the dots use the single metric series color.
 
 All dashboard bar and line charts use compact Y-axis ticks (1k, 1.5k, 1M, 1B), while tooltips, tables, and summary cards retain their full-value formatting.

@@ -14,6 +14,8 @@
 
 .company-chapter {
   --company-accent: #166c9d;
+  --sway-duration: 6s;
+  --sway-delay: -1s;
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -23,6 +25,27 @@
   &:nth-child(6n + 4) { --company-accent: #286a9b; }
   &:nth-child(6n + 5) { --company-accent: #a54b6c; }
   &:nth-child(6n + 6) { --company-accent: #527748; }
+  &:nth-child(3n + 2) { --sway-duration: 7s; --sway-delay: -3s; }
+  &:nth-child(3n + 3) { --sway-duration: 6.5s; --sway-delay: -4.5s; }
+}
+
+.hanging-card {
+  animation: card-sway var(--sway-duration) ease-in-out var(--sway-delay) infinite;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  // The angled strap's top is offset from the centered clip.
+  transform-origin: calc(50% + 1.6rem) top;
+}
+
+.company-chapter:hover .hanging-card {
+  animation-play-state: paused;
+}
+
+@keyframes card-sway {
+  0%, 100% { transform: rotate(-1.5deg); }
+  50% { transform: rotate(1.5deg); }
 }
 
 .chapter-heading {
@@ -105,7 +128,7 @@
   padding: 1.1rem;
   position: relative;
   transform-origin: center -5rem;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition: box-shadow 0.25s ease;
   width: 100%;
 
   &::before {
@@ -123,7 +146,6 @@
 
 .company-chapter:hover .id-badge {
   box-shadow: var(--box-shadow-inset);
-  transform: rotate(-2deg) translateY(-0.4rem);
 }
 
 .badge-clip {
@@ -269,9 +291,10 @@
   .company-grid { gap: 3.5rem; grid-template-columns: 1fr; }
   .id-badge { max-width: 36rem; }
   .lanyard { height: 11rem; }
+  .hanging-card { transform-origin: calc(50% + 1.3rem) top; }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .hanging-card { animation: none; }
   .id-badge { transition: none; }
-  .company-chapter:hover .id-badge { transform: none; }
 }
